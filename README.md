@@ -1,3 +1,3 @@
-# procheckv2_hw
+# FLogger hw
 
-Hardware del Procheck V2
+Hardware del FLogger
