@@ -1,7 +1,5 @@
 EESchema Schematic File Version 4
-LIBS:prockeckv2-cache
-LIBS:forcenOne-cache
-EELAYER 26 0
+EELAYER 30 0
 EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
@@ -740,7 +738,7 @@ $EndComp
 Text Notes 12650 3700 0    50   ~ 0
 Acondicionamiento diferencial
 $Comp
-L chinaland:MC3403 U?
+L prockeckv2-rescue:MC3403-chinaland U?
 U 1 1 5E701B88
 P 13250 5050
 F 0 "U?" H 13400 5250 60  0000 C CNN
@@ -761,7 +759,7 @@ Wire Wire Line
 Wire Wire Line
 	12750 5400 13850 5400
 $Comp
-L chinaland:MC3403 U?
+L prockeckv2-rescue:MC3403-chinaland U?
 U 2 1 5E701B94
 P 13250 4200
 F 0 "U?" H 13300 4500 60  0000 C CNN
@@ -783,7 +781,7 @@ Wire Wire Line
 	13900 4200 13700 4200
 Connection ~ 13850 5050
 $Comp
-L chinaland:MC3403 U?
+L prockeckv2-rescue:MC3403-chinaland U?
 U 3 1 5E701BA1
 P 14900 4900
 F 0 "U?" H 14925 5387 60  0000 C CNN
@@ -822,7 +820,7 @@ Wire Wire Line
 Wire Wire Line
 	15050 4200 15100 4200
 $Comp
-L chinaland:MC3403 U?
+L prockeckv2-rescue:MC3403-chinaland U?
 U 5 1 5E701BB8
 P 15450 3850
 F 0 "U?" H 15628 3903 60  0000 L CNN

@@ -1,0 +1,4 @@
+(sym_lib_table
+  (lib (name prockeckv2-rescue)(type Legacy)(uri ${KIPRJMOD}/prockeckv2-rescue.lib)(options "")(descr ""))
+  (lib (name Chinaland)(type Legacy)(uri ${KIPRJMOD}/chinaland.lib)(options "")(descr ""))
+)

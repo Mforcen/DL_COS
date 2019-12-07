@@ -1,7 +1,6 @@
 EESchema Schematic File Version 4
 LIBS:prockeckv2-cache
-LIBS:forcenOne-cache
-EELAYER 26 0
+EELAYER 30 0
 EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
@@ -16,7 +15,7 @@ Comment3 ""
 Comment4 ""
 $EndDescr
 $Comp
-L chinaland:SGM3204 U?
+L prockeckv2-rescue:SGM3204-chinaland U?
 U 1 1 5E85D6AB
 P 2500 1300
 AR Path="/5E85D6AB" Ref="U?"  Part="1" 
@@ -357,7 +356,7 @@ Regulador 3.3v
 Text GLabel 1400 2650 0    50   Output ~ 0
 Vbatt
 $Comp
-L chinaland:HX3242 U?
+L prockeckv2-rescue:HX3242-chinaland U?
 U 1 1 5E87EE6B
 P 9000 1450
 AR Path="/5E87EE6B" Ref="U?"  Part="1" 
@@ -668,7 +667,7 @@ $EndComp
 Text GLabel 7700 1350 0    50   Input ~ 0
 SENSOR_EN
 $Comp
-L chinaland:HX3001 U?
+L prockeckv2-rescue:HX3001-chinaland U?
 U 1 1 5E886D9C
 P 5250 1450
 AR Path="/5E886D9C" Ref="U?"  Part="1" 
