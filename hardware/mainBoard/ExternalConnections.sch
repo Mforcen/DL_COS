@@ -1,0 +1,473 @@
+EESchema Schematic File Version 4
+LIBS:prockeckv2-cache
+EELAYER 30 0
+EELAYER END
+$Descr A4 11693 8268
+encoding utf-8
+Sheet 8 8
+Title ""
+Date ""
+Rev ""
+Comp ""
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndDescr
+Text HLabel 2200 3550 0    50   BiDi ~ 0
+USART1
+Entry Wire Line
+	2350 3550 2450 3650
+Entry Wire Line
+	2450 3550 2550 3650
+$Comp
+L Connector:Conn_01x04_Male J?
+U 1 1 5E582AFB
+P 2450 4400
+F 0 "J?" V 2604 4112 50  0000 R CNN
+F 1 "Conn_01x04_Male" V 2513 4112 50  0000 R CNN
+F 2 "" H 2450 4400 50  0001 C CNN
+F 3 "~" H 2450 4400 50  0001 C CNN
+	1    2450 4400
+	0    -1   -1   0   
+$EndComp
+Wire Wire Line
+	2450 4200 2450 3650
+Wire Wire Line
+	2550 3650 2550 4200
+Text Label 2450 3700 3    50   ~ 0
+USART1_TX
+Text Label 2550 3700 3    50   ~ 0
+USART1_RX
+$Comp
+L power:GND #PWR?
+U 1 1 5E58371C
+P 2650 4150
+F 0 "#PWR?" H 2650 3900 50  0001 C CNN
+F 1 "GND" H 2655 3977 50  0000 C CNN
+F 2 "" H 2650 4150 50  0001 C CNN
+F 3 "" H 2650 4150 50  0001 C CNN
+	1    2650 4150
+	-1   0    0    1   
+$EndComp
+$Comp
+L power:+3V3 #PWR?
+U 1 1 5E583956
+P 2250 4150
+F 0 "#PWR?" H 2250 4000 50  0001 C CNN
+F 1 "+3V3" V 2265 4278 50  0000 L CNN
+F 2 "" H 2250 4150 50  0001 C CNN
+F 3 "" H 2250 4150 50  0001 C CNN
+	1    2250 4150
+	0    -1   -1   0   
+$EndComp
+Wire Wire Line
+	2250 4150 2350 4150
+Wire Wire Line
+	2350 4150 2350 4200
+Wire Wire Line
+	2650 4150 2650 4200
+Text HLabel 2200 4600 0    50   BiDi ~ 0
+USART2
+Entry Wire Line
+	2350 4600 2450 4700
+Entry Wire Line
+	2450 4600 2550 4700
+$Comp
+L Connector:Conn_01x04_Male J?
+U 1 1 5E58535A
+P 2450 5450
+F 0 "J?" V 2604 5162 50  0000 R CNN
+F 1 "Conn_01x04_Male" V 2513 5162 50  0000 R CNN
+F 2 "" H 2450 5450 50  0001 C CNN
+F 3 "~" H 2450 5450 50  0001 C CNN
+	1    2450 5450
+	0    -1   -1   0   
+$EndComp
+Wire Wire Line
+	2450 5250 2450 4700
+Wire Wire Line
+	2550 4700 2550 5250
+Text Label 2450 4750 3    50   ~ 0
+USART2_TX
+Text Label 2550 4750 3    50   ~ 0
+USART2_RX
+$Comp
+L power:GND #PWR?
+U 1 1 5E585364
+P 2650 5200
+F 0 "#PWR?" H 2650 4950 50  0001 C CNN
+F 1 "GND" H 2655 5027 50  0000 C CNN
+F 2 "" H 2650 5200 50  0001 C CNN
+F 3 "" H 2650 5200 50  0001 C CNN
+	1    2650 5200
+	-1   0    0    1   
+$EndComp
+$Comp
+L power:+3V3 #PWR?
+U 1 1 5E58536A
+P 2250 5200
+F 0 "#PWR?" H 2250 5050 50  0001 C CNN
+F 1 "+3V3" V 2265 5328 50  0000 L CNN
+F 2 "" H 2250 5200 50  0001 C CNN
+F 3 "" H 2250 5200 50  0001 C CNN
+	1    2250 5200
+	0    -1   -1   0   
+$EndComp
+Wire Wire Line
+	2250 5200 2350 5200
+Wire Wire Line
+	2350 5200 2350 5250
+Wire Wire Line
+	2650 5200 2650 5250
+Text HLabel 2200 5650 0    50   BiDi ~ 0
+USART3
+Entry Wire Line
+	2350 5650 2450 5750
+Entry Wire Line
+	2450 5650 2550 5750
+$Comp
+L Connector:Conn_01x04_Male J?
+U 1 1 5E585D97
+P 2450 6500
+F 0 "J?" V 2604 6212 50  0000 R CNN
+F 1 "Conn_01x04_Male" V 2513 6212 50  0000 R CNN
+F 2 "" H 2450 6500 50  0001 C CNN
+F 3 "~" H 2450 6500 50  0001 C CNN
+	1    2450 6500
+	0    -1   -1   0   
+$EndComp
+Wire Wire Line
+	2450 6300 2450 5750
+Wire Wire Line
+	2550 5750 2550 6300
+Text Label 2450 5800 3    50   ~ 0
+USART3_TX
+Text Label 2550 5800 3    50   ~ 0
+USART3_RX
+$Comp
+L power:GND #PWR?
+U 1 1 5E585DA1
+P 2650 6250
+F 0 "#PWR?" H 2650 6000 50  0001 C CNN
+F 1 "GND" H 2655 6077 50  0000 C CNN
+F 2 "" H 2650 6250 50  0001 C CNN
+F 3 "" H 2650 6250 50  0001 C CNN
+	1    2650 6250
+	-1   0    0    1   
+$EndComp
+$Comp
+L power:+3V3 #PWR?
+U 1 1 5E585DA7
+P 2250 6250
+F 0 "#PWR?" H 2250 6100 50  0001 C CNN
+F 1 "+3V3" V 2265 6378 50  0000 L CNN
+F 2 "" H 2250 6250 50  0001 C CNN
+F 3 "" H 2250 6250 50  0001 C CNN
+	1    2250 6250
+	0    -1   -1   0   
+$EndComp
+Wire Wire Line
+	2250 6250 2350 6250
+Wire Wire Line
+	2350 6250 2350 6300
+Wire Wire Line
+	2650 6250 2650 6300
+Text HLabel 4150 3600 0    50   BiDi ~ 0
+I2C1
+Entry Wire Line
+	4300 3600 4400 3700
+Entry Wire Line
+	4400 3600 4500 3700
+$Comp
+L Connector:Conn_01x04_Male J?
+U 1 1 5E587597
+P 4400 4450
+F 0 "J?" V 4554 4162 50  0000 R CNN
+F 1 "Conn_01x04_Male" V 4463 4162 50  0000 R CNN
+F 2 "" H 4400 4450 50  0001 C CNN
+F 3 "~" H 4400 4450 50  0001 C CNN
+	1    4400 4450
+	0    -1   -1   0   
+$EndComp
+Wire Wire Line
+	4400 4250 4400 3700
+Wire Wire Line
+	4500 3700 4500 4250
+Text Label 4400 3750 3    50   ~ 0
+I2C1_SCL
+Text Label 4500 3750 3    50   ~ 0
+I2C1_SDA
+$Comp
+L power:GND #PWR?
+U 1 1 5E5875A1
+P 4600 4200
+F 0 "#PWR?" H 4600 3950 50  0001 C CNN
+F 1 "GND" H 4605 4027 50  0000 C CNN
+F 2 "" H 4600 4200 50  0001 C CNN
+F 3 "" H 4600 4200 50  0001 C CNN
+	1    4600 4200
+	-1   0    0    1   
+$EndComp
+$Comp
+L power:+3V3 #PWR?
+U 1 1 5E5875A7
+P 4200 4200
+F 0 "#PWR?" H 4200 4050 50  0001 C CNN
+F 1 "+3V3" V 4215 4328 50  0000 L CNN
+F 2 "" H 4200 4200 50  0001 C CNN
+F 3 "" H 4200 4200 50  0001 C CNN
+	1    4200 4200
+	0    -1   -1   0   
+$EndComp
+Wire Wire Line
+	4200 4200 4300 4200
+Wire Wire Line
+	4300 4200 4300 4250
+Wire Wire Line
+	4600 4200 4600 4250
+Text HLabel 4200 4600 0    50   BiDi ~ 0
+I2C2
+Entry Wire Line
+	4350 4600 4450 4700
+Entry Wire Line
+	4450 4600 4550 4700
+$Comp
+L Connector:Conn_01x04_Male J?
+U 1 1 5E587B9C
+P 4450 5450
+F 0 "J?" V 4604 5162 50  0000 R CNN
+F 1 "Conn_01x04_Male" V 4513 5162 50  0000 R CNN
+F 2 "" H 4450 5450 50  0001 C CNN
+F 3 "~" H 4450 5450 50  0001 C CNN
+	1    4450 5450
+	0    -1   -1   0   
+$EndComp
+Wire Wire Line
+	4450 5250 4450 4700
+Wire Wire Line
+	4550 4700 4550 5250
+Text Label 4450 4750 3    50   ~ 0
+I2C2_SCL
+Text Label 4550 4750 3    50   ~ 0
+I2C2_SDA
+$Comp
+L power:GND #PWR?
+U 1 1 5E587BA6
+P 4650 5200
+F 0 "#PWR?" H 4650 4950 50  0001 C CNN
+F 1 "GND" H 4655 5027 50  0000 C CNN
+F 2 "" H 4650 5200 50  0001 C CNN
+F 3 "" H 4650 5200 50  0001 C CNN
+	1    4650 5200
+	-1   0    0    1   
+$EndComp
+$Comp
+L power:+3V3 #PWR?
+U 1 1 5E587BAC
+P 4250 5200
+F 0 "#PWR?" H 4250 5050 50  0001 C CNN
+F 1 "+3V3" V 4265 5328 50  0000 L CNN
+F 2 "" H 4250 5200 50  0001 C CNN
+F 3 "" H 4250 5200 50  0001 C CNN
+	1    4250 5200
+	0    -1   -1   0   
+$EndComp
+Wire Wire Line
+	4250 5200 4350 5200
+Wire Wire Line
+	4350 5200 4350 5250
+Wire Wire Line
+	4650 5200 4650 5250
+$Comp
+L Connector:Conn_01x05_Male J?
+U 1 1 5E589F83
+P 6750 4450
+F 0 "J?" V 6904 4162 50  0000 R CNN
+F 1 "Conn_01x05_Male" V 6813 4162 50  0000 R CNN
+F 2 "" H 6750 4450 50  0001 C CNN
+F 3 "~" H 6750 4450 50  0001 C CNN
+	1    6750 4450
+	0    -1   -1   0   
+$EndComp
+Text HLabel 6150 3600 0    50   BiDi ~ 0
+SPI2
+Wire Wire Line
+	6850 4250 6850 3700
+Wire Wire Line
+	6750 4250 6750 3700
+Wire Wire Line
+	6650 4250 6650 3700
+$Comp
+L power:+3V3 #PWR?
+U 1 1 5E58CEA6
+P 6450 4150
+F 0 "#PWR?" H 6450 4000 50  0001 C CNN
+F 1 "+3V3" V 6465 4278 50  0000 L CNN
+F 2 "" H 6450 4150 50  0001 C CNN
+F 3 "" H 6450 4150 50  0001 C CNN
+	1    6450 4150
+	0    -1   -1   0   
+$EndComp
+Wire Wire Line
+	6450 4150 6550 4150
+Wire Wire Line
+	6550 4150 6550 4250
+$Comp
+L power:GND #PWR?
+U 1 1 5E58D8EE
+P 6950 4200
+F 0 "#PWR?" H 6950 3950 50  0001 C CNN
+F 1 "GND" H 6955 4027 50  0000 C CNN
+F 2 "" H 6950 4200 50  0001 C CNN
+F 3 "" H 6950 4200 50  0001 C CNN
+	1    6950 4200
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	6950 4200 6950 4250
+Entry Wire Line
+	6550 3600 6650 3700
+Entry Wire Line
+	6650 3600 6750 3700
+Entry Wire Line
+	6750 3600 6850 3700
+Text Label 6650 3750 3    50   ~ 0
+SPI2_MOSI
+Text Label 6750 3750 3    50   ~ 0
+SPI2_MISO
+Text Label 6850 3750 3    50   ~ 0
+SPI2_SCK
+$Comp
+L Connector:Conn_01x05_Male J?
+U 1 1 5E59188B
+P 6750 5450
+F 0 "J?" V 6904 5162 50  0000 R CNN
+F 1 "Conn_01x05_Male" V 6813 5162 50  0000 R CNN
+F 2 "" H 6750 5450 50  0001 C CNN
+F 3 "~" H 6750 5450 50  0001 C CNN
+	1    6750 5450
+	0    -1   -1   0   
+$EndComp
+Text HLabel 6150 4600 0    50   BiDi ~ 0
+SPI3
+Wire Wire Line
+	6850 5250 6850 4700
+Wire Wire Line
+	6750 5250 6750 4700
+Wire Wire Line
+	6650 5250 6650 4700
+$Comp
+L power:+3V3 #PWR?
+U 1 1 5E591895
+P 6450 5150
+F 0 "#PWR?" H 6450 5000 50  0001 C CNN
+F 1 "+3V3" V 6465 5278 50  0000 L CNN
+F 2 "" H 6450 5150 50  0001 C CNN
+F 3 "" H 6450 5150 50  0001 C CNN
+	1    6450 5150
+	0    -1   -1   0   
+$EndComp
+Wire Wire Line
+	6450 5150 6550 5150
+Wire Wire Line
+	6550 5150 6550 5250
+$Comp
+L power:GND #PWR?
+U 1 1 5E59189D
+P 6950 5200
+F 0 "#PWR?" H 6950 4950 50  0001 C CNN
+F 1 "GND" H 6955 5027 50  0000 C CNN
+F 2 "" H 6950 5200 50  0001 C CNN
+F 3 "" H 6950 5200 50  0001 C CNN
+	1    6950 5200
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	6950 5200 6950 5250
+Entry Wire Line
+	6550 4600 6650 4700
+Entry Wire Line
+	6650 4600 6750 4700
+Entry Wire Line
+	6750 4600 6850 4700
+Text Label 6650 4750 3    50   ~ 0
+SPI3_MOSI
+Text Label 6750 4750 3    50   ~ 0
+SPI3_MISO
+Text Label 6850 4750 3    50   ~ 0
+SPI3_SCK
+$Comp
+L Connector:Conn_01x06_Male J?
+U 1 1 5E59541E
+P 8900 4500
+F 0 "J?" V 9054 4112 50  0000 R CNN
+F 1 "Conn_01x06_Male" V 8963 4112 50  0000 R CNN
+F 2 "" H 8900 4500 50  0001 C CNN
+F 3 "~" H 8900 4500 50  0001 C CNN
+	1    8900 4500
+	0    -1   -1   0   
+$EndComp
+Text HLabel 8400 3550 0    50   BiDi ~ 0
+SWD
+$Comp
+L power:+3V3 #PWR?
+U 1 1 5E596CB6
+P 8600 4150
+F 0 "#PWR?" H 8600 4000 50  0001 C CNN
+F 1 "+3V3" V 8615 4278 50  0000 L CNN
+F 2 "" H 8600 4150 50  0001 C CNN
+F 3 "" H 8600 4150 50  0001 C CNN
+	1    8600 4150
+	0    -1   -1   0   
+$EndComp
+Wire Wire Line
+	8600 4150 8700 4150
+Wire Wire Line
+	8700 4150 8700 4300
+$Comp
+L power:GND #PWR?
+U 1 1 5E597C07
+P 9200 4250
+F 0 "#PWR?" H 9200 4000 50  0001 C CNN
+F 1 "GND" H 9205 4077 50  0000 C CNN
+F 2 "" H 9200 4250 50  0001 C CNN
+F 3 "" H 9200 4250 50  0001 C CNN
+	1    9200 4250
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	9200 4250 9200 4300
+Wire Wire Line
+	8800 4300 8800 3650
+Wire Wire Line
+	8900 3650 8900 4300
+Entry Wire Line
+	8700 3550 8800 3650
+Entry Wire Line
+	8800 3550 8900 3650
+Text GLabel 9000 4000 1    50   Output ~ 0
+BOOT0
+Wire Wire Line
+	9000 4000 9000 4300
+Text GLabel 9100 4000 1    50   Output ~ 0
+~RST
+Wire Wire Line
+	9100 4000 9100 4300
+Wire Bus Line
+	2200 3550 2750 3550
+Wire Bus Line
+	2200 4600 2750 4600
+Wire Bus Line
+	2200 5650 2750 5650
+Wire Bus Line
+	4150 3600 4700 3600
+Wire Bus Line
+	4200 4600 4750 4600
+Wire Bus Line
+	8400 3550 9200 3550
+Wire Bus Line
+	6150 3600 6950 3600
+Wire Bus Line
+	6150 4600 6950 4600
+$EndSCHEMATC
