@@ -1,0 +1,158 @@
+EESchema Schematic File Version 4
+LIBS:prockeckv2-cache
+EELAYER 30 0
+EELAYER END
+$Descr A4 11693 8268
+encoding utf-8
+Sheet 8 10
+Title ""
+Date ""
+Rev ""
+Comp ""
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndDescr
+Text HLabel 3100 3200 0    50   BiDi ~ 0
+SDI12[0..2]
+$Comp
+L Logic_LevelTranslator:TXB0104PW U20
+U 1 1 5DF8A07C
+P 5150 3900
+F 0 "U20" H 5150 3111 50  0000 C CNN
+F 1 "TXB0104PW" H 5150 3020 50  0000 C CNN
+F 2 "Package_SO:TSSOP-14_4.4x5mm_P0.65mm" H 5150 3150 50  0001 C CNN
+F 3 "http://www.ti.com/lit/ds/symlink/txb0104.pdf" H 5260 3995 50  0001 C CNN
+	1    5150 3900
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR0112
+U 1 1 5DFE0FA7
+P 5300 4600
+F 0 "#PWR0112" H 5300 4350 50  0001 C CNN
+F 1 "GND" V 5305 4472 50  0000 R CNN
+F 2 "" H 5300 4600 50  0001 C CNN
+F 3 "" H 5300 4600 50  0001 C CNN
+	1    5300 4600
+	0    -1   -1   0   
+$EndComp
+Wire Wire Line
+	5300 4600 5150 4600
+$Comp
+L power:+3V3 #PWR0110
+U 1 1 5DFE19FA
+P 5050 3100
+F 0 "#PWR0110" H 5050 2950 50  0001 C CNN
+F 1 "+3V3" H 5065 3273 50  0000 C CNN
+F 2 "" H 5050 3100 50  0001 C CNN
+F 3 "" H 5050 3100 50  0001 C CNN
+	1    5050 3100
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5050 3100 5050 3200
+$Comp
+L power:+5V #PWR0111
+U 1 1 5DFE1E74
+P 5250 3100
+F 0 "#PWR0111" H 5250 2950 50  0001 C CNN
+F 1 "+5V" H 5265 3273 50  0000 C CNN
+F 2 "" H 5250 3100 50  0001 C CNN
+F 3 "" H 5250 3100 50  0001 C CNN
+	1    5250 3100
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5250 3100 5250 3200
+Entry Wire Line
+	4200 3200 4300 3300
+Entry Wire Line
+	4100 3200 4200 3300
+Entry Wire Line
+	4000 3200 4100 3300
+Wire Wire Line
+	4300 3300 4300 3400
+Wire Wire Line
+	4300 3400 4750 3400
+Wire Wire Line
+	4200 3300 4200 3600
+Wire Wire Line
+	4200 3600 4750 3600
+Wire Wire Line
+	4100 3300 4100 3800
+Wire Wire Line
+	4100 3800 4750 3800
+Text Label 4350 3400 0    50   ~ 0
+SDI122
+Text Label 4350 3600 0    50   ~ 0
+SDI120
+Text Label 4350 3800 0    50   ~ 0
+SDI121
+$Comp
+L Connector:Screw_Terminal_01x06 J20
+U 1 1 5DFE2E7A
+P 6750 3700
+F 0 "J20" H 6830 3692 50  0000 L CNN
+F 1 "Screw_Terminal_01x06" H 6830 3601 50  0000 L CNN
+F 2 "TerminalBlock:TerminalBlock_bornier-6_P5.08mm" H 6750 3700 50  0001 C CNN
+F 3 "~" H 6750 3700 50  0001 C CNN
+	1    6750 3700
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+12V #PWR0113
+U 1 1 5DFE3C0E
+P 6300 3300
+F 0 "#PWR0113" H 6300 3150 50  0001 C CNN
+F 1 "+12V" H 6315 3473 50  0000 C CNN
+F 2 "" H 6300 3300 50  0001 C CNN
+F 3 "" H 6300 3300 50  0001 C CNN
+	1    6300 3300
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR0114
+U 1 1 5DFE3E68
+P 6350 4100
+F 0 "#PWR0114" H 6350 3850 50  0001 C CNN
+F 1 "GND" H 6355 3927 50  0000 C CNN
+F 2 "" H 6350 4100 50  0001 C CNN
+F 3 "" H 6350 4100 50  0001 C CNN
+	1    6350 4100
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	6300 3300 6300 3500
+Wire Wire Line
+	6300 3500 6550 3500
+Wire Wire Line
+	6300 3500 6300 3800
+Wire Wire Line
+	6300 3800 6550 3800
+Connection ~ 6300 3500
+Wire Wire Line
+	6350 4100 6350 4000
+Wire Wire Line
+	6350 4000 6550 4000
+Wire Wire Line
+	6350 4000 6350 3700
+Wire Wire Line
+	6350 3700 6550 3700
+Connection ~ 6350 4000
+Wire Wire Line
+	5550 3800 5900 3800
+Wire Wire Line
+	5900 3800 5900 3900
+Wire Wire Line
+	5900 3900 6550 3900
+Wire Wire Line
+	5550 3600 6550 3600
+NoConn ~ 5550 4000
+NoConn ~ 5550 4200
+NoConn ~ 4750 4200
+NoConn ~ 4750 4000
+Wire Bus Line
+	3100 3200 4300 3200
+$EndSCHEMATC
