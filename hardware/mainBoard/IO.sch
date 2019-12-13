@@ -1,5 +1,4 @@
 EESchema Schematic File Version 4
-LIBS:prockeckv2-cache
 EELAYER 30 0
 EELAYER END
 $Descr A4 11693 8268
@@ -245,10 +244,6 @@ Wire Wire Line
 Wire Wire Line
 	8000 3350 7700 3350
 Connection ~ 7700 3350
-Wire Bus Line
-	7000 2450 7850 2450
-Wire Bus Line
-	3300 2450 5350 2450
 $Comp
 L Connector:Screw_Terminal_01x19 J3
 U 1 1 5DF27906
@@ -260,4 +255,8 @@ F 3 "~" H 4500 3650 50  0001 C CNN
 	1    4500 3650
 	0    1    1    0   
 $EndComp
+Wire Bus Line
+	7000 2450 7850 2450
+Wire Bus Line
+	3300 2450 5350 2450
 $EndSCHEMATC

@@ -1,5 +1,4 @@
 EESchema Schematic File Version 4
-LIBS:prockeckv2-cache
 EELAYER 30 0
 EELAYER END
 $Descr A4 11693 8268
@@ -266,41 +265,22 @@ Wire Wire Line
 	3300 2500 3300 2300
 Wire Wire Line
 	3300 2200 3300 2100
-Wire Wire Line
-	3300 2100 2500 2100
-Wire Wire Line
-	2500 2100 2500 2150
-$Comp
-L Device:C_Small C24
-U 1 1 5DD6A3FD
-P 2150 2650
-F 0 "C24" H 2242 2696 50  0000 L CNN
-F 1 "20p" H 2242 2605 50  0000 L CNN
-F 2 "Capacitor_SMD:C_0603_1608Metric_Pad1.05x0.95mm_HandSolder" H 2150 2650 50  0001 C CNN
-F 3 "~" H 2150 2650 50  0001 C CNN
-	1    2150 2650
-	1    0    0    -1  
-$EndComp
 $Comp
 L Device:C_Small C25
 U 1 1 5DD6AE7A
-P 2800 2650
-F 0 "C25" H 2892 2696 50  0000 L CNN
-F 1 "20p" H 2892 2605 50  0000 L CNN
-F 2 "Capacitor_SMD:C_0603_1608Metric_Pad1.05x0.95mm_HandSolder" H 2800 2650 50  0001 C CNN
-F 3 "~" H 2800 2650 50  0001 C CNN
-	1    2800 2650
+P 2500 2650
+F 0 "C25" H 2592 2696 50  0000 L CNN
+F 1 "20p" H 2592 2605 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0603_1608Metric_Pad1.05x0.95mm_HandSolder" H 2500 2650 50  0001 C CNN
+F 3 "~" H 2500 2650 50  0001 C CNN
+	1    2500 2650
 	1    0    0    -1  
 $EndComp
-Wire Wire Line
-	2300 2300 2150 2300
-Wire Wire Line
-	2150 2300 2150 2550
 $Comp
 L Device:Crystal_GND24 Y1
 U 1 1 5DD5F9B1
 P 2500 2300
-F 0 "Y1" V 2546 2056 50  0000 R CNN
+F 0 "Y1" V 2600 2100 50  0000 R CNN
 F 1 "Crystal_GND24" V 2650 2950 50  0000 R CNN
 F 2 "Crystal:Crystal_SMD_7050-4Pin_7.0x5.0mm" H 2500 2300 50  0001 C CNN
 F 3 "https://datasheet.lcsc.com/szlcsc/1811081329_Yangxing-Tech-X50328MSB4SI_C157341.pdf" H 2500 2300 50  0001 C CNN
@@ -311,35 +291,31 @@ F 6 "https://www.st.com/content/ccc/resource/technical/document/application_note
 	0    -1   -1   0   
 $EndComp
 Wire Wire Line
-	2800 2550 2800 2300
-Wire Wire Line
-	2800 2300 2700 2300
+	2750 2300 2700 2300
 $Comp
 L power:GND #PWR058
 U 1 1 5DD72FF6
-P 2800 2800
-F 0 "#PWR058" H 2800 2550 50  0001 C CNN
-F 1 "GND" H 2805 2627 50  0000 C CNN
-F 2 "" H 2800 2800 50  0001 C CNN
-F 3 "" H 2800 2800 50  0001 C CNN
-	1    2800 2800
+P 2500 2800
+F 0 "#PWR058" H 2500 2550 50  0001 C CNN
+F 1 "GND" H 2505 2627 50  0000 C CNN
+F 2 "" H 2500 2800 50  0001 C CNN
+F 3 "" H 2500 2800 50  0001 C CNN
+	1    2500 2800
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	2800 2800 2800 2750
+	2500 2800 2500 2750
 $Comp
 L power:GND #PWR057
 U 1 1 5DD74202
-P 2150 2800
-F 0 "#PWR057" H 2150 2550 50  0001 C CNN
-F 1 "GND" H 2155 2627 50  0000 C CNN
-F 2 "" H 2150 2800 50  0001 C CNN
-F 3 "" H 2150 2800 50  0001 C CNN
-	1    2150 2800
-	1    0    0    -1  
+P 2500 1800
+F 0 "#PWR057" H 2500 1550 50  0001 C CNN
+F 1 "GND" H 2505 1627 50  0000 C CNN
+F 2 "" H 2500 1800 50  0001 C CNN
+F 3 "" H 2500 1800 50  0001 C CNN
+	1    2500 1800
+	-1   0    0    1   
 $EndComp
-Wire Wire Line
-	2150 2800 2150 2750
 Wire Wire Line
 	5300 4900 6100 4900
 Wire Wire Line
@@ -921,10 +897,10 @@ F 3 "~" H 850 1600 50  0001 C CNN
 	1    850  1600
 	1    0    0    -1  
 $EndComp
-Text GLabel 2150 1600 2    50   Output ~ 0
+Text GLabel 2050 1600 2    50   Output ~ 0
 BOOT0
 Wire Wire Line
-	2150 1600 1800 1600
+	2050 1600 1800 1600
 $Comp
 L power:GND #PWR054
 U 1 1 5E5AD45A
@@ -1173,6 +1149,53 @@ Wire Wire Line
 Connection ~ 1100 2550
 Wire Wire Line
 	1100 2550 1100 2600
+Wire Wire Line
+	2500 1800 2500 1850
+Wire Wire Line
+	2500 2100 2500 2150
+Wire Wire Line
+	3300 2100 2500 2100
+$Comp
+L Device:C_Small C24
+U 1 1 5DD6A3FD
+P 2500 1950
+F 0 "C24" H 2592 1996 50  0000 L CNN
+F 1 "20p" H 2592 1905 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0603_1608Metric_Pad1.05x0.95mm_HandSolder" H 2500 1950 50  0001 C CNN
+F 3 "~" H 2500 1950 50  0001 C CNN
+	1    2500 1950
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	2500 2050 2500 2100
+Connection ~ 2500 2100
+Wire Wire Line
+	2500 2550 2500 2500
+Connection ~ 2500 2500
+$Comp
+L power:GND #PWR?
+U 1 1 5E168D3A
+P 2250 2300
+F 0 "#PWR?" H 2250 2050 50  0001 C CNN
+F 1 "GND" H 2255 2127 50  0000 C CNN
+F 2 "" H 2250 2300 50  0001 C CNN
+F 3 "" H 2250 2300 50  0001 C CNN
+	1    2250 2300
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	2250 2300 2300 2300
+$Comp
+L power:GND #PWR?
+U 1 1 5E1765D4
+P 2750 2300
+F 0 "#PWR?" H 2750 2050 50  0001 C CNN
+F 1 "GND" H 2755 2127 50  0000 C CNN
+F 2 "" H 2750 2300 50  0001 C CNN
+F 3 "" H 2750 2300 50  0001 C CNN
+	1    2750 2300
+	0    -1   -1   0   
+$EndComp
 Wire Bus Line
 	8450 1800 8450 2750
 Wire Bus Line
