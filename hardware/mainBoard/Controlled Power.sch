@@ -1,4 +1,5 @@
 EESchema Schematic File Version 4
+LIBS:prockeckv2-cache
 EELAYER 30 0
 EELAYER END
 $Descr A4 11693 8268
@@ -27,6 +28,7 @@ F 0 "R59" V 2993 2900 50  0000 C CNN
 F 1 "100k" V 3084 2900 50  0000 C CNN
 F 2 "Resistor_SMD:R_0603_1608Metric_Pad1.05x0.95mm_HandSolder" V 3130 2900 50  0001 C CNN
 F 3 "~" H 3200 2900 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount_100KR-1003-1_C14675.html" H 3200 2900 50  0001 C CNN "URL"
 	1    3200 2900
 	0    1    1    0   
 $EndComp
@@ -55,6 +57,7 @@ F 0 "R61" H 3630 2404 50  0000 R CNN
 F 1 "100k" H 3630 2495 50  0000 R CNN
 F 2 "Resistor_SMD:R_0603_1608Metric_Pad1.05x0.95mm_HandSolder" V 3630 2450 50  0001 C CNN
 F 3 "~" H 3700 2450 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount_100KR-1003-1_C14675.html" H 3700 2450 50  0001 C CNN "URL"
 	1    3700 2450
 	-1   0    0    1   
 $EndComp
@@ -81,6 +84,7 @@ F 0 "Q6" H 4806 2604 50  0000 L CNN
 F 1 "AO3415" H 4806 2695 50  0000 L CNN
 F 2 "Package_TO_SOT_SMD:SOT-23_Handsoldering" H 4800 2750 50  0001 C CNN
 F 3 "~" H 4600 2650 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/MOSFET_Alpha-Omega-Semicon_AO3415_Alpha-Omega-Semicon-AOS-AO3415_C14354.html" H 4600 2650 50  0001 C CNN "URL"
 	1    4600 2650
 	1    0    0    1   
 $EndComp
@@ -106,7 +110,7 @@ U 1 1 5E03AF80
 P 4950 3000
 F 0 "J21" H 5030 2992 50  0000 L CNN
 F 1 "Screw_Terminal_01x02" H 5030 2901 50  0000 L CNN
-F 2 "TerminalBlock:TerminalBlock_bornier-2_P5.08mm" H 4950 3000 50  0001 C CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical" H 4950 3000 50  0001 C CNN
 F 3 "~" H 4950 3000 50  0001 C CNN
 	1    4950 3000
 	1    0    0    -1  
@@ -138,6 +142,7 @@ F 0 "R60" V 2993 4400 50  0000 C CNN
 F 1 "100k" V 3084 4400 50  0000 C CNN
 F 2 "Resistor_SMD:R_0603_1608Metric_Pad1.05x0.95mm_HandSolder" V 3130 4400 50  0001 C CNN
 F 3 "~" H 3200 4400 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount_100KR-1003-1_C14675.html" H 3200 4400 50  0001 C CNN "URL"
 	1    3200 4400
 	0    1    1    0   
 $EndComp
@@ -164,6 +169,7 @@ F 0 "R62" H 3630 3904 50  0000 R CNN
 F 1 "100k" H 3630 3995 50  0000 R CNN
 F 2 "Resistor_SMD:R_0603_1608Metric_Pad1.05x0.95mm_HandSolder" V 3630 3950 50  0001 C CNN
 F 3 "~" H 3700 3950 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount_100KR-1003-1_C14675.html" H 3700 3950 50  0001 C CNN "URL"
 	1    3700 3950
 	-1   0    0    1   
 $EndComp
@@ -190,6 +196,7 @@ F 0 "Q7" H 4806 4104 50  0000 L CNN
 F 1 "AO3415" H 4806 4195 50  0000 L CNN
 F 2 "Package_TO_SOT_SMD:SOT-23_Handsoldering" H 4800 4250 50  0001 C CNN
 F 3 "~" H 4600 4150 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/MOSFET_Alpha-Omega-Semicon_AO3415_Alpha-Omega-Semicon-AOS-AO3415_C14354.html" H 4600 4150 50  0001 C CNN "URL"
 	1    4600 4150
 	1    0    0    1   
 $EndComp
@@ -215,7 +222,7 @@ U 1 1 5E03F836
 P 4950 4500
 F 0 "J22" H 5030 4492 50  0000 L CNN
 F 1 "Screw_Terminal_01x02" H 5030 4401 50  0000 L CNN
-F 2 "TerminalBlock:TerminalBlock_bornier-2_P5.08mm" H 4950 4500 50  0001 C CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical" H 4950 4500 50  0001 C CNN
 F 3 "~" H 4950 4500 50  0001 C CNN
 	1    4950 4500
 	1    0    0    -1  
@@ -259,6 +266,7 @@ F 0 "Q8" H 8106 3154 50  0000 L CNN
 F 1 "AP2300" H 8106 3245 50  0000 L CNN
 F 2 "Package_TO_SOT_SMD:SOT-23_Handsoldering" H 8100 3300 50  0001 C CNN
 F 3 "~" H 7900 3200 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/MOSFET_ALLPOWER-ShenZhen-Quan-Li-Semiconductor-AP2300_C360338.html" H 7900 3200 50  0001 C CNN "URL"
 	1    7900 3200
 	1    0    0    1   
 $EndComp
@@ -272,6 +280,7 @@ F 0 "R63" V 7243 3200 50  0000 C CNN
 F 1 "10k" V 7334 3200 50  0000 C CNN
 F 2 "Resistor_SMD:R_0603_1608Metric_Pad1.05x0.95mm_HandSolder" V 7380 3200 50  0001 C CNN
 F 3 "~" H 7450 3200 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/New-Arrivals_SANYEAR-SY0603JN10KP_C380762.html" H 7450 3200 50  0001 C CNN "URL"
 	1    7450 3200
 	0    1    1    0   
 $EndComp
@@ -283,6 +292,7 @@ F 0 "R65" H 7580 3404 50  0000 R CNN
 F 1 "1M" H 7580 3495 50  0000 R CNN
 F 2 "Resistor_SMD:R_0603_1608Metric_Pad1.05x0.95mm_HandSolder" V 7580 3450 50  0001 C CNN
 F 3 "~" H 7650 3450 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount_UNI-ROYAL-Uniroyal-Elec-0603WAJ0105T5E_C26098.html" H 7650 3450 50  0001 C CNN "URL"
 	1    7650 3450
 	-1   0    0    1   
 $EndComp
@@ -327,7 +337,7 @@ U 1 1 5E04A12D
 P 8250 2350
 F 0 "J23" H 8330 2342 50  0000 L CNN
 F 1 "Screw_Terminal_01x02" H 8330 2251 50  0000 L CNN
-F 2 "TerminalBlock:TerminalBlock_bornier-2_P5.08mm" H 8250 2350 50  0001 C CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical" H 8250 2350 50  0001 C CNN
 F 3 "~" H 8250 2350 50  0001 C CNN
 	1    8250 2350
 	1    0    0    -1  
@@ -357,6 +367,7 @@ F 0 "Q9" H 8106 4754 50  0000 L CNN
 F 1 "AP2300" H 8106 4845 50  0000 L CNN
 F 2 "Package_TO_SOT_SMD:SOT-23_Handsoldering" H 8100 4900 50  0001 C CNN
 F 3 "~" H 7900 4800 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/MOSFET_ALLPOWER-ShenZhen-Quan-Li-Semiconductor-AP2300_C360338.html" H 7900 4800 50  0001 C CNN "URL"
 	1    7900 4800
 	1    0    0    1   
 $EndComp
@@ -370,6 +381,7 @@ F 0 "R64" V 7243 4800 50  0000 C CNN
 F 1 "10k" V 7334 4800 50  0000 C CNN
 F 2 "Resistor_SMD:R_0603_1608Metric_Pad1.05x0.95mm_HandSolder" V 7380 4800 50  0001 C CNN
 F 3 "~" H 7450 4800 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/New-Arrivals_SANYEAR-SY0603JN10KP_C380762.html" H 7450 4800 50  0001 C CNN "URL"
 	1    7450 4800
 	0    1    1    0   
 $EndComp
@@ -381,6 +393,7 @@ F 0 "R66" H 7580 5004 50  0000 R CNN
 F 1 "1M" H 7580 5095 50  0000 R CNN
 F 2 "Resistor_SMD:R_0603_1608Metric_Pad1.05x0.95mm_HandSolder" V 7580 5050 50  0001 C CNN
 F 3 "~" H 7650 5050 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount_UNI-ROYAL-Uniroyal-Elec-0603WAJ0105T5E_C26098.html" H 7650 5050 50  0001 C CNN "URL"
 	1    7650 5050
 	-1   0    0    1   
 $EndComp
@@ -425,7 +438,7 @@ U 1 1 5E0525F6
 P 8300 4250
 F 0 "J24" H 8380 4242 50  0000 L CNN
 F 1 "Screw_Terminal_01x02" H 8380 4151 50  0000 L CNN
-F 2 "TerminalBlock:TerminalBlock_bornier-2_P5.08mm" H 8300 4250 50  0001 C CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical" H 8300 4250 50  0001 C CNN
 F 3 "~" H 8300 4250 50  0001 C CNN
 	1    8300 4250
 	1    0    0    -1  
@@ -457,6 +470,7 @@ F 0 "F1" H 4768 2346 50  0000 L CNN
 F 1 "SL1210400" H 4768 2255 50  0000 L CNN
 F 2 "Resistor_SMD:R_1210_3225Metric" H 4750 2100 50  0001 L CNN
 F 3 "~" H 4700 2300 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/PTC-Resettable-Fuses_TECHFUSE-SL1210400_C70186.html" H 4700 2300 50  0001 C CNN "URL"
 	1    4700 2300
 	1    0    0    -1  
 $EndComp
@@ -472,6 +486,7 @@ F 0 "F2" H 4768 3846 50  0000 L CNN
 F 1 "SL1210400" H 4768 3755 50  0000 L CNN
 F 2 "Resistor_SMD:R_1210_3225Metric" H 4750 3600 50  0001 L CNN
 F 3 "~" H 4700 3800 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/PTC-Resettable-Fuses_TECHFUSE-SL1210400_C70186.html" H 4700 3800 50  0001 C CNN "URL"
 	1    4700 3800
 	1    0    0    -1  
 $EndComp
@@ -491,6 +506,7 @@ F 0 "F4" H 8068 4496 50  0000 L CNN
 F 1 "SL1210400" H 8068 4405 50  0000 L CNN
 F 2 "Resistor_SMD:R_1210_3225Metric" H 8050 4250 50  0001 L CNN
 F 3 "~" H 8000 4450 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/PTC-Resettable-Fuses_TECHFUSE-SL1210400_C70186.html" H 8000 4450 50  0001 C CNN "URL"
 	1    8000 4450
 	1    0    0    -1  
 $EndComp
@@ -504,6 +520,7 @@ F 0 "F3" H 8068 2846 50  0000 L CNN
 F 1 "SL1210400" H 8068 2755 50  0000 L CNN
 F 2 "Resistor_SMD:R_1210_3225Metric" H 8050 2600 50  0001 L CNN
 F 3 "~" H 8000 2800 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/PTC-Resettable-Fuses_TECHFUSE-SL1210400_C70186.html" H 8000 2800 50  0001 C CNN "URL"
 	1    8000 2800
 	1    0    0    -1  
 $EndComp
@@ -515,6 +532,7 @@ F 0 "Q4" H 3790 2946 50  0000 L CNN
 F 1 "S8050" H 3790 2855 50  0000 L CNN
 F 2 "Package_TO_SOT_SMD:SOT-23_Handsoldering" H 3800 3000 50  0001 C CNN
 F 3 "~" H 3600 2900 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Transistors-NPN-PNP_S8050_C181158.html" H 3600 2900 50  0001 C CNN "URL"
 	1    3600 2900
 	1    0    0    -1  
 $EndComp
@@ -526,6 +544,7 @@ F 0 "Q5" H 3790 4446 50  0000 L CNN
 F 1 "S8050" H 3790 4355 50  0000 L CNN
 F 2 "Package_TO_SOT_SMD:SOT-23_Handsoldering" H 3800 4500 50  0001 C CNN
 F 3 "~" H 3600 4400 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Transistors-NPN-PNP_S8050_C181158.html" H 3600 4400 50  0001 C CNN "URL"
 	1    3600 4400
 	1    0    0    -1  
 $EndComp

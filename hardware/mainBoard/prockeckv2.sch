@@ -1,4 +1,5 @@
 EESchema Schematic File Version 4
+LIBS:prockeckv2-cache
 EELAYER 30 0
 EELAYER END
 $Descr A4 11693 8268
@@ -39,6 +40,7 @@ F 0 "J1" H 2905 3667 50  0000 C CNN
 F 1 "USB_B_Micro" H 2905 3576 50  0000 C CNN
 F 2 "Connector_USB:USB_Micro-B_Molex-105017-0001" H 3000 3150 50  0001 C CNN
 F 3 "~" H 3000 3150 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Micro-USB-Connectors_Korean-Hroparts-Elec-U-F-M5DD-Y-L_C91146.html" H 2850 3200 50  0001 C CNN "URL"
 	1    2850 3200
 	1    0    0    -1  
 $EndComp

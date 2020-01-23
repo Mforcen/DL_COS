@@ -1,4 +1,5 @@
 EESchema Schematic File Version 4
+LIBS:prockeckv2-cache
 EELAYER 30 0
 EELAYER END
 $Descr A4 11693 8268
@@ -23,6 +24,7 @@ F 0 "U15" V 3678 3222 60  0000 R CNN
 F 1 "TLC227AIDR" V 3572 3222 60  0000 R CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 3750 3500 60  0001 C CNN
 F 3 "" H 3750 3500 60  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Precision-OpAmps_Texas-Instruments-TLC2274AIDR_C93026.html" H 3650 3450 50  0001 C CNN "URL"
 	4    3650 3450
 	0    -1   -1   0   
 $EndComp
@@ -36,6 +38,7 @@ F 0 "U15" V 3078 3872 60  0000 R CNN
 F 1 "TLC227AIDR" V 2972 3872 60  0000 R CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 3150 4150 60  0001 C CNN
 F 3 "" H 3150 4150 60  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Precision-OpAmps_Texas-Instruments-TLC2274AIDR_C93026.html" H 3050 4100 50  0001 C CNN "URL"
 	3    3050 4100
 	0    -1   -1   0   
 $EndComp
@@ -49,6 +52,7 @@ F 0 "U15" V 2278 3322 60  0000 R CNN
 F 1 "TLC227AIDR" V 2172 3322 60  0000 R CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 2350 3600 60  0001 C CNN
 F 3 "" H 2350 3600 60  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Precision-OpAmps_Texas-Instruments-TLC2274AIDR_C93026.html" H 2250 3550 50  0001 C CNN "URL"
 	2    2250 3550
 	0    -1   -1   0   
 $EndComp
@@ -60,6 +64,7 @@ F 0 "U15" V 1678 3872 60  0000 R CNN
 F 1 "TLC227AIDR" V 1572 3872 60  0000 R CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 1750 4150 60  0001 C CNN
 F 3 "" H 1750 4150 60  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Precision-OpAmps_Texas-Instruments-TLC2274AIDR_C93026.html" H 1650 4100 50  0001 C CNN "URL"
 	1    1650 4100
 	0    -1   -1   0   
 $EndComp
@@ -127,6 +132,7 @@ F 0 "U17" V 6428 3222 60  0000 R CNN
 F 1 "TLC227AIDR" V 6322 3222 60  0000 R CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 6500 3500 60  0001 C CNN
 F 3 "" H 6500 3500 60  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Precision-OpAmps_Texas-Instruments-TLC2274AIDR_C93026.html" H 6400 3450 50  0001 C CNN "URL"
 	4    6400 3450
 	0    -1   -1   0   
 $EndComp
@@ -138,6 +144,7 @@ F 0 "U17" V 5828 3872 60  0000 R CNN
 F 1 "TLC227AIDR" V 5722 3872 60  0000 R CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 5900 4150 60  0001 C CNN
 F 3 "" H 5900 4150 60  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Precision-OpAmps_Texas-Instruments-TLC2274AIDR_C93026.html" H 5800 4100 50  0001 C CNN "URL"
 	3    5800 4100
 	0    -1   -1   0   
 $EndComp
@@ -149,6 +156,7 @@ F 0 "U17" V 5028 3222 60  0000 R CNN
 F 1 "TLC227AIDR" V 4922 3222 60  0000 R CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 5100 3500 60  0001 C CNN
 F 3 "" H 5100 3500 60  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Precision-OpAmps_Texas-Instruments-TLC2274AIDR_C93026.html" H 5000 3450 50  0001 C CNN "URL"
 	2    5000 3450
 	0    -1   -1   0   
 $EndComp
@@ -160,6 +168,7 @@ F 0 "U17" V 4428 3872 60  0000 R CNN
 F 1 "TLC227AIDR" V 4322 3872 60  0000 R CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 4500 4150 60  0001 C CNN
 F 3 "" H 4500 4150 60  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Precision-OpAmps_Texas-Instruments-TLC2274AIDR_C93026.html" H 4400 4100 50  0001 C CNN "URL"
 	1    4400 4100
 	0    -1   -1   0   
 $EndComp
@@ -197,6 +206,7 @@ F 0 "U18" V 9028 3322 60  0000 R CNN
 F 1 "TLC227AIDR" V 8922 3322 60  0000 R CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 9100 3600 60  0001 C CNN
 F 3 "" H 9100 3600 60  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Precision-OpAmps_Texas-Instruments-TLC2274AIDR_C93026.html" H 9000 3550 50  0001 C CNN "URL"
 	4    9000 3550
 	0    -1   -1   0   
 $EndComp
@@ -210,6 +220,7 @@ F 0 "U18" V 8428 3972 60  0000 R CNN
 F 1 "TLC227AIDR" V 8322 3972 60  0000 R CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 8500 4250 60  0001 C CNN
 F 3 "" H 8500 4250 60  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Precision-OpAmps_Texas-Instruments-TLC2274AIDR_C93026.html" H 8400 4200 50  0001 C CNN "URL"
 	3    8400 4200
 	0    -1   -1   0   
 $EndComp
@@ -223,6 +234,7 @@ F 0 "U18" V 7628 3272 60  0000 R CNN
 F 1 "TLC227AIDR" V 7522 3272 60  0000 R CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 7700 3550 60  0001 C CNN
 F 3 "" H 7700 3550 60  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Precision-OpAmps_Texas-Instruments-TLC2274AIDR_C93026.html" H 7600 3500 50  0001 C CNN "URL"
 	2    7600 3500
 	0    -1   -1   0   
 $EndComp
@@ -236,6 +248,7 @@ F 0 "U18" V 7028 3972 60  0000 R CNN
 F 1 "TLC227AIDR" V 6922 3972 60  0000 R CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 7100 4250 60  0001 C CNN
 F 3 "" H 7100 4250 60  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Precision-OpAmps_Texas-Instruments-TLC2274AIDR_C93026.html" H 7000 4200 50  0001 C CNN "URL"
 	1    7000 4200
 	0    -1   -1   0   
 $EndComp
@@ -335,6 +348,7 @@ F 0 "U15" H 10678 3053 60  0000 L CNN
 F 1 "TLC227AIDR" H 10678 2947 60  0000 L CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 10600 3050 60  0001 C CNN
 F 3 "" H 10600 3050 60  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Precision-OpAmps_Texas-Instruments-TLC2274AIDR_C93026.html" H 10500 3000 50  0001 C CNN "URL"
 	5    10500 3000
 	1    0    0    -1  
 $EndComp
@@ -346,6 +360,7 @@ F 0 "U16" H 10678 3403 60  0000 L CNN
 F 1 "TLC227AIDR" H 10678 3297 60  0000 L CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 10600 3400 60  0001 C CNN
 F 3 "" H 10600 3400 60  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Precision-OpAmps_Texas-Instruments-TLC2274AIDR_C93026.html" H 10500 3350 50  0001 C CNN "URL"
 	5    10500 3350
 	1    0    0    -1  
 $EndComp
@@ -357,6 +372,7 @@ F 0 "U17" H 10678 3753 60  0000 L CNN
 F 1 "TLC227AIDR" H 10678 3647 60  0000 L CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 10600 3750 60  0001 C CNN
 F 3 "" H 10600 3750 60  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Precision-OpAmps_Texas-Instruments-TLC2274AIDR_C93026.html" H 10500 3700 50  0001 C CNN "URL"
 	5    10500 3700
 	1    0    0    -1  
 $EndComp
@@ -418,6 +434,7 @@ F 0 "U16" V 1878 2022 60  0000 R CNN
 F 1 "TLC227AIDR" V 1772 2022 60  0000 R CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 1950 2300 60  0001 C CNN
 F 3 "" H 1950 2300 60  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Precision-OpAmps_Texas-Instruments-TLC2274AIDR_C93026.html" H 1850 2250 50  0001 C CNN "URL"
 	1    1850 2250
 	0    -1   -1   0   
 $EndComp
@@ -431,6 +448,7 @@ F 0 "U16" V 3278 2022 60  0000 R CNN
 F 1 "TLC227AIDR" V 3172 2022 60  0000 R CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 3350 2300 60  0001 C CNN
 F 3 "" H 3350 2300 60  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Precision-OpAmps_Texas-Instruments-TLC2274AIDR_C93026.html" H 3250 2250 50  0001 C CNN "URL"
 	2    3250 2250
 	0    -1   -1   0   
 $EndComp
@@ -444,6 +462,7 @@ F 0 "U16" V 4628 2022 60  0000 R CNN
 F 1 "TLC227AIDR" V 4522 2022 60  0000 R CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 4700 2300 60  0001 C CNN
 F 3 "" H 4700 2300 60  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Precision-OpAmps_Texas-Instruments-TLC2274AIDR_C93026.html" H 4600 2250 50  0001 C CNN "URL"
 	3    4600 2250
 	0    -1   -1   0   
 $EndComp
@@ -457,6 +476,7 @@ F 0 "U16" V 6078 2022 60  0000 R CNN
 F 1 "TLC227AIDR" V 5972 2022 60  0000 R CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 6150 2300 60  0001 C CNN
 F 3 "" H 6150 2300 60  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Precision-OpAmps_Texas-Instruments-TLC2274AIDR_C93026.html" H 6050 2250 50  0001 C CNN "URL"
 	4    6050 2250
 	0    -1   -1   0   
 $EndComp
@@ -470,6 +490,7 @@ F 0 "U19" V 7278 2072 60  0000 R CNN
 F 1 "TLC227AIDR" V 7172 2072 60  0000 R CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 7350 2350 60  0001 C CNN
 F 3 "" H 7350 2350 60  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Precision-OpAmps_Texas-Instruments-TLC2274AIDR_C93026.html" H 7250 2300 50  0001 C CNN "URL"
 	1    7250 2300
 	0    -1   -1   0   
 $EndComp
@@ -483,6 +504,7 @@ F 0 "U19" V 8728 2072 60  0000 R CNN
 F 1 "TLC227AIDR" V 8622 2072 60  0000 R CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 8800 2350 60  0001 C CNN
 F 3 "" H 8800 2350 60  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Precision-OpAmps_Texas-Instruments-TLC2274AIDR_C93026.html" H 8700 2300 50  0001 C CNN "URL"
 	2    8700 2300
 	0    -1   -1   0   
 $EndComp
@@ -496,6 +518,7 @@ F 0 "U19" H 10075 5737 60  0000 C CNN
 F 1 "TLC227AIDR" H 10075 5631 60  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 10200 5400 60  0001 C CNN
 F 3 "" H 10200 5400 60  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Precision-OpAmps_Texas-Instruments-TLC2274AIDR_C93026.html" H 10100 5350 50  0001 C CNN "URL"
 	3    10100 5350
 	1    0    0    -1  
 $EndComp
@@ -509,6 +532,7 @@ F 0 "U19" H 10075 6437 60  0000 C CNN
 F 1 "TLC227AIDR" H 10075 6331 60  0000 C CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 10200 6100 60  0001 C CNN
 F 3 "" H 10200 6100 60  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Precision-OpAmps_Texas-Instruments-TLC2274AIDR_C93026.html" H 10100 6050 50  0001 C CNN "URL"
 	4    10100 6050
 	1    0    0    -1  
 $EndComp
@@ -526,6 +550,7 @@ F 0 "R31" H 1770 2996 50  0000 L CNN
 F 1 "200k" H 1770 2905 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric_Pad1.05x0.95mm_HandSolder" V 1630 2950 50  0001 C CNN
 F 3 "~" H 1700 2950 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount_UNI-ROYAL-Uniroyal-Elec-0603WAF2003T5E_C25811.html" H 1700 2950 50  0001 C CNN "URL"
 	1    1700 2950
 	1    0    0    -1  
 $EndComp
@@ -537,6 +562,7 @@ F 0 "R30" H 1520 2746 50  0000 L CNN
 F 1 "200k" H 1520 2655 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric_Pad1.05x0.95mm_HandSolder" V 1380 2700 50  0001 C CNN
 F 3 "~" H 1450 2700 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount_UNI-ROYAL-Uniroyal-Elec-0603WAF2003T5E_C25811.html" H 1450 2700 50  0001 C CNN "URL"
 	1    1450 2700
 	1    0    0    -1  
 $EndComp
@@ -548,6 +574,7 @@ F 0 "R32" H 2070 2996 50  0000 L CNN
 F 1 "200k" H 2070 2905 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric_Pad1.05x0.95mm_HandSolder" V 1930 2950 50  0001 C CNN
 F 3 "~" H 2000 2950 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount_UNI-ROYAL-Uniroyal-Elec-0603WAF2003T5E_C25811.html" H 2000 2950 50  0001 C CNN "URL"
 	1    2000 2950
 	1    0    0    -1  
 $EndComp
@@ -559,6 +586,7 @@ F 0 "R33" H 2220 2596 50  0000 L CNN
 F 1 "63k4" H 2220 2505 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric_Pad1.05x0.95mm_HandSolder" V 2080 2550 50  0001 C CNN
 F 3 "~" H 2150 2550 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount_UNI-ROYAL-Uniroyal-Elec-0603WAF6342T5E_C23093.html" H 2150 2550 50  0001 C CNN "URL"
 	1    2150 2550
 	1    0    0    -1  
 $EndComp
@@ -570,6 +598,7 @@ F 0 "R35" H 2920 2746 50  0000 L CNN
 F 1 "200k" H 2920 2655 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric_Pad1.05x0.95mm_HandSolder" V 2780 2700 50  0001 C CNN
 F 3 "~" H 2850 2700 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount_UNI-ROYAL-Uniroyal-Elec-0603WAF2003T5E_C25811.html" H 2850 2700 50  0001 C CNN "URL"
 	1    2850 2700
 	1    0    0    -1  
 $EndComp
@@ -581,6 +610,7 @@ F 0 "R36" H 3170 2946 50  0000 L CNN
 F 1 "200k" H 3170 2855 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric_Pad1.05x0.95mm_HandSolder" V 3030 2900 50  0001 C CNN
 F 3 "~" H 3100 2900 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount_UNI-ROYAL-Uniroyal-Elec-0603WAF2003T5E_C25811.html" H 3100 2900 50  0001 C CNN "URL"
 	1    3100 2900
 	1    0    0    -1  
 $EndComp
@@ -592,6 +622,7 @@ F 0 "R37" H 3470 2946 50  0000 L CNN
 F 1 "200k" H 3470 2855 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric_Pad1.05x0.95mm_HandSolder" V 3330 2900 50  0001 C CNN
 F 3 "~" H 3400 2900 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount_UNI-ROYAL-Uniroyal-Elec-0603WAF2003T5E_C25811.html" H 3400 2900 50  0001 C CNN "URL"
 	1    3400 2900
 	1    0    0    -1  
 $EndComp
@@ -603,6 +634,7 @@ F 0 "R38" H 3670 2596 50  0000 L CNN
 F 1 "63k4" H 3670 2505 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric_Pad1.05x0.95mm_HandSolder" V 3530 2550 50  0001 C CNN
 F 3 "~" H 3600 2550 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount_UNI-ROYAL-Uniroyal-Elec-0603WAF6342T5E_C23093.html" H 3600 2550 50  0001 C CNN "URL"
 	1    3600 2550
 	1    0    0    -1  
 $EndComp
@@ -614,6 +646,7 @@ F 0 "R40" H 4220 2746 50  0000 L CNN
 F 1 "200k" H 4220 2655 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric_Pad1.05x0.95mm_HandSolder" V 4080 2700 50  0001 C CNN
 F 3 "~" H 4150 2700 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount_UNI-ROYAL-Uniroyal-Elec-0603WAF2003T5E_C25811.html" H 4150 2700 50  0001 C CNN "URL"
 	1    4150 2700
 	1    0    0    -1  
 $EndComp
@@ -625,6 +658,7 @@ F 0 "R43" H 5020 2596 50  0000 L CNN
 F 1 "63k4" H 5020 2505 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric_Pad1.05x0.95mm_HandSolder" V 4880 2550 50  0001 C CNN
 F 3 "~" H 4950 2550 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount_UNI-ROYAL-Uniroyal-Elec-0603WAF6342T5E_C23093.html" H 4950 2550 50  0001 C CNN "URL"
 	1    4950 2550
 	1    0    0    -1  
 $EndComp
@@ -636,6 +670,7 @@ F 0 "R41" H 4520 2896 50  0000 L CNN
 F 1 "200k" H 4520 2805 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric_Pad1.05x0.95mm_HandSolder" V 4380 2850 50  0001 C CNN
 F 3 "~" H 4450 2850 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount_UNI-ROYAL-Uniroyal-Elec-0603WAF2003T5E_C25811.html" H 4450 2850 50  0001 C CNN "URL"
 	1    4450 2850
 	1    0    0    -1  
 $EndComp
@@ -647,6 +682,7 @@ F 0 "R42" H 4820 2896 50  0000 L CNN
 F 1 "200k" H 4820 2805 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric_Pad1.05x0.95mm_HandSolder" V 4680 2850 50  0001 C CNN
 F 3 "~" H 4750 2850 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount_UNI-ROYAL-Uniroyal-Elec-0603WAF2003T5E_C25811.html" H 4750 2850 50  0001 C CNN "URL"
 	1    4750 2850
 	1    0    0    -1  
 $EndComp
@@ -658,6 +694,7 @@ F 0 "R45" H 5670 2746 50  0000 L CNN
 F 1 "200k" H 5670 2655 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric_Pad1.05x0.95mm_HandSolder" V 5530 2700 50  0001 C CNN
 F 3 "~" H 5600 2700 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount_UNI-ROYAL-Uniroyal-Elec-0603WAF2003T5E_C25811.html" H 5600 2700 50  0001 C CNN "URL"
 	1    5600 2700
 	1    0    0    -1  
 $EndComp
@@ -669,6 +706,7 @@ F 0 "R46" H 5970 2896 50  0000 L CNN
 F 1 "200k" H 5970 2805 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric_Pad1.05x0.95mm_HandSolder" V 5830 2850 50  0001 C CNN
 F 3 "~" H 5900 2850 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount_UNI-ROYAL-Uniroyal-Elec-0603WAF2003T5E_C25811.html" H 5900 2850 50  0001 C CNN "URL"
 	1    5900 2850
 	1    0    0    -1  
 $EndComp
@@ -680,6 +718,7 @@ F 0 "R47" H 6270 2896 50  0000 L CNN
 F 1 "200k" H 6270 2805 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric_Pad1.05x0.95mm_HandSolder" V 6130 2850 50  0001 C CNN
 F 3 "~" H 6200 2850 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount_UNI-ROYAL-Uniroyal-Elec-0603WAF2003T5E_C25811.html" H 6200 2850 50  0001 C CNN "URL"
 	1    6200 2850
 	1    0    0    -1  
 $EndComp
@@ -691,6 +730,7 @@ F 0 "R48" H 6470 2596 50  0000 L CNN
 F 1 "63k4" H 6470 2505 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric_Pad1.05x0.95mm_HandSolder" V 6330 2550 50  0001 C CNN
 F 3 "~" H 6400 2550 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount_UNI-ROYAL-Uniroyal-Elec-0603WAF6342T5E_C23093.html" H 6400 2550 50  0001 C CNN "URL"
 	1    6400 2550
 	1    0    0    -1  
 $EndComp
@@ -702,6 +742,7 @@ F 0 "R50" H 6920 2746 50  0000 L CNN
 F 1 "200k" H 6920 2655 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric_Pad1.05x0.95mm_HandSolder" V 6780 2700 50  0001 C CNN
 F 3 "~" H 6850 2700 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount_UNI-ROYAL-Uniroyal-Elec-0603WAF2003T5E_C25811.html" H 6850 2700 50  0001 C CNN "URL"
 	1    6850 2700
 	1    0    0    -1  
 $EndComp
@@ -713,6 +754,7 @@ F 0 "R51" H 7170 2946 50  0000 L CNN
 F 1 "200k" H 7170 2855 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric_Pad1.05x0.95mm_HandSolder" V 7030 2900 50  0001 C CNN
 F 3 "~" H 7100 2900 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount_UNI-ROYAL-Uniroyal-Elec-0603WAF2003T5E_C25811.html" H 7100 2900 50  0001 C CNN "URL"
 	1    7100 2900
 	1    0    0    -1  
 $EndComp
@@ -724,6 +766,7 @@ F 0 "R52" H 7470 2946 50  0000 L CNN
 F 1 "200k" H 7470 2855 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric_Pad1.05x0.95mm_HandSolder" V 7330 2900 50  0001 C CNN
 F 3 "~" H 7400 2900 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount_UNI-ROYAL-Uniroyal-Elec-0603WAF2003T5E_C25811.html" H 7400 2900 50  0001 C CNN "URL"
 	1    7400 2900
 	1    0    0    -1  
 $EndComp
@@ -735,6 +778,7 @@ F 0 "R53" H 7670 2646 50  0000 L CNN
 F 1 "63k4" H 7670 2555 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric_Pad1.05x0.95mm_HandSolder" V 7530 2600 50  0001 C CNN
 F 3 "~" H 7600 2600 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount_UNI-ROYAL-Uniroyal-Elec-0603WAF6342T5E_C23093.html" H 7600 2600 50  0001 C CNN "URL"
 	1    7600 2600
 	1    0    0    -1  
 $EndComp
@@ -746,6 +790,7 @@ F 0 "R55" H 8270 2746 50  0000 L CNN
 F 1 "200k" H 8270 2655 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric_Pad1.05x0.95mm_HandSolder" V 8130 2700 50  0001 C CNN
 F 3 "~" H 8200 2700 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount_UNI-ROYAL-Uniroyal-Elec-0603WAF2003T5E_C25811.html" H 8200 2700 50  0001 C CNN "URL"
 	1    8200 2700
 	1    0    0    -1  
 $EndComp
@@ -757,6 +802,7 @@ F 0 "R56" H 8620 2946 50  0000 L CNN
 F 1 "200k" H 8620 2855 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric_Pad1.05x0.95mm_HandSolder" V 8480 2900 50  0001 C CNN
 F 3 "~" H 8550 2900 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount_UNI-ROYAL-Uniroyal-Elec-0603WAF2003T5E_C25811.html" H 8550 2900 50  0001 C CNN "URL"
 	1    8550 2900
 	1    0    0    -1  
 $EndComp
@@ -768,6 +814,7 @@ F 0 "R57" H 8920 2946 50  0000 L CNN
 F 1 "200k" H 8920 2855 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric_Pad1.05x0.95mm_HandSolder" V 8780 2900 50  0001 C CNN
 F 3 "~" H 8850 2900 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount_UNI-ROYAL-Uniroyal-Elec-0603WAF2003T5E_C25811.html" H 8850 2900 50  0001 C CNN "URL"
 	1    8850 2900
 	1    0    0    -1  
 $EndComp
@@ -779,6 +826,7 @@ F 0 "R58" H 9120 2646 50  0000 L CNN
 F 1 "63k4" H 9120 2555 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric_Pad1.05x0.95mm_HandSolder" V 8980 2600 50  0001 C CNN
 F 3 "~" H 9050 2600 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount_UNI-ROYAL-Uniroyal-Elec-0603WAF6342T5E_C23093.html" H 9050 2600 50  0001 C CNN "URL"
 	1    9050 2600
 	1    0    0    -1  
 $EndComp
@@ -790,6 +838,7 @@ F 0 "R29" H 1520 2246 50  0000 L CNN
 F 1 "100k" H 1520 2155 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric_Pad1.05x0.95mm_HandSolder" V 1380 2200 50  0001 C CNN
 F 3 "~" H 1450 2200 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount_100KR-1003-1_C14675.html" H 1450 2200 50  0001 C CNN "URL"
 	1    1450 2200
 	1    0    0    -1  
 $EndComp
@@ -801,6 +850,7 @@ F 0 "R34" H 2920 2296 50  0000 L CNN
 F 1 "100k" H 2920 2205 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric_Pad1.05x0.95mm_HandSolder" V 2780 2250 50  0001 C CNN
 F 3 "~" H 2850 2250 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount_100KR-1003-1_C14675.html" H 2850 2250 50  0001 C CNN "URL"
 	1    2850 2250
 	1    0    0    -1  
 $EndComp
@@ -812,6 +862,7 @@ F 0 "R39" H 4220 2296 50  0000 L CNN
 F 1 "100k" H 4220 2205 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric_Pad1.05x0.95mm_HandSolder" V 4080 2250 50  0001 C CNN
 F 3 "~" H 4150 2250 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount_100KR-1003-1_C14675.html" H 4150 2250 50  0001 C CNN "URL"
 	1    4150 2250
 	1    0    0    -1  
 $EndComp
@@ -823,6 +874,7 @@ F 0 "R44" H 5670 2296 50  0000 L CNN
 F 1 "100k" H 5670 2205 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric_Pad1.05x0.95mm_HandSolder" V 5530 2250 50  0001 C CNN
 F 3 "~" H 5600 2250 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount_100KR-1003-1_C14675.html" H 5600 2250 50  0001 C CNN "URL"
 	1    5600 2250
 	1    0    0    -1  
 $EndComp
@@ -834,6 +886,7 @@ F 0 "R49" H 6920 2296 50  0000 L CNN
 F 1 "100k" H 6920 2205 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric_Pad1.05x0.95mm_HandSolder" V 6780 2250 50  0001 C CNN
 F 3 "~" H 6850 2250 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount_100KR-1003-1_C14675.html" H 6850 2250 50  0001 C CNN "URL"
 	1    6850 2250
 	1    0    0    -1  
 $EndComp
@@ -845,6 +898,7 @@ F 0 "R54" H 8270 2296 50  0000 L CNN
 F 1 "100k" H 8270 2205 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric_Pad1.05x0.95mm_HandSolder" V 8130 2250 50  0001 C CNN
 F 3 "~" H 8200 2250 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount_100KR-1003-1_C14675.html" H 8200 2250 50  0001 C CNN "URL"
 	1    8200 2250
 	1    0    0    -1  
 $EndComp
@@ -1274,6 +1328,7 @@ F 0 "U18" H 10678 4103 60  0000 L CNN
 F 1 "TLC227AIDR" H 10678 3997 60  0000 L CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 10600 4100 60  0001 C CNN
 F 3 "" H 10600 4100 60  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Precision-OpAmps_Texas-Instruments-TLC2274AIDR_C93026.html" H 10500 4050 50  0001 C CNN "URL"
 	5    10500 4050
 	1    0    0    -1  
 $EndComp
@@ -1285,6 +1340,7 @@ F 0 "U19" H 10678 4453 60  0000 L CNN
 F 1 "TLC227AIDR" H 10678 4347 60  0000 L CNN
 F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 10600 4450 60  0001 C CNN
 F 3 "" H 10600 4450 60  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Precision-OpAmps_Texas-Instruments-TLC2274AIDR_C93026.html" H 10500 4400 50  0001 C CNN "URL"
 	5    10500 4400
 	1    0    0    -1  
 $EndComp
@@ -1358,6 +1414,7 @@ F 0 "C34" H 9850 4250 50  0000 L CNN
 F 1 "100n" H 9600 4050 50  0000 L CNN
 F 2 "Capacitor_SMD:C_0603_1608Metric_Pad1.05x0.95mm_HandSolder" H 9838 4000 50  0001 C CNN
 F 3 "~" H 9800 4150 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL10F104ZB8NNNC_100nF-104-80-20-50V_C1688.html" H 9800 4150 50  0001 C CNN "URL"
 	1    9800 4150
 	1    0    0    -1  
 $EndComp
@@ -1369,6 +1426,7 @@ F 0 "C33" H 9850 3850 50  0000 L CNN
 F 1 "100n" H 9600 3650 50  0000 L CNN
 F 2 "Capacitor_SMD:C_0603_1608Metric_Pad1.05x0.95mm_HandSolder" H 9838 3600 50  0001 C CNN
 F 3 "~" H 9800 3750 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL10F104ZB8NNNC_100nF-104-80-20-50V_C1688.html" H 9800 3750 50  0001 C CNN "URL"
 	1    9800 3750
 	1    0    0    -1  
 $EndComp

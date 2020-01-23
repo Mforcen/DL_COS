@@ -1,4 +1,5 @@
 EESchema Schematic File Version 4
+LIBS:prockeckv2-cache
 EELAYER 30 0
 EELAYER END
 $Descr A4 11693 8268
@@ -21,6 +22,7 @@ F 0 "C29" H 6042 1046 50  0000 L CNN
 F 1 "1u" H 6042 955 50  0000 L CNN
 F 2 "Capacitor_SMD:C_0603_1608Metric_Pad1.05x0.95mm_HandSolder" H 5950 1000 50  0001 C CNN
 F 3 "~" H 5950 1000 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL10A105KB8NNNC_1uF-105-10-50V_C15849.html" H 5950 1000 50  0001 C CNN "URL"
 	1    5950 1000
 	1    0    0    -1  
 $EndComp
@@ -32,6 +34,7 @@ F 0 "U12" H 4300 1014 50  0000 C CNN
 F 1 "STM32F103VETx" H 4300 923 50  0000 C CNN
 F 2 "Package_QFP:LQFP-100_14x14mm_P0.5mm" H 3500 1300 50  0001 R CNN
 F 3 "http://www.st.com/st-web-ui/static/active/en/resource/technical/document/datasheet/CD00191185.pdf" H 4300 3900 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/ST-Microelectronics_STMicroelectronics_STM32F103VET6_STM32F103VET6_C8308.html" H 4300 3900 50  0001 C CNN "URL"
 	1    4300 3900
 	1    0    0    -1  
 $EndComp
@@ -71,6 +74,7 @@ F 0 "C30" H 6342 1046 50  0000 L CNN
 F 1 "10n" H 6342 955 50  0000 L CNN
 F 2 "Capacitor_SMD:C_0603_1608Metric_Pad1.05x0.95mm_HandSolder" H 6250 1000 50  0001 C CNN
 F 3 "~" H 6250 1000 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_FH-Guangdong-Fenghua-Advanced-Tech-0603B103K500NT_C57112.html" H 6250 1000 50  0001 C CNN "URL"
 	1    6250 1000
 	1    0    0    -1  
 $EndComp
@@ -100,6 +104,7 @@ F 0 "C27" H 5342 1046 50  0000 L CNN
 F 1 "1u" H 5342 955 50  0000 L CNN
 F 2 "Capacitor_SMD:C_0603_1608Metric_Pad1.05x0.95mm_HandSolder" H 5250 1000 50  0001 C CNN
 F 3 "~" H 5250 1000 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL10A105KB8NNNC_1uF-105-10-50V_C15849.html" H 5250 1000 50  0001 C CNN "URL"
 	1    5250 1000
 	1    0    0    -1  
 $EndComp
@@ -111,6 +116,7 @@ F 0 "C28" H 5642 1046 50  0000 L CNN
 F 1 "10n" H 5642 955 50  0000 L CNN
 F 2 "Capacitor_SMD:C_0603_1608Metric_Pad1.05x0.95mm_HandSolder" H 5550 1000 50  0001 C CNN
 F 3 "~" H 5550 1000 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_FH-Guangdong-Fenghua-Advanced-Tech-0603B103K500NT_C57112.html" H 5550 1000 50  0001 C CNN "URL"
 	1    5550 1000
 	1    0    0    -1  
 $EndComp
@@ -138,6 +144,7 @@ F 0 "C31" H 6742 1046 50  0000 L CNN
 F 1 "1u" H 6742 955 50  0000 L CNN
 F 2 "Capacitor_SMD:C_0603_1608Metric_Pad1.05x0.95mm_HandSolder" H 6650 1000 50  0001 C CNN
 F 3 "~" H 6650 1000 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL10A105KB8NNNC_1uF-105-10-50V_C15849.html" H 6650 1000 50  0001 C CNN "URL"
 	1    6650 1000
 	1    0    0    -1  
 $EndComp
@@ -149,6 +156,7 @@ F 0 "C32" H 7042 1046 50  0000 L CNN
 F 1 "10n" H 7042 955 50  0000 L CNN
 F 2 "Capacitor_SMD:C_0603_1608Metric_Pad1.05x0.95mm_HandSolder" H 6950 1000 50  0001 C CNN
 F 3 "~" H 6950 1000 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_FH-Guangdong-Fenghua-Advanced-Tech-0603B103K500NT_C57112.html" H 6950 1000 50  0001 C CNN "URL"
 	1    6950 1000
 	1    0    0    -1  
 $EndComp
@@ -273,6 +281,7 @@ F 0 "C25" H 2592 2696 50  0000 L CNN
 F 1 "20p" H 2592 2605 50  0000 L CNN
 F 2 "Capacitor_SMD:C_0603_1608Metric_Pad1.05x0.95mm_HandSolder" H 2500 2650 50  0001 C CNN
 F 3 "~" H 2500 2650 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL10C200JB8NNNC_20pF-200-5-50V_C1648.html" H 2500 2650 50  0001 C CNN "URL"
 	1    2500 2650
 	1    0    0    -1  
 $EndComp
@@ -287,6 +296,7 @@ F 3 "https://datasheet.lcsc.com/szlcsc/1811081329_Yangxing-Tech-X50328MSB4SI_C15
 F 4 "https://kdelectronics.blogspot.com/2013/03/using-crystal-resonator-with.html" V 2500 2300 50  0001 C CNN "Calculo"
 F 5 "Yangxing Tech X50328MSB4SI" V 2500 2300 50  0001 C CNN "Nombre"
 F 6 "https://www.st.com/content/ccc/resource/technical/document/application_note/c6/eb/5e/11/e3/69/43/eb/CD00221665.pdf/files/CD00221665.pdf/jcr:content/translations/en.CD00221665.pdf" V 2500 2300 50  0001 C CNN "Calculo2"
+F 7 "https://lcsc.com/product-detail/SMD-Crystal-Resonators_Yangxing-Tech-X50328MSB4SI_C157341.html" H 2500 2300 50  0001 C CNN "URL"
 	1    2500 2300
 	0    -1   -1   0   
 $EndComp
@@ -932,9 +942,10 @@ L Device:R R22
 U 1 1 5E60071F
 P 1800 1750
 F 0 "R22" H 1870 1796 50  0000 L CNN
-F 1 "100K" H 1870 1705 50  0000 L CNN
+F 1 "100k" H 1870 1705 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric_Pad1.05x0.95mm_HandSolder" V 1730 1750 50  0001 C CNN
 F 3 "~" H 1800 1750 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount_100KR-1003-1_C14675.html" H 1800 1750 50  0001 C CNN "URL"
 	1    1800 1750
 	1    0    0    -1  
 $EndComp
@@ -949,6 +960,7 @@ F 0 "C23" H 1542 1746 50  0000 L CNN
 F 1 "100n" H 1542 1655 50  0000 L CNN
 F 2 "Capacitor_SMD:C_0603_1608Metric_Pad1.05x0.95mm_HandSolder" H 1450 1700 50  0001 C CNN
 F 3 "~" H 1450 1700 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL10F104ZB8NNNC_100nF-104-80-20-50V_C1688.html" H 1450 1700 50  0001 C CNN "URL"
 	1    1450 1700
 	1    0    0    -1  
 $EndComp
@@ -989,6 +1001,7 @@ F 0 "C26" H 3242 1346 50  0000 L CNN
 F 1 "100n" H 3242 1255 50  0000 L CNN
 F 2 "Capacitor_SMD:C_0603_1608Metric_Pad1.05x0.95mm_HandSolder" H 3150 1300 50  0001 C CNN
 F 3 "~" H 3150 1300 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL10F104ZB8NNNC_100nF-104-80-20-50V_C1688.html" H 3150 1300 50  0001 C CNN "URL"
 	1    3150 1300
 	1    0    0    -1  
 $EndComp
@@ -1018,6 +1031,7 @@ F 0 "SW1" V 2750 1350 50  0000 L CNN
 F 1 "SW_Push" V 2850 850 50  0000 L CNN
 F 2 "Button_Switch_THT:SW_PUSH_6mm_H4.3mm" H 2850 1450 50  0001 C CNN
 F 3 "~" H 2850 1450 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Tactile-Switches_Korean-Hroparts-Elec-K2-1102DP-C4SW-04_C110153.html" H 2850 1250 50  0001 C CNN "URL"
 	1    2850 1250
 	0    1    1    0   
 $EndComp
@@ -1113,6 +1127,7 @@ F 0 "BT1" H 1218 2896 50  0000 L CNN
 F 1 "Battery_Cell" H 1218 2805 50  0000 L CNN
 F 2 "chinalandfoot:BT-CR2032" V 1100 2860 50  0001 C CNN
 F 3 "~" V 1100 2860 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Battery-Holders-Clips-Contacts_Button-battery-holder-CR2032_C70377.html" H 1100 2800 50  0001 C CNN "URL"
 	1    1100 2800
 	1    0    0    -1  
 $EndComp
@@ -1163,6 +1178,7 @@ F 0 "C24" H 2592 1996 50  0000 L CNN
 F 1 "20p" H 2592 1905 50  0000 L CNN
 F 2 "Capacitor_SMD:C_0603_1608Metric_Pad1.05x0.95mm_HandSolder" H 2500 1950 50  0001 C CNN
 F 3 "~" H 2500 1950 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL10C200JB8NNNC_20pF-200-5-50V_C1648.html" H 2500 1950 50  0001 C CNN "URL"
 	1    2500 1950
 	-1   0    0    1   
 $EndComp
@@ -1173,10 +1189,10 @@ Wire Wire Line
 	2500 2550 2500 2500
 Connection ~ 2500 2500
 $Comp
-L power:GND #PWR?
+L power:GND #PWR0130
 U 1 1 5E168D3A
 P 2250 2300
-F 0 "#PWR?" H 2250 2050 50  0001 C CNN
+F 0 "#PWR0130" H 2250 2050 50  0001 C CNN
 F 1 "GND" H 2255 2127 50  0000 C CNN
 F 2 "" H 2250 2300 50  0001 C CNN
 F 3 "" H 2250 2300 50  0001 C CNN
@@ -1186,10 +1202,10 @@ $EndComp
 Wire Wire Line
 	2250 2300 2300 2300
 $Comp
-L power:GND #PWR?
+L power:GND #PWR0131
 U 1 1 5E1765D4
 P 2750 2300
-F 0 "#PWR?" H 2750 2050 50  0001 C CNN
+F 0 "#PWR0131" H 2750 2050 50  0001 C CNN
 F 1 "GND" H 2755 2127 50  0000 C CNN
 F 2 "" H 2750 2300 50  0001 C CNN
 F 3 "" H 2750 2300 50  0001 C CNN

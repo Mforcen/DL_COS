@@ -1,0 +1,2639 @@
+ARM GAS  /tmp/ccg9siko.s 			page 1
+
+
+   1              		.cpu cortex-m3
+   2              		.eabi_attribute 20, 1
+   3              		.eabi_attribute 21, 1
+   4              		.eabi_attribute 23, 3
+   5              		.eabi_attribute 24, 1
+   6              		.eabi_attribute 25, 1
+   7              		.eabi_attribute 26, 1
+   8              		.eabi_attribute 30, 1
+   9              		.eabi_attribute 34, 1
+  10              		.eabi_attribute 18, 4
+  11              		.file	"stm32f1xx_hal_dac.c"
+  12              		.text
+  13              	.Ltext0:
+  14              		.cfi_sections	.debug_frame
+  15              		.section	.text.HAL_DAC_MspInit,"ax",%progbits
+  16              		.align	1
+  17              		.weak	HAL_DAC_MspInit
+  18              		.syntax unified
+  19              		.thumb
+  20              		.thumb_func
+  21              		.fpu softvfp
+  23              	HAL_DAC_MspInit:
+  24              	.LFB67:
+  25              		.file 1 "Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c"
+   1:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** /**
+   2:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   ******************************************************************************
+   3:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @file    stm32f1xx_hal_dac.c
+   4:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @author  MCD Application Team
+   5:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @brief   DAC HAL module driver.
+   6:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *         This file provides firmware functions to manage the following
+   7:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *         functionalities of the Digital to Analog Converter (DAC) peripheral:
+   8:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *           + Initialization and de-initialization functions
+   9:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *           + IO operation functions
+  10:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *           + Peripheral Control functions
+  11:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *           + Peripheral State and Errors functions
+  12:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *
+  13:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *
+  14:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   @verbatim
+  15:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   ==============================================================================
+  16:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****                       ##### DAC Peripheral features #####
+  17:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   ==============================================================================
+  18:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     [..]
+  19:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       *** DAC Channels ***
+  20:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       ====================
+  21:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     [..]
+  22:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     STM32F1 devices integrate two 12-bit Digital Analog Converters
+  23:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+  24:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     The 2 converters (i.e. channel1 & channel2)
+  25:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     can be used independently or simultaneously (dual mode):
+  26:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       (#) DAC channel1 with DAC_OUT1 (PA4) as output or connected to on-chip
+  27:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****           peripherals (ex. timers).
+  28:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       (#) DAC channel2 with DAC_OUT2 (PA5) as output or connected to on-chip
+  29:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****           peripherals (ex. timers).
+  30:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+  31:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       *** DAC Triggers ***
+  32:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       ====================
+  33:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     [..]
+ARM GAS  /tmp/ccg9siko.s 			page 2
+
+
+  34:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     Digital to Analog conversion can be non-triggered using DAC_TRIGGER_NONE
+  35:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     and DAC_OUT1/DAC_OUT2 is available once writing to DHRx register.
+  36:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     [..]
+  37:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     Digital to Analog conversion can be triggered by:
+  38:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       (#) External event: EXTI Line 9 (any GPIOx_PIN_9) using DAC_TRIGGER_EXT_IT9.
+  39:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****           The used pin (GPIOx_PIN_9) must be configured in input mode.
+  40:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+  41:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       (#) Timers TRGO: TIM2, TIM4, TIM6, TIM7
+  42:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****           For STM32F10x connectivity line devices and STM32F100x devices: TIM3
+  43:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****           For STM32F10x high-density and XL-density devices: TIM8
+  44:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****           For STM32F100x high-density value line devices: TIM15 as
+  45:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****           replacement of TIM5.
+  46:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****           (DAC_TRIGGER_T2_TRGO, DAC_TRIGGER_T4_TRGO...)
+  47:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   
+  48:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       (#) Software using DAC_TRIGGER_SOFTWARE
+  49:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+  50:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       *** DAC Buffer mode feature ***
+  51:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       ===============================
+  52:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       [..]
+  53:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       Each DAC channel integrates an output buffer that can be used to
+  54:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       reduce the output impedance, and to drive external loads directly
+  55:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       without having to add an external operational amplifier.
+  56:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       To enable, the output buffer use
+  57:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       sConfig.DAC_OutputBuffer = DAC_OUTPUTBUFFER_ENABLE;
+  58:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       [..]
+  59:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       (@) Refer to the device datasheet for more details about output
+  60:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****           impedance value with and without output buffer.
+  61:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+  62:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       *** DAC connect feature ***
+  63:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       ===============================
+  64:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       [..]
+  65:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       Each DAC channel can be connected internally.
+  66:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       To connect, use
+  67:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       sConfig.DAC_ConnectOnChipPeripheral = DAC_CHIPCONNECT_ENABLE;
+  68:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+  69:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       *** GPIO configurations guidelines ***
+  70:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       =====================
+  71:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       [..]
+  72:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       When a DAC channel is used (ex channel1 on PA4) and the other is not
+  73:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       (ex channel2 on PA5 is configured in Analog and disabled).
+  74:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       Channel1 may disturb channel2 as coupling effect.
+  75:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       Note that there is no coupling on channel2 as soon as channel2 is turned on.
+  76:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       Coupling on adjacent channel could be avoided as follows:
+  77:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       when unused PA5 is configured as INPUT PULL-UP or DOWN.
+  78:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       PA5 is configured in ANALOG just before it is turned on.
+  79:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+  80:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****        *** DAC wave generation feature ***
+  81:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****        ===================================
+  82:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****        [..]
+  83:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****        Both DAC channels can be used to generate
+  84:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****          (#) Noise wave
+  85:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****          (#) Triangle wave
+  86:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+  87:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****        *** DAC data format ***
+  88:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****        =======================
+  89:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****        [..]
+  90:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****        The DAC data format can be:
+ARM GAS  /tmp/ccg9siko.s 			page 3
+
+
+  91:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****          (#) 8-bit right alignment using DAC_ALIGN_8B_R
+  92:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****          (#) 12-bit left alignment using DAC_ALIGN_12B_L
+  93:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****          (#) 12-bit right alignment using DAC_ALIGN_12B_R
+  94:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+  95:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****        *** DAC data value to voltage correspondence ***
+  96:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****        ================================================
+  97:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****        [..]
+  98:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****        The analog output voltage on each DAC channel pin is determined
+  99:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****        by the following equation:
+ 100:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****        [..]
+ 101:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****        DAC_OUTx = VREF+ * DOR / 4095
+ 102:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****        (+) with  DOR is the Data Output Register
+ 103:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****        [..]
+ 104:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****           VEF+ is the input voltage reference (refer to the device datasheet)
+ 105:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****        [..]
+ 106:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         e.g. To set DAC_OUT1 to 0.7V, use
+ 107:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****        (+) Assuming that VREF+ = 3.3V, DAC_OUT1 = (3.3 * 868) / 4095 = 0.7V
+ 108:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 109:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****        *** DMA requests ***
+ 110:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****        =====================
+ 111:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****        [..]
+ 112:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****        A DMA request can be generated when an external trigger (but not a software trigger)
+ 113:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****        occurs if DMA1 requests are enabled using HAL_DAC_Start_DMA().
+ 114:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****        DMA1 requests are mapped as following:
+ 115:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       (#) DAC channel1 mapped on DMA1 channel3
+ 116:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****           for STM32F100x low-density, medium-density, high-density with DAC
+ 117:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****           DMA remap:
+ 118:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       (#) DAC channel2 mapped on DMA2 channel3
+ 119:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****           for STM32F100x high-density without DAC DMA remap and other  
+ 120:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****           STM32F1 devices
+ 121:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 122:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****      [..]
+ 123:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     (@) For Dual mode and specific signal (Triangle and noise) generation please
+ 124:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         refer to Extended Features Driver description
+ 125:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 126:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****                       ##### How to use this driver #####
+ 127:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   ==============================================================================
+ 128:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     [..]
+ 129:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       (+) DAC APB clock must be enabled to get write access to DAC
+ 130:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****           registers using HAL_DAC_Init()
+ 131:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       (+) Configure DAC_OUTx (DAC_OUT1: PA4, DAC_OUT2: PA5) in analog mode.
+ 132:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       (+) Configure the DAC channel using HAL_DAC_ConfigChannel() function.
+ 133:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       (+) Enable the DAC channel using HAL_DAC_Start() or HAL_DAC_Start_DMA() functions.
+ 134:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 135:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 136:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****      *** Polling mode IO operation ***
+ 137:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****      =================================
+ 138:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****      [..]
+ 139:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****        (+) Start the DAC peripheral using HAL_DAC_Start()
+ 140:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****        (+) To read the DAC last data output value, use the HAL_DAC_GetValue() function.
+ 141:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****        (+) Stop the DAC peripheral using HAL_DAC_Stop()
+ 142:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 143:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****      *** DMA mode IO operation ***
+ 144:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****      ==============================
+ 145:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****      [..]
+ 146:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****        (+) Start the DAC peripheral using HAL_DAC_Start_DMA(), at this stage the user specify the l
+ 147:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****            of data to be transferred at each end of conversion
+ARM GAS  /tmp/ccg9siko.s 			page 4
+
+
+ 148:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****            First issued trigger will start the conversion of the value previously set by HAL_DAC_Se
+ 149:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****        (+) At the middle of data transfer HAL_DAC_ConvHalfCpltCallbackCh1() or HAL_DACEx_ConvHalfCp
+ 150:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****            function is executed and user can add his own code by customization of function pointer
+ 151:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****            HAL_DAC_ConvHalfCpltCallbackCh1() or HAL_DACEx_ConvHalfCpltCallbackCh2()
+ 152:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****        (+) At The end of data transfer HAL_DAC_ConvCpltCallbackCh1() or HAL_DACEx_ConvHalfCpltCallb
+ 153:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****            function is executed and user can add his own code by customization of function pointer
+ 154:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****            HAL_DAC_ConvCpltCallbackCh1() or HAL_DACEx_ConvHalfCpltCallbackCh2()
+ 155:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****        (+) In case of transfer Error, HAL_DAC_ErrorCallbackCh1() function is executed and user can
+ 156:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****             add his own code by customization of function pointer HAL_DAC_ErrorCallbackCh1
+ 157:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****        (+) For STM32F100x devices with specific feature: DMA underrun.             
+ 158:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****            In case of DMA underrun, DAC interruption triggers and execute internal function HAL_DAC
+ 159:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****            HAL_DAC_DMAUnderrunCallbackCh1() or HAL_DACEx_DMAUnderrunCallbackCh2()
+ 160:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****            function is executed and user can add his own code by customization of function pointer
+ 161:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****            HAL_DAC_DMAUnderrunCallbackCh1() or HAL_DACEx_DMAUnderrunCallbackCh2() and
+ 162:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****            add his own code by customization of function pointer HAL_DAC_ErrorCallbackCh1()
+ 163:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****        (+) Stop the DAC peripheral using HAL_DAC_Stop_DMA()
+ 164:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 165:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     *** Callback registration ***
+ 166:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     =============================================
+ 167:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     [..]
+ 168:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       The compilation define  USE_HAL_DAC_REGISTER_CALLBACKS when set to 1
+ 169:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       allows the user to configure dynamically the driver callbacks.
+ 170:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 171:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     Use Functions @ref HAL_DAC_RegisterCallback() to register a user callback,
+ 172:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       it allows to register following callbacks:
+ 173:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       (+) ConvCpltCallbackCh1     : callback when a half transfer is completed on Ch1.
+ 174:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       (+) ConvHalfCpltCallbackCh1 : callback when a transfer is completed on Ch1.
+ 175:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       (+) ErrorCallbackCh1        : callback when an error occurs on Ch1.
+ 176:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       (+) DMAUnderrunCallbackCh1  : callback when an underrun error occurs on Ch1.
+ 177:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       (+) ConvCpltCallbackCh2     : callback when a half transfer is completed on Ch2.
+ 178:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       (+) ConvHalfCpltCallbackCh2 : callback when a transfer is completed on Ch2.
+ 179:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       (+) ErrorCallbackCh2        : callback when an error occurs on Ch2.
+ 180:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       (+) DMAUnderrunCallbackCh2  : callback when an underrun error occurs on Ch2.
+ 181:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       (+) MspInitCallback         : DAC MspInit.
+ 182:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       (+) MspDeInitCallback       : DAC MspdeInit.
+ 183:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       This function takes as parameters the HAL peripheral handle, the Callback ID
+ 184:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       and a pointer to the user callback function.
+ 185:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 186:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     Use function @ref HAL_DAC_UnRegisterCallback() to reset a callback to the default
+ 187:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       weak (surcharged) function. It allows to reset following callbacks:
+ 188:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       (+) ConvCpltCallbackCh1     : callback when a half transfer is completed on Ch1.
+ 189:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       (+) ConvHalfCpltCallbackCh1 : callback when a transfer is completed on Ch1.
+ 190:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       (+) ErrorCallbackCh1        : callback when an error occurs on Ch1.
+ 191:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       (+) DMAUnderrunCallbackCh1  : callback when an underrun error occurs on Ch1.
+ 192:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       (+) ConvCpltCallbackCh2     : callback when a half transfer is completed on Ch2.
+ 193:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       (+) ConvHalfCpltCallbackCh2 : callback when a transfer is completed on Ch2.
+ 194:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       (+) ErrorCallbackCh2        : callback when an error occurs on Ch2.
+ 195:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       (+) DMAUnderrunCallbackCh2  : callback when an underrun error occurs on Ch2.
+ 196:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       (+) MspInitCallback         : DAC MspInit.
+ 197:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       (+) MspDeInitCallback       : DAC MspdeInit.
+ 198:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       (+) All Callbacks
+ 199:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       This function) takes as parameters the HAL peripheral handle and the Callback ID.
+ 200:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 201:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       By default, after the @ref HAL_DAC_Init and if the state is HAL_DAC_STATE_RESET
+ 202:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       all callbacks are reset to the corresponding legacy weak (surcharged) functions.
+ 203:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       Exception done for MspInit and MspDeInit callbacks that are respectively
+ 204:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       reset to the legacy weak (surcharged) functions in the @ref HAL_DAC_Init
+ARM GAS  /tmp/ccg9siko.s 			page 5
+
+
+ 205:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       and @ref  HAL_DAC_DeInit only when these callbacks are null (not registered beforehand).
+ 206:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       If not, MspInit or MspDeInit are not null, the @ref HAL_DAC_Init and @ref HAL_DAC_DeInit
+ 207:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       keep and use the user MspInit/MspDeInit callbacks (registered beforehand)
+ 208:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 209:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       Callbacks can be registered/unregistered in READY state only.
+ 210:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       Exception done for MspInit/MspDeInit callbacks that can be registered/unregistered
+ 211:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       in READY or RESET state, thus registered (user) MspInit/DeInit callbacks can be used
+ 212:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       during the Init/DeInit.
+ 213:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       In that case first register the MspInit/MspDeInit user callbacks
+ 214:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       using @ref HAL_DAC_RegisterCallback before calling @ref HAL_DAC_DeInit
+ 215:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       or @ref HAL_DAC_Init function.
+ 216:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 217:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       When The compilation define USE_HAL_DAC_REGISTER_CALLBACKS is set to 0 or
+ 218:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       not defined, the callback registering feature is not available
+ 219:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       and weak (surcharged) callbacks are used.
+ 220:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 221:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****      *** DAC HAL driver macros list ***
+ 222:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****      =============================================
+ 223:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****      [..]
+ 224:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****        Below the list of most used macros in DAC HAL driver.
+ 225:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 226:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       (+) __HAL_DAC_ENABLE : Enable the DAC peripheral (For STM32F100x devices with specific featur
+ 227:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       (+) __HAL_DAC_DISABLE : Disable the DAC peripheral (For STM32F100x devices with specific feat
+ 228:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       (+) __HAL_DAC_CLEAR_FLAG: Clear the DAC's pending flags (For STM32F100x devices with specific
+ 229:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       (+) __HAL_DAC_GET_FLAG: Get the selected DAC's flag status (For STM32F100x devices with speci
+ 230:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 231:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****      [..]
+ 232:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       (@) You can refer to the DAC HAL driver header file for more useful macros
+ 233:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 234:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****  @endverbatim
+ 235:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   ******************************************************************************
+ 236:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @attention
+ 237:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *
+ 238:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * <h2><center>&copy; Copyright (c) 2016 STMicroelectronics.
+ 239:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * All rights reserved.</center></h2>
+ 240:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *
+ 241:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * This software component is licensed by ST under BSD 3-Clause license,
+ 242:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * the "License"; You may not use this file except in compliance with the
+ 243:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * License. You may obtain a copy of the License at:
+ 244:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *                        opensource.org/licenses/BSD-3-Clause
+ 245:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *
+ 246:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   ******************************************************************************
+ 247:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   */
+ 248:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 249:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** /* Includes ------------------------------------------------------------------*/
+ 250:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** #include "stm32f1xx_hal.h"
+ 251:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 252:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** /** @addtogroup STM32F1xx_HAL_Driver
+ 253:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @{
+ 254:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   */
+ 255:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 256:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** #ifdef HAL_DAC_MODULE_ENABLED
+ 257:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** #if defined(DAC)
+ 258:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 259:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** /** @defgroup DAC DAC
+ 260:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @brief DAC driver modules
+ 261:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @{
+ARM GAS  /tmp/ccg9siko.s 			page 6
+
+
+ 262:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   */
+ 263:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 264:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** /* Private typedef -----------------------------------------------------------*/
+ 265:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** /* Private define ------------------------------------------------------------*/
+ 266:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** /* Private constants ---------------------------------------------------------*/
+ 267:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** /* Private macro -------------------------------------------------------------*/
+ 268:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** /* Private variables ---------------------------------------------------------*/
+ 269:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** /* Private function prototypes -----------------------------------------------*/
+ 270:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** /* Exported functions -------------------------------------------------------*/
+ 271:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 272:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** /** @defgroup DAC_Exported_Functions DAC Exported Functions
+ 273:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @{
+ 274:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   */
+ 275:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 276:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** /** @defgroup DAC_Exported_Functions_Group1 Initialization and de-initialization functions
+ 277:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *  @brief    Initialization and Configuration functions
+ 278:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *
+ 279:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** @verbatim
+ 280:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   ==============================================================================
+ 281:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****               ##### Initialization and de-initialization functions #####
+ 282:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   ==============================================================================
+ 283:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     [..]  This section provides functions allowing to:
+ 284:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       (+) Initialize and configure the DAC.
+ 285:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       (+) De-initialize the DAC.
+ 286:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 287:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** @endverbatim
+ 288:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @{
+ 289:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   */
+ 290:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 291:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** /**
+ 292:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @brief  Initialize the DAC peripheral according to the specified parameters
+ 293:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *         in the DAC_InitStruct and initialize the associated handle.
+ 294:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @param  hdac pointer to a DAC_HandleTypeDef structure that contains
+ 295:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *         the configuration information for the specified DAC.
+ 296:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @retval HAL status
+ 297:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   */
+ 298:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** HAL_StatusTypeDef HAL_DAC_Init(DAC_HandleTypeDef *hdac)
+ 299:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** {
+ 300:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Check DAC handle */
+ 301:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   if (hdac == NULL)
+ 302:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   {
+ 303:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     return HAL_ERROR;
+ 304:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   }
+ 305:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Check the parameters */
+ 306:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   assert_param(IS_DAC_ALL_INSTANCE(hdac->Instance));
+ 307:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 308:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   if (hdac->State == HAL_DAC_STATE_RESET)
+ 309:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   {
+ 310:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** #if (USE_HAL_DAC_REGISTER_CALLBACKS == 1)
+ 311:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     /* Init the DAC Callback settings */
+ 312:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     hdac->ConvCpltCallbackCh1           = HAL_DAC_ConvCpltCallbackCh1;
+ 313:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     hdac->ConvHalfCpltCallbackCh1       = HAL_DAC_ConvHalfCpltCallbackCh1;
+ 314:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     hdac->ErrorCallbackCh1              = HAL_DAC_ErrorCallbackCh1;
+ 315:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     hdac->DMAUnderrunCallbackCh1        = HAL_DAC_DMAUnderrunCallbackCh1;
+ 316:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 317:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     hdac->ConvCpltCallbackCh2           = HAL_DACEx_ConvCpltCallbackCh2;
+ 318:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     hdac->ConvHalfCpltCallbackCh2       = HAL_DACEx_ConvHalfCpltCallbackCh2;
+ARM GAS  /tmp/ccg9siko.s 			page 7
+
+
+ 319:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     hdac->ErrorCallbackCh2              = HAL_DACEx_ErrorCallbackCh2;
+ 320:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     hdac->DMAUnderrunCallbackCh2        = HAL_DACEx_DMAUnderrunCallbackCh2;
+ 321:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 322:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     if (hdac->MspInitCallback == NULL)
+ 323:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     {
+ 324:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       hdac->MspInitCallback             = HAL_DAC_MspInit;
+ 325:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     }
+ 326:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** #endif /* USE_HAL_DAC_REGISTER_CALLBACKS */
+ 327:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 328:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     /* Allocate lock resource and initialize it */
+ 329:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     hdac->Lock = HAL_UNLOCKED;
+ 330:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 331:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** #if (USE_HAL_DAC_REGISTER_CALLBACKS == 1)
+ 332:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     /* Init the low level hardware */
+ 333:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     hdac->MspInitCallback(hdac);
+ 334:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** #else
+ 335:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     /* Init the low level hardware */
+ 336:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     HAL_DAC_MspInit(hdac);
+ 337:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** #endif /* USE_HAL_DAC_REGISTER_CALLBACKS */
+ 338:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   }
+ 339:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 340:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Initialize the DAC state*/
+ 341:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   hdac->State = HAL_DAC_STATE_BUSY;
+ 342:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 343:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Set DAC error code to none */
+ 344:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   hdac->ErrorCode = HAL_DAC_ERROR_NONE;
+ 345:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 346:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Initialize the DAC state*/
+ 347:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   hdac->State = HAL_DAC_STATE_READY;
+ 348:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 349:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Return function status */
+ 350:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   return HAL_OK;
+ 351:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** }
+ 352:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 353:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** /**
+ 354:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @brief  Deinitialize the DAC peripheral registers to their default reset values.
+ 355:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @param  hdac pointer to a DAC_HandleTypeDef structure that contains
+ 356:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *         the configuration information for the specified DAC.
+ 357:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @retval HAL status
+ 358:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   */
+ 359:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** HAL_StatusTypeDef HAL_DAC_DeInit(DAC_HandleTypeDef *hdac)
+ 360:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** {
+ 361:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Check DAC handle */
+ 362:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   if (hdac == NULL)
+ 363:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   {
+ 364:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     return HAL_ERROR;
+ 365:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   }
+ 366:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 367:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Check the parameters */
+ 368:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   assert_param(IS_DAC_ALL_INSTANCE(hdac->Instance));
+ 369:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 370:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Change DAC state */
+ 371:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   hdac->State = HAL_DAC_STATE_BUSY;
+ 372:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 373:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** #if (USE_HAL_DAC_REGISTER_CALLBACKS == 1)
+ 374:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   if (hdac->MspDeInitCallback == NULL)
+ 375:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   {
+ARM GAS  /tmp/ccg9siko.s 			page 8
+
+
+ 376:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     hdac->MspDeInitCallback = HAL_DAC_MspDeInit;
+ 377:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   }
+ 378:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* DeInit the low level hardware */
+ 379:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   hdac->MspDeInitCallback(hdac);
+ 380:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** #else
+ 381:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* DeInit the low level hardware */
+ 382:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   HAL_DAC_MspDeInit(hdac);
+ 383:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** #endif /* USE_HAL_DAC_REGISTER_CALLBACKS */
+ 384:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 385:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Set DAC error code to none */
+ 386:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   hdac->ErrorCode = HAL_DAC_ERROR_NONE;
+ 387:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 388:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Change DAC state */
+ 389:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   hdac->State = HAL_DAC_STATE_RESET;
+ 390:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 391:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Release Lock */
+ 392:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   __HAL_UNLOCK(hdac);
+ 393:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 394:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Return function status */
+ 395:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   return HAL_OK;
+ 396:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** }
+ 397:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 398:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** /**
+ 399:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @brief  Initialize the DAC MSP.
+ 400:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @param  hdac pointer to a DAC_HandleTypeDef structure that contains
+ 401:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *         the configuration information for the specified DAC.
+ 402:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @retval None
+ 403:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   */
+ 404:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** __weak void HAL_DAC_MspInit(DAC_HandleTypeDef *hdac)
+ 405:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** {
+  26              		.loc 1 405 0
+  27              		.cfi_startproc
+  28              		@ args = 0, pretend = 0, frame = 0
+  29              		@ frame_needed = 0, uses_anonymous_args = 0
+  30              		@ link register save eliminated.
+  31              	.LVL0:
+  32 0000 7047     		bx	lr
+  33              		.cfi_endproc
+  34              	.LFE67:
+  36              		.section	.text.HAL_DAC_Init,"ax",%progbits
+  37              		.align	1
+  38              		.global	HAL_DAC_Init
+  39              		.syntax unified
+  40              		.thumb
+  41              		.thumb_func
+  42              		.fpu softvfp
+  44              	HAL_DAC_Init:
+  45              	.LFB65:
+ 299:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Check DAC handle */
+  46              		.loc 1 299 0
+  47              		.cfi_startproc
+  48              		@ args = 0, pretend = 0, frame = 0
+  49              		@ frame_needed = 0, uses_anonymous_args = 0
+  50              	.LVL1:
+ 301:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   {
+  51              		.loc 1 301 0
+  52 0000 70B1     		cbz	r0, .L5
+ARM GAS  /tmp/ccg9siko.s 			page 9
+
+
+ 299:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Check DAC handle */
+  53              		.loc 1 299 0
+  54 0002 10B5     		push	{r4, lr}
+  55              	.LCFI0:
+  56              		.cfi_def_cfa_offset 8
+  57              		.cfi_offset 4, -8
+  58              		.cfi_offset 14, -4
+  59 0004 0446     		mov	r4, r0
+ 308:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   {
+  60              		.loc 1 308 0
+  61 0006 0379     		ldrb	r3, [r0, #4]	@ zero_extendqisi2
+  62 0008 33B1     		cbz	r3, .L10
+  63              	.LVL2:
+  64              	.L4:
+ 341:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+  65              		.loc 1 341 0
+  66 000a 0223     		movs	r3, #2
+  67 000c 2371     		strb	r3, [r4, #4]
+ 344:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+  68              		.loc 1 344 0
+  69 000e 0020     		movs	r0, #0
+  70 0010 2061     		str	r0, [r4, #16]
+ 347:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+  71              		.loc 1 347 0
+  72 0012 0123     		movs	r3, #1
+  73 0014 2371     		strb	r3, [r4, #4]
+ 350:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** }
+  74              		.loc 1 350 0
+  75 0016 10BD     		pop	{r4, pc}
+  76              	.LVL3:
+  77              	.L10:
+ 329:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+  78              		.loc 1 329 0
+  79 0018 4371     		strb	r3, [r0, #5]
+ 336:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** #endif /* USE_HAL_DAC_REGISTER_CALLBACKS */
+  80              		.loc 1 336 0
+  81 001a FFF7FEFF 		bl	HAL_DAC_MspInit
+  82              	.LVL4:
+  83 001e F4E7     		b	.L4
+  84              	.LVL5:
+  85              	.L5:
+  86              	.LCFI1:
+  87              		.cfi_def_cfa_offset 0
+  88              		.cfi_restore 4
+  89              		.cfi_restore 14
+ 303:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   }
+  90              		.loc 1 303 0
+  91 0020 0120     		movs	r0, #1
+  92              	.LVL6:
+  93 0022 7047     		bx	lr
+  94              		.cfi_endproc
+  95              	.LFE65:
+  97              		.section	.text.HAL_DAC_MspDeInit,"ax",%progbits
+  98              		.align	1
+  99              		.weak	HAL_DAC_MspDeInit
+ 100              		.syntax unified
+ 101              		.thumb
+ARM GAS  /tmp/ccg9siko.s 			page 10
+
+
+ 102              		.thumb_func
+ 103              		.fpu softvfp
+ 105              	HAL_DAC_MspDeInit:
+ 106              	.LFB68:
+ 406:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Prevent unused argument(s) compilation warning */
+ 407:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   UNUSED(hdac);
+ 408:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 409:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* NOTE : This function should not be modified, when the callback is needed,
+ 410:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****             the HAL_DAC_MspInit could be implemented in the user file
+ 411:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****    */
+ 412:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** }
+ 413:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 414:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** /**
+ 415:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @brief  DeInitialize the DAC MSP.
+ 416:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @param  hdac pointer to a DAC_HandleTypeDef structure that contains
+ 417:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *         the configuration information for the specified DAC.
+ 418:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @retval None
+ 419:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   */
+ 420:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** __weak void HAL_DAC_MspDeInit(DAC_HandleTypeDef *hdac)
+ 421:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** {
+ 107              		.loc 1 421 0
+ 108              		.cfi_startproc
+ 109              		@ args = 0, pretend = 0, frame = 0
+ 110              		@ frame_needed = 0, uses_anonymous_args = 0
+ 111              		@ link register save eliminated.
+ 112              	.LVL7:
+ 113 0000 7047     		bx	lr
+ 114              		.cfi_endproc
+ 115              	.LFE68:
+ 117              		.section	.text.HAL_DAC_DeInit,"ax",%progbits
+ 118              		.align	1
+ 119              		.global	HAL_DAC_DeInit
+ 120              		.syntax unified
+ 121              		.thumb
+ 122              		.thumb_func
+ 123              		.fpu softvfp
+ 125              	HAL_DAC_DeInit:
+ 126              	.LFB66:
+ 360:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Check DAC handle */
+ 127              		.loc 1 360 0
+ 128              		.cfi_startproc
+ 129              		@ args = 0, pretend = 0, frame = 0
+ 130              		@ frame_needed = 0, uses_anonymous_args = 0
+ 131              	.LVL8:
+ 362:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   {
+ 132              		.loc 1 362 0
+ 133 0000 50B1     		cbz	r0, .L14
+ 360:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Check DAC handle */
+ 134              		.loc 1 360 0
+ 135 0002 10B5     		push	{r4, lr}
+ 136              	.LCFI2:
+ 137              		.cfi_def_cfa_offset 8
+ 138              		.cfi_offset 4, -8
+ 139              		.cfi_offset 14, -4
+ 140 0004 0446     		mov	r4, r0
+ 371:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 141              		.loc 1 371 0
+ARM GAS  /tmp/ccg9siko.s 			page 11
+
+
+ 142 0006 0223     		movs	r3, #2
+ 143 0008 0371     		strb	r3, [r0, #4]
+ 382:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** #endif /* USE_HAL_DAC_REGISTER_CALLBACKS */
+ 144              		.loc 1 382 0
+ 145 000a FFF7FEFF 		bl	HAL_DAC_MspDeInit
+ 146              	.LVL9:
+ 386:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 147              		.loc 1 386 0
+ 148 000e 0020     		movs	r0, #0
+ 149 0010 2061     		str	r0, [r4, #16]
+ 389:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 150              		.loc 1 389 0
+ 151 0012 2071     		strb	r0, [r4, #4]
+ 392:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 152              		.loc 1 392 0
+ 153 0014 6071     		strb	r0, [r4, #5]
+ 395:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** }
+ 154              		.loc 1 395 0
+ 155 0016 10BD     		pop	{r4, pc}
+ 156              	.LVL10:
+ 157              	.L14:
+ 158              	.LCFI3:
+ 159              		.cfi_def_cfa_offset 0
+ 160              		.cfi_restore 4
+ 161              		.cfi_restore 14
+ 364:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   }
+ 162              		.loc 1 364 0
+ 163 0018 0120     		movs	r0, #1
+ 164              	.LVL11:
+ 165 001a 7047     		bx	lr
+ 166              		.cfi_endproc
+ 167              	.LFE66:
+ 169              		.section	.text.HAL_DAC_Start,"ax",%progbits
+ 170              		.align	1
+ 171              		.global	HAL_DAC_Start
+ 172              		.syntax unified
+ 173              		.thumb
+ 174              		.thumb_func
+ 175              		.fpu softvfp
+ 177              	HAL_DAC_Start:
+ 178              	.LFB69:
+ 422:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Prevent unused argument(s) compilation warning */
+ 423:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   UNUSED(hdac);
+ 424:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 425:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* NOTE : This function should not be modified, when the callback is needed,
+ 426:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****             the HAL_DAC_MspDeInit could be implemented in the user file
+ 427:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****    */
+ 428:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** }
+ 429:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 430:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** /**
+ 431:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @}
+ 432:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   */
+ 433:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 434:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** /** @defgroup DAC_Exported_Functions_Group2 IO operation functions
+ 435:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *  @brief    IO operation functions
+ 436:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *
+ 437:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** @verbatim
+ARM GAS  /tmp/ccg9siko.s 			page 12
+
+
+ 438:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   ==============================================================================
+ 439:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****              ##### IO operation functions #####
+ 440:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   ==============================================================================
+ 441:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     [..]  This section provides functions allowing to:
+ 442:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       (+) Start conversion.
+ 443:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       (+) Stop conversion.
+ 444:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       (+) Start conversion and enable DMA transfer.
+ 445:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       (+) Stop conversion and disable DMA transfer.
+ 446:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       (+) Get result of conversion.
+ 447:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 448:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** @endverbatim
+ 449:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @{
+ 450:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   */
+ 451:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 452:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** /**
+ 453:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @brief  Enables DAC and starts conversion of channel.
+ 454:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @param  hdac pointer to a DAC_HandleTypeDef structure that contains
+ 455:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *         the configuration information for the specified DAC.
+ 456:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @param  Channel The selected DAC channel.
+ 457:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *          This parameter can be one of the following values:
+ 458:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *            @arg DAC_CHANNEL_1: DAC Channel1 selected
+ 459:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *            @arg DAC_CHANNEL_2: DAC Channel2 selected
+ 460:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @retval HAL status
+ 461:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   */
+ 462:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** HAL_StatusTypeDef HAL_DAC_Start(DAC_HandleTypeDef *hdac, uint32_t Channel)
+ 463:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** {
+ 179              		.loc 1 463 0
+ 180              		.cfi_startproc
+ 181              		@ args = 0, pretend = 0, frame = 0
+ 182              		@ frame_needed = 0, uses_anonymous_args = 0
+ 183              		@ link register save eliminated.
+ 184              	.LVL12:
+ 464:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Check the parameters */
+ 465:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   assert_param(IS_DAC_CHANNEL(Channel));
+ 466:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 467:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Process locked */
+ 468:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   __HAL_LOCK(hdac);
+ 185              		.loc 1 468 0
+ 186 0000 4379     		ldrb	r3, [r0, #5]	@ zero_extendqisi2
+ 187 0002 012B     		cmp	r3, #1
+ 188 0004 2CD0     		beq	.L23
+ 463:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Check the parameters */
+ 189              		.loc 1 463 0 discriminator 2
+ 190 0006 30B4     		push	{r4, r5}
+ 191              	.LCFI4:
+ 192              		.cfi_def_cfa_offset 8
+ 193              		.cfi_offset 4, -8
+ 194              		.cfi_offset 5, -4
+ 195              		.loc 1 468 0 discriminator 2
+ 196 0008 0123     		movs	r3, #1
+ 197 000a 4371     		strb	r3, [r0, #5]
+ 469:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 470:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Change DAC state */
+ 471:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   hdac->State = HAL_DAC_STATE_BUSY;
+ 198              		.loc 1 471 0 discriminator 2
+ 199 000c 0222     		movs	r2, #2
+ 200 000e 0271     		strb	r2, [r0, #4]
+ARM GAS  /tmp/ccg9siko.s 			page 13
+
+
+ 472:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 473:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Enable the Peripheral */
+ 474:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   __HAL_DAC_ENABLE(hdac, Channel);
+ 201              		.loc 1 474 0 discriminator 2
+ 202 0010 0468     		ldr	r4, [r0]
+ 203 0012 2268     		ldr	r2, [r4]
+ 204 0014 01F01005 		and	r5, r1, #16
+ 205 0018 AB40     		lsls	r3, r3, r5
+ 206 001a 1343     		orrs	r3, r3, r2
+ 207 001c 2360     		str	r3, [r4]
+ 475:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 476:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   if (Channel == DAC_CHANNEL_1)
+ 208              		.loc 1 476 0 discriminator 2
+ 209 001e 89B9     		cbnz	r1, .L21
+ 477:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   {
+ 478:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     /* Check if software trigger enabled */
+ 479:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     if ((hdac->Instance->CR & (DAC_CR_TEN1 | DAC_CR_TSEL1)) == DAC_TRIGGER_SOFTWARE)
+ 210              		.loc 1 479 0
+ 211 0020 0268     		ldr	r2, [r0]
+ 212 0022 1368     		ldr	r3, [r2]
+ 213 0024 03F03C03 		and	r3, r3, #60
+ 214 0028 3C2B     		cmp	r3, #60
+ 215 002a 06D0     		beq	.L28
+ 216              	.LVL13:
+ 217              	.L22:
+ 480:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     {
+ 481:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       /* Enable the selected DAC software conversion */
+ 482:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       SET_BIT(hdac->Instance->SWTRIGR, DAC_SWTRIGR_SWTRIG1);
+ 483:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     }
+ 484:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   }
+ 485:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   else
+ 486:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   {
+ 487:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     /* Check if software trigger enabled */
+ 488:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     if ((hdac->Instance->CR & (DAC_CR_TEN2 | DAC_CR_TSEL2)) == (DAC_TRIGGER_SOFTWARE << (Channel & 
+ 489:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     {
+ 490:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       /* Enable the selected DAC software conversion*/
+ 491:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       SET_BIT(hdac->Instance->SWTRIGR, DAC_SWTRIGR_SWTRIG2);
+ 492:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     }
+ 493:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   }
+ 494:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 495:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Change DAC state */
+ 496:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   hdac->State = HAL_DAC_STATE_READY;
+ 218              		.loc 1 496 0
+ 219 002c 0123     		movs	r3, #1
+ 220 002e 0371     		strb	r3, [r0, #4]
+ 497:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 498:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Process unlocked */
+ 499:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   __HAL_UNLOCK(hdac);
+ 221              		.loc 1 499 0
+ 222 0030 0023     		movs	r3, #0
+ 223 0032 4371     		strb	r3, [r0, #5]
+ 500:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 501:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Return function status */
+ 502:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   return HAL_OK;
+ 224              		.loc 1 502 0
+ 225 0034 1846     		mov	r0, r3
+ 226              	.LVL14:
+ARM GAS  /tmp/ccg9siko.s 			page 14
+
+
+ 503:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** }
+ 227              		.loc 1 503 0
+ 228 0036 30BC     		pop	{r4, r5}
+ 229              	.LCFI5:
+ 230              		.cfi_remember_state
+ 231              		.cfi_restore 5
+ 232              		.cfi_restore 4
+ 233              		.cfi_def_cfa_offset 0
+ 234 0038 7047     		bx	lr
+ 235              	.LVL15:
+ 236              	.L28:
+ 237              	.LCFI6:
+ 238              		.cfi_restore_state
+ 482:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     }
+ 239              		.loc 1 482 0
+ 240 003a 5368     		ldr	r3, [r2, #4]
+ 241 003c 43F00103 		orr	r3, r3, #1
+ 242 0040 5360     		str	r3, [r2, #4]
+ 243 0042 F3E7     		b	.L22
+ 244              	.L21:
+ 488:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     {
+ 245              		.loc 1 488 0
+ 246 0044 0168     		ldr	r1, [r0]
+ 247              	.LVL16:
+ 248 0046 0A68     		ldr	r2, [r1]
+ 249 0048 02F47012 		and	r2, r2, #3932160
+ 250 004c 3C23     		movs	r3, #60
+ 251 004e 03FA05F5 		lsl	r5, r3, r5
+ 252 0052 AA42     		cmp	r2, r5
+ 253 0054 EAD1     		bne	.L22
+ 491:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     }
+ 254              		.loc 1 491 0
+ 255 0056 4B68     		ldr	r3, [r1, #4]
+ 256 0058 43F00203 		orr	r3, r3, #2
+ 257 005c 4B60     		str	r3, [r1, #4]
+ 258 005e E5E7     		b	.L22
+ 259              	.LVL17:
+ 260              	.L23:
+ 261              	.LCFI7:
+ 262              		.cfi_def_cfa_offset 0
+ 263              		.cfi_restore 4
+ 264              		.cfi_restore 5
+ 468:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 265              		.loc 1 468 0
+ 266 0060 0220     		movs	r0, #2
+ 267              	.LVL18:
+ 268 0062 7047     		bx	lr
+ 269              		.cfi_endproc
+ 270              	.LFE69:
+ 272              		.section	.text.HAL_DAC_Stop,"ax",%progbits
+ 273              		.align	1
+ 274              		.global	HAL_DAC_Stop
+ 275              		.syntax unified
+ 276              		.thumb
+ 277              		.thumb_func
+ 278              		.fpu softvfp
+ 280              	HAL_DAC_Stop:
+ARM GAS  /tmp/ccg9siko.s 			page 15
+
+
+ 281              	.LFB70:
+ 504:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 505:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** /**
+ 506:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @brief  Disables DAC and stop conversion of channel.
+ 507:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @param  hdac pointer to a DAC_HandleTypeDef structure that contains
+ 508:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *         the configuration information for the specified DAC.
+ 509:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @param  Channel The selected DAC channel.
+ 510:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *          This parameter can be one of the following values:
+ 511:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *            @arg DAC_CHANNEL_1: DAC Channel1 selected
+ 512:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *            @arg DAC_CHANNEL_2: DAC Channel2 selected
+ 513:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @retval HAL status
+ 514:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   */
+ 515:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** HAL_StatusTypeDef HAL_DAC_Stop(DAC_HandleTypeDef *hdac, uint32_t Channel)
+ 516:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** {
+ 282              		.loc 1 516 0
+ 283              		.cfi_startproc
+ 284              		@ args = 0, pretend = 0, frame = 0
+ 285              		@ frame_needed = 0, uses_anonymous_args = 0
+ 286              		@ link register save eliminated.
+ 287              	.LVL19:
+ 288 0000 10B4     		push	{r4}
+ 289              	.LCFI8:
+ 290              		.cfi_def_cfa_offset 4
+ 291              		.cfi_offset 4, -4
+ 517:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Check the parameters */
+ 518:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   assert_param(IS_DAC_CHANNEL(Channel));
+ 519:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 520:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Disable the Peripheral */
+ 521:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   __HAL_DAC_DISABLE(hdac, Channel);
+ 292              		.loc 1 521 0
+ 293 0002 0468     		ldr	r4, [r0]
+ 294 0004 2368     		ldr	r3, [r4]
+ 295 0006 01F01001 		and	r1, r1, #16
+ 296              	.LVL20:
+ 297 000a 0122     		movs	r2, #1
+ 298 000c 02FA01F1 		lsl	r1, r2, r1
+ 299 0010 23EA0103 		bic	r3, r3, r1
+ 300 0014 2360     		str	r3, [r4]
+ 522:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 523:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Change DAC state */
+ 524:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   hdac->State = HAL_DAC_STATE_READY;
+ 301              		.loc 1 524 0
+ 302 0016 0271     		strb	r2, [r0, #4]
+ 525:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 526:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Return function status */
+ 527:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   return HAL_OK;
+ 528:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** }
+ 303              		.loc 1 528 0
+ 304 0018 0020     		movs	r0, #0
+ 305              	.LVL21:
+ 306 001a 10BC     		pop	{r4}
+ 307              	.LCFI9:
+ 308              		.cfi_restore 4
+ 309              		.cfi_def_cfa_offset 0
+ 310 001c 7047     		bx	lr
+ 311              		.cfi_endproc
+ 312              	.LFE70:
+ARM GAS  /tmp/ccg9siko.s 			page 16
+
+
+ 314              		.section	.text.HAL_DAC_Start_DMA,"ax",%progbits
+ 315              		.align	1
+ 316              		.global	HAL_DAC_Start_DMA
+ 317              		.syntax unified
+ 318              		.thumb
+ 319              		.thumb_func
+ 320              		.fpu softvfp
+ 322              	HAL_DAC_Start_DMA:
+ 323              	.LFB71:
+ 529:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 530:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** /**
+ 531:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @brief  Enables DAC and starts conversion of channel.
+ 532:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @param  hdac pointer to a DAC_HandleTypeDef structure that contains
+ 533:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *         the configuration information for the specified DAC.
+ 534:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @param  Channel The selected DAC channel.
+ 535:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *          This parameter can be one of the following values:
+ 536:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *            @arg DAC_CHANNEL_1: DAC Channel1 selected
+ 537:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *            @arg DAC_CHANNEL_2: DAC Channel2 selected
+ 538:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @param  pData The destination peripheral Buffer address.
+ 539:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @param  Length The length of data to be transferred from memory to DAC peripheral
+ 540:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @param  Alignment Specifies the data alignment for DAC channel.
+ 541:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *          This parameter can be one of the following values:
+ 542:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *            @arg DAC_ALIGN_8B_R: 8bit right data alignment selected
+ 543:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *            @arg DAC_ALIGN_12B_L: 12bit left data alignment selected
+ 544:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *            @arg DAC_ALIGN_12B_R: 12bit right data alignment selected
+ 545:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @retval HAL status
+ 546:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   */
+ 547:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** HAL_StatusTypeDef HAL_DAC_Start_DMA(DAC_HandleTypeDef *hdac, uint32_t Channel, uint32_t *pData, uin
+ 548:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****                                     uint32_t Alignment)
+ 549:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** {
+ 324              		.loc 1 549 0
+ 325              		.cfi_startproc
+ 326              		@ args = 4, pretend = 0, frame = 0
+ 327              		@ frame_needed = 0, uses_anonymous_args = 0
+ 328              	.LVL22:
+ 329 0000 F8B5     		push	{r3, r4, r5, r6, r7, lr}
+ 330              	.LCFI10:
+ 331              		.cfi_def_cfa_offset 24
+ 332              		.cfi_offset 3, -24
+ 333              		.cfi_offset 4, -20
+ 334              		.cfi_offset 5, -16
+ 335              		.cfi_offset 6, -12
+ 336              		.cfi_offset 7, -8
+ 337              		.cfi_offset 14, -4
+ 338 0002 069C     		ldr	r4, [sp, #24]
+ 339              	.LVL23:
+ 550:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   HAL_StatusTypeDef status;
+ 551:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   uint32_t tmpreg = 0U;
+ 552:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 553:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Check the parameters */
+ 554:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   assert_param(IS_DAC_CHANNEL(Channel));
+ 555:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   assert_param(IS_DAC_ALIGN(Alignment));
+ 556:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 557:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Process locked */
+ 558:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   __HAL_LOCK(hdac);
+ 340              		.loc 1 558 0
+ 341 0004 4579     		ldrb	r5, [r0, #5]	@ zero_extendqisi2
+ARM GAS  /tmp/ccg9siko.s 			page 17
+
+
+ 342 0006 012D     		cmp	r5, #1
+ 343 0008 63D0     		beq	.L44
+ 344              		.loc 1 558 0 is_stmt 0 discriminator 2
+ 345 000a 0125     		movs	r5, #1
+ 346 000c 4571     		strb	r5, [r0, #5]
+ 559:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 560:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Change DAC state */
+ 561:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   hdac->State = HAL_DAC_STATE_BUSY;
+ 347              		.loc 1 561 0 is_stmt 1 discriminator 2
+ 348 000e 0225     		movs	r5, #2
+ 349 0010 0571     		strb	r5, [r0, #4]
+ 562:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 563:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   if (Channel == DAC_CHANNEL_1)
+ 350              		.loc 1 563 0 discriminator 2
+ 351 0012 0029     		cmp	r1, #0
+ 352 0014 2FD1     		bne	.L33
+ 564:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   {
+ 565:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     /* Set the DMA transfer complete callback for channel1 */
+ 566:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     hdac->DMA_Handle1->XferCpltCallback = DAC_DMAConvCpltCh1;
+ 353              		.loc 1 566 0
+ 354 0016 8568     		ldr	r5, [r0, #8]
+ 355 0018 2F4E     		ldr	r6, .L53
+ 356 001a AE62     		str	r6, [r5, #40]
+ 567:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 568:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     /* Set the DMA half transfer complete callback for channel1 */
+ 569:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     hdac->DMA_Handle1->XferHalfCpltCallback = DAC_DMAHalfConvCpltCh1;
+ 357              		.loc 1 569 0
+ 358 001c 8568     		ldr	r5, [r0, #8]
+ 359 001e 2F4E     		ldr	r6, .L53+4
+ 360 0020 EE62     		str	r6, [r5, #44]
+ 570:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 571:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     /* Set the DMA error callback for channel1 */
+ 572:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     hdac->DMA_Handle1->XferErrorCallback = DAC_DMAErrorCh1;
+ 361              		.loc 1 572 0
+ 362 0022 8568     		ldr	r5, [r0, #8]
+ 363 0024 2E4E     		ldr	r6, .L53+8
+ 364 0026 2E63     		str	r6, [r5, #48]
+ 573:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 574:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     /* Enable the selected DAC channel1 DMA request */
+ 575:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     SET_BIT(hdac->Instance->CR, DAC_CR_DMAEN1);
+ 365              		.loc 1 575 0
+ 366 0028 0668     		ldr	r6, [r0]
+ 367 002a 3568     		ldr	r5, [r6]
+ 368 002c 45F48055 		orr	r5, r5, #4096
+ 369 0030 3560     		str	r5, [r6]
+ 576:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 577:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     /* Case of use of channel 1 */
+ 578:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     switch (Alignment)
+ 370              		.loc 1 578 0
+ 371 0032 042C     		cmp	r4, #4
+ 372 0034 19D0     		beq	.L35
+ 373 0036 082C     		cmp	r4, #8
+ 374 0038 1AD0     		beq	.L36
+ 375 003a 9CB1     		cbz	r4, .L50
+ 551:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 376              		.loc 1 551 0
+ 377 003c 0E46     		mov	r6, r1
+ARM GAS  /tmp/ccg9siko.s 			page 18
+
+
+ 378              	.LVL24:
+ 379              	.L34:
+ 380 003e 1446     		mov	r4, r2
+ 381 0040 0F46     		mov	r7, r1
+ 382 0042 0546     		mov	r5, r0
+ 383              	.LVL25:
+ 579:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     {
+ 580:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       case DAC_ALIGN_12B_R:
+ 581:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         /* Get DHR12R1 address */
+ 582:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         tmpreg = (uint32_t)&hdac->Instance->DHR12R1;
+ 583:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         break;
+ 584:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       case DAC_ALIGN_12B_L:
+ 585:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         /* Get DHR12L1 address */
+ 586:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         tmpreg = (uint32_t)&hdac->Instance->DHR12L1;
+ 587:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         break;
+ 588:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       case DAC_ALIGN_8B_R:
+ 589:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         /* Get DHR8R1 address */
+ 590:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         tmpreg = (uint32_t)&hdac->Instance->DHR8R1;
+ 591:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         break;
+ 592:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       default:
+ 593:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         break;
+ 594:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     }
+ 595:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   }
+ 596:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   else
+ 597:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   {
+ 598:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     /* Set the DMA transfer complete callback for channel2 */
+ 599:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     hdac->DMA_Handle2->XferCpltCallback = DAC_DMAConvCpltCh2;
+ 600:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 601:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     /* Set the DMA half transfer complete callback for channel2 */
+ 602:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     hdac->DMA_Handle2->XferHalfCpltCallback = DAC_DMAHalfConvCpltCh2;
+ 603:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 604:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     /* Set the DMA error callback for channel2 */
+ 605:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     hdac->DMA_Handle2->XferErrorCallback = DAC_DMAErrorCh2;
+ 606:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 607:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     /* Enable the selected DAC channel2 DMA request */
+ 608:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     SET_BIT(hdac->Instance->CR, DAC_CR_DMAEN2);
+ 609:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 610:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     /* Case of use of channel 2 */
+ 611:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     switch (Alignment)
+ 612:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     {
+ 613:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       case DAC_ALIGN_12B_R:
+ 614:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         /* Get DHR12R2 address */
+ 615:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         tmpreg = (uint32_t)&hdac->Instance->DHR12R2;
+ 616:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         break;
+ 617:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       case DAC_ALIGN_12B_L:
+ 618:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         /* Get DHR12L2 address */
+ 619:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         tmpreg = (uint32_t)&hdac->Instance->DHR12L2;
+ 620:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         break;
+ 621:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       case DAC_ALIGN_8B_R:
+ 622:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         /* Get DHR8R2 address */
+ 623:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         tmpreg = (uint32_t)&hdac->Instance->DHR8R2;
+ 624:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         break;
+ 625:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       default:
+ 626:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         break;
+ 627:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     }
+ 628:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   }
+ 629:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ARM GAS  /tmp/ccg9siko.s 			page 19
+
+
+ 630:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Enable the DMA Stream */
+ 631:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   if (Channel == DAC_CHANNEL_1)
+ 384              		.loc 1 631 0
+ 385 0044 0029     		cmp	r1, #0
+ 386 0046 34D1     		bne	.L41
+ 632:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   {
+ 633:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** #if defined(DAC_CR_DMAUDRIE1)
+ 634:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     /* Enable the DAC DMA underrun interrupt */
+ 635:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     __HAL_DAC_ENABLE_IT(hdac, DAC_IT_DMAUDR1);
+ 636:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** #endif /* DAC_CR_DMAUDRIE1 */
+ 637:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****    /* Enable the DMA Stream */
+ 638:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     status = HAL_DMA_Start_IT(hdac->DMA_Handle1, (uint32_t)pData, tmpreg, Length);
+ 387              		.loc 1 638 0
+ 388 0048 3246     		mov	r2, r6
+ 389              	.LVL26:
+ 390 004a 2146     		mov	r1, r4
+ 391              	.LVL27:
+ 392 004c 8068     		ldr	r0, [r0, #8]
+ 393              	.LVL28:
+ 394 004e FFF7FEFF 		bl	HAL_DMA_Start_IT
+ 395              	.LVL29:
+ 396              	.L42:
+ 639:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   }
+ 640:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   else
+ 641:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   {
+ 642:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** #if defined(DAC_CR_DMAUDRIE2)
+ 643:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     /* Enable the DAC DMA underrun interrupt */
+ 644:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     __HAL_DAC_ENABLE_IT(hdac, DAC_IT_DMAUDR2);
+ 645:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** #endif /* DAC_CR_DMAUDRIE2 */
+ 646:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     /* Enable the DMA Stream */
+ 647:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     status = HAL_DMA_Start_IT(hdac->DMA_Handle2, (uint32_t)pData, tmpreg, Length);
+ 648:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   }
+ 649:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 650:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Process Unlocked */
+ 651:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   __HAL_UNLOCK(hdac);
+ 397              		.loc 1 651 0
+ 398 0052 0023     		movs	r3, #0
+ 399 0054 6B71     		strb	r3, [r5, #5]
+ 652:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 653:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   if (status == HAL_OK)
+ 400              		.loc 1 653 0
+ 401 0056 0028     		cmp	r0, #0
+ 402 0058 31D0     		beq	.L51
+ 654:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   {
+ 655:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     /* Enable the Peripheral */
+ 656:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     __HAL_DAC_ENABLE(hdac, Channel);
+ 657:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   }
+ 658:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   else
+ 659:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   {
+ 660:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     hdac->ErrorCode |= HAL_DAC_ERROR_DMA;
+ 403              		.loc 1 660 0
+ 404 005a 2B69     		ldr	r3, [r5, #16]
+ 405 005c 43F00403 		orr	r3, r3, #4
+ 406 0060 2B61     		str	r3, [r5, #16]
+ 407 0062 F8BD     		pop	{r3, r4, r5, r6, r7, pc}
+ 408              	.LVL30:
+ 409              	.L50:
+ARM GAS  /tmp/ccg9siko.s 			page 20
+
+
+ 582:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         break;
+ 410              		.loc 1 582 0
+ 411 0064 0668     		ldr	r6, [r0]
+ 412 0066 0836     		adds	r6, r6, #8
+ 413              	.LVL31:
+ 583:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       case DAC_ALIGN_12B_L:
+ 414              		.loc 1 583 0
+ 415 0068 E9E7     		b	.L34
+ 416              	.LVL32:
+ 417              	.L35:
+ 586:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         break;
+ 418              		.loc 1 586 0
+ 419 006a 0668     		ldr	r6, [r0]
+ 420 006c 0C36     		adds	r6, r6, #12
+ 421              	.LVL33:
+ 587:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       case DAC_ALIGN_8B_R:
+ 422              		.loc 1 587 0
+ 423 006e E6E7     		b	.L34
+ 424              	.LVL34:
+ 425              	.L36:
+ 590:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         break;
+ 426              		.loc 1 590 0
+ 427 0070 0668     		ldr	r6, [r0]
+ 428 0072 1036     		adds	r6, r6, #16
+ 429              	.LVL35:
+ 591:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       default:
+ 430              		.loc 1 591 0
+ 431 0074 E3E7     		b	.L34
+ 432              	.LVL36:
+ 433              	.L33:
+ 599:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 434              		.loc 1 599 0
+ 435 0076 C568     		ldr	r5, [r0, #12]
+ 436 0078 1A4E     		ldr	r6, .L53+12
+ 437 007a AE62     		str	r6, [r5, #40]
+ 602:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 438              		.loc 1 602 0
+ 439 007c C568     		ldr	r5, [r0, #12]
+ 440 007e 1A4E     		ldr	r6, .L53+16
+ 441 0080 EE62     		str	r6, [r5, #44]
+ 605:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 442              		.loc 1 605 0
+ 443 0082 C568     		ldr	r5, [r0, #12]
+ 444 0084 194E     		ldr	r6, .L53+20
+ 445 0086 2E63     		str	r6, [r5, #48]
+ 608:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 446              		.loc 1 608 0
+ 447 0088 0668     		ldr	r6, [r0]
+ 448 008a 3568     		ldr	r5, [r6]
+ 449 008c 45F08055 		orr	r5, r5, #268435456
+ 450 0090 3560     		str	r5, [r6]
+ 611:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     {
+ 451              		.loc 1 611 0
+ 452 0092 042C     		cmp	r4, #4
+ 453 0094 07D0     		beq	.L38
+ 454 0096 082C     		cmp	r4, #8
+ 455 0098 08D0     		beq	.L39
+ARM GAS  /tmp/ccg9siko.s 			page 21
+
+
+ 456 009a 0CB1     		cbz	r4, .L52
+ 551:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 457              		.loc 1 551 0
+ 458 009c 0026     		movs	r6, #0
+ 459 009e CEE7     		b	.L34
+ 460              	.L52:
+ 615:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         break;
+ 461              		.loc 1 615 0
+ 462 00a0 0668     		ldr	r6, [r0]
+ 463 00a2 1436     		adds	r6, r6, #20
+ 464              	.LVL37:
+ 616:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       case DAC_ALIGN_12B_L:
+ 465              		.loc 1 616 0
+ 466 00a4 CBE7     		b	.L34
+ 467              	.LVL38:
+ 468              	.L38:
+ 619:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         break;
+ 469              		.loc 1 619 0
+ 470 00a6 0668     		ldr	r6, [r0]
+ 471 00a8 1836     		adds	r6, r6, #24
+ 472              	.LVL39:
+ 620:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       case DAC_ALIGN_8B_R:
+ 473              		.loc 1 620 0
+ 474 00aa C8E7     		b	.L34
+ 475              	.LVL40:
+ 476              	.L39:
+ 623:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         break;
+ 477              		.loc 1 623 0
+ 478 00ac 0668     		ldr	r6, [r0]
+ 479 00ae 1C36     		adds	r6, r6, #28
+ 480              	.LVL41:
+ 624:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       default:
+ 481              		.loc 1 624 0
+ 482 00b0 C5E7     		b	.L34
+ 483              	.L41:
+ 647:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   }
+ 484              		.loc 1 647 0
+ 485 00b2 3246     		mov	r2, r6
+ 486              	.LVL42:
+ 487 00b4 2146     		mov	r1, r4
+ 488              	.LVL43:
+ 489 00b6 C068     		ldr	r0, [r0, #12]
+ 490              	.LVL44:
+ 491 00b8 FFF7FEFF 		bl	HAL_DMA_Start_IT
+ 492              	.LVL45:
+ 493 00bc C9E7     		b	.L42
+ 494              	.L51:
+ 656:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   }
+ 495              		.loc 1 656 0
+ 496 00be 2A68     		ldr	r2, [r5]
+ 497 00c0 1368     		ldr	r3, [r2]
+ 498 00c2 07F01001 		and	r1, r7, #16
+ 499 00c6 0127     		movs	r7, #1
+ 500              	.LVL46:
+ 501 00c8 07FA01F1 		lsl	r1, r7, r1
+ 502 00cc 1943     		orrs	r1, r1, r3
+ 503 00ce 1160     		str	r1, [r2]
+ARM GAS  /tmp/ccg9siko.s 			page 22
+
+
+ 504 00d0 F8BD     		pop	{r3, r4, r5, r6, r7, pc}
+ 505              	.LVL47:
+ 506              	.L44:
+ 558:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 507              		.loc 1 558 0
+ 508 00d2 0220     		movs	r0, #2
+ 509              	.LVL48:
+ 661:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   }
+ 662:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 663:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Return function status */
+ 664:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   return status;
+ 665:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** }
+ 510              		.loc 1 665 0
+ 511 00d4 F8BD     		pop	{r3, r4, r5, r6, r7, pc}
+ 512              	.LVL49:
+ 513              	.L54:
+ 514 00d6 00BF     		.align	2
+ 515              	.L53:
+ 516 00d8 00000000 		.word	DAC_DMAConvCpltCh1
+ 517 00dc 00000000 		.word	DAC_DMAHalfConvCpltCh1
+ 518 00e0 00000000 		.word	DAC_DMAErrorCh1
+ 519 00e4 00000000 		.word	DAC_DMAConvCpltCh2
+ 520 00e8 00000000 		.word	DAC_DMAHalfConvCpltCh2
+ 521 00ec 00000000 		.word	DAC_DMAErrorCh2
+ 522              		.cfi_endproc
+ 523              	.LFE71:
+ 525              		.section	.text.HAL_DAC_Stop_DMA,"ax",%progbits
+ 526              		.align	1
+ 527              		.global	HAL_DAC_Stop_DMA
+ 528              		.syntax unified
+ 529              		.thumb
+ 530              		.thumb_func
+ 531              		.fpu softvfp
+ 533              	HAL_DAC_Stop_DMA:
+ 534              	.LFB72:
+ 666:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 667:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** /**
+ 668:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @brief  Disables DAC and stop conversion of channel.
+ 669:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @param  hdac pointer to a DAC_HandleTypeDef structure that contains
+ 670:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *         the configuration information for the specified DAC.
+ 671:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @param  Channel The selected DAC channel.
+ 672:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *          This parameter can be one of the following values:
+ 673:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *            @arg DAC_CHANNEL_1: DAC Channel1 selected
+ 674:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *            @arg DAC_CHANNEL_2: DAC Channel2 selected
+ 675:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @retval HAL status
+ 676:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   */
+ 677:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** HAL_StatusTypeDef HAL_DAC_Stop_DMA(DAC_HandleTypeDef *hdac, uint32_t Channel)
+ 678:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** {
+ 535              		.loc 1 678 0
+ 536              		.cfi_startproc
+ 537              		@ args = 0, pretend = 0, frame = 0
+ 538              		@ frame_needed = 0, uses_anonymous_args = 0
+ 539              	.LVL50:
+ 540 0000 70B5     		push	{r4, r5, r6, lr}
+ 541              	.LCFI11:
+ 542              		.cfi_def_cfa_offset 16
+ 543              		.cfi_offset 4, -16
+ARM GAS  /tmp/ccg9siko.s 			page 23
+
+
+ 544              		.cfi_offset 5, -12
+ 545              		.cfi_offset 6, -8
+ 546              		.cfi_offset 14, -4
+ 547 0002 0446     		mov	r4, r0
+ 679:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   HAL_StatusTypeDef status;
+ 680:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 681:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Check the parameters */
+ 682:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   assert_param(IS_DAC_CHANNEL(Channel));
+ 683:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 684:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Disable the selected DAC channel DMA request */
+ 685:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   hdac->Instance->CR &= ~(DAC_CR_DMAEN1 << (Channel & 0x10UL));
+ 548              		.loc 1 685 0
+ 549 0004 0368     		ldr	r3, [r0]
+ 550 0006 1868     		ldr	r0, [r3]
+ 551              	.LVL51:
+ 552 0008 01F01006 		and	r6, r1, #16
+ 553 000c 4FF48055 		mov	r5, #4096
+ 554 0010 B540     		lsls	r5, r5, r6
+ 555 0012 20EA0500 		bic	r0, r0, r5
+ 556 0016 1860     		str	r0, [r3]
+ 686:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 687:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Disable the Peripheral */
+ 688:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   __HAL_DAC_DISABLE(hdac, Channel);
+ 557              		.loc 1 688 0
+ 558 0018 2068     		ldr	r0, [r4]
+ 559 001a 0368     		ldr	r3, [r0]
+ 560 001c 0122     		movs	r2, #1
+ 561 001e B240     		lsls	r2, r2, r6
+ 562 0020 23EA0203 		bic	r3, r3, r2
+ 563 0024 0360     		str	r3, [r0]
+ 689:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 690:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Disable the DMA Stream */
+ 691:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 692:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Channel1 is used */
+ 693:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   if (Channel == DAC_CHANNEL_1)
+ 564              		.loc 1 693 0
+ 565 0026 31B9     		cbnz	r1, .L56
+ 694:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   {
+ 695:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     /* Disable the DMA Stream */
+ 696:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     status = HAL_DMA_Abort(hdac->DMA_Handle1);
+ 566              		.loc 1 696 0
+ 567 0028 A068     		ldr	r0, [r4, #8]
+ 568 002a FFF7FEFF 		bl	HAL_DMA_Abort
+ 569              	.LVL52:
+ 570              	.L57:
+ 697:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** #if defined(DAC_CR_DMAUDRIE1)
+ 698:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     /* Disable the DAC DMA underrun interrupt */
+ 699:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     __HAL_DAC_DISABLE_IT(hdac, DAC_IT_DMAUDR1);
+ 700:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** #endif /* DAC_CR_DMAUDRIE1 */
+ 701:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   }
+ 702:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   else /* Channel2 is used for */
+ 703:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   {
+ 704:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     /* Disable the DMA Stream */
+ 705:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     status = HAL_DMA_Abort(hdac->DMA_Handle2);
+ 706:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** #if defined(DAC_CR_DMAUDRIE2)
+ 707:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     /* Disable the DAC DMA underrun interrupt */
+ 708:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     __HAL_DAC_DISABLE_IT(hdac, DAC_IT_DMAUDR2);
+ARM GAS  /tmp/ccg9siko.s 			page 24
+
+
+ 709:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** #endif /* DAC_CR_DMAUDRIE2 */
+ 710:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   }
+ 711:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 712:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Check if DMA Stream effectively disabled */
+ 713:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   if (status != HAL_OK)
+ 571              		.loc 1 713 0
+ 572 002e 30B9     		cbnz	r0, .L61
+ 714:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   {
+ 715:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     /* Update DAC state machine to error */
+ 716:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     hdac->State = HAL_DAC_STATE_ERROR;
+ 717:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   }
+ 718:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   else
+ 719:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   {
+ 720:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     /* Change DAC state */
+ 721:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     hdac->State = HAL_DAC_STATE_READY;
+ 573              		.loc 1 721 0
+ 574 0030 0123     		movs	r3, #1
+ 575 0032 2371     		strb	r3, [r4, #4]
+ 722:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   }
+ 723:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 724:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Return function status */
+ 725:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   return status;
+ 726:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** }
+ 576              		.loc 1 726 0
+ 577 0034 70BD     		pop	{r4, r5, r6, pc}
+ 578              	.LVL53:
+ 579              	.L56:
+ 705:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** #if defined(DAC_CR_DMAUDRIE2)
+ 580              		.loc 1 705 0
+ 581 0036 E068     		ldr	r0, [r4, #12]
+ 582 0038 FFF7FEFF 		bl	HAL_DMA_Abort
+ 583              	.LVL54:
+ 584 003c F7E7     		b	.L57
+ 585              	.L61:
+ 716:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   }
+ 586              		.loc 1 716 0
+ 587 003e 0423     		movs	r3, #4
+ 588 0040 2371     		strb	r3, [r4, #4]
+ 589 0042 70BD     		pop	{r4, r5, r6, pc}
+ 590              		.cfi_endproc
+ 591              	.LFE72:
+ 593              		.section	.text.HAL_DAC_IRQHandler,"ax",%progbits
+ 594              		.align	1
+ 595              		.global	HAL_DAC_IRQHandler
+ 596              		.syntax unified
+ 597              		.thumb
+ 598              		.thumb_func
+ 599              		.fpu softvfp
+ 601              	HAL_DAC_IRQHandler:
+ 602              	.LFB73:
+ 727:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 728:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** /**
+ 729:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @brief  Handles DAC interrupt request
+ 730:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *         This function uses the interruption of DMA
+ 731:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *         underrun.
+ 732:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @param  hdac pointer to a DAC_HandleTypeDef structure that contains
+ 733:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *         the configuration information for the specified DAC.
+ARM GAS  /tmp/ccg9siko.s 			page 25
+
+
+ 734:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @retval None
+ 735:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   */
+ 736:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** void HAL_DAC_IRQHandler(DAC_HandleTypeDef *hdac)
+ 737:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** {
+ 603              		.loc 1 737 0
+ 604              		.cfi_startproc
+ 605              		@ args = 0, pretend = 0, frame = 0
+ 606              		@ frame_needed = 0, uses_anonymous_args = 0
+ 607              		@ link register save eliminated.
+ 608              	.LVL55:
+ 609 0000 7047     		bx	lr
+ 610              		.cfi_endproc
+ 611              	.LFE73:
+ 613              		.section	.text.HAL_DAC_SetValue,"ax",%progbits
+ 614              		.align	1
+ 615              		.global	HAL_DAC_SetValue
+ 616              		.syntax unified
+ 617              		.thumb
+ 618              		.thumb_func
+ 619              		.fpu softvfp
+ 621              	HAL_DAC_SetValue:
+ 622              	.LFB74:
+ 738:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** #if defined(DAC_SR_DMAUDR1)
+ 739:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   if (__HAL_DAC_GET_IT_SOURCE(hdac, DAC_IT_DMAUDR1))
+ 740:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   {
+ 741:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     /* Check underrun flag of DAC channel 1 */
+ 742:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     if (__HAL_DAC_GET_FLAG(hdac, DAC_FLAG_DMAUDR1))
+ 743:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     {
+ 744:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       /* Change DAC state to error state */
+ 745:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       hdac->State = HAL_DAC_STATE_ERROR;
+ 746:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 747:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       /* Set DAC error code to chanel1 DMA underrun error */
+ 748:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       SET_BIT(hdac->ErrorCode, HAL_DAC_ERROR_DMAUNDERRUNCH1);
+ 749:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 750:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       /* Clear the underrun flag */
+ 751:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       __HAL_DAC_CLEAR_FLAG(hdac, DAC_FLAG_DMAUDR1);
+ 752:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 753:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       /* Disable the selected DAC channel1 DMA request */
+ 754:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       CLEAR_BIT(hdac->Instance->CR, DAC_CR_DMAEN1);
+ 755:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 756:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       /* Error callback */
+ 757:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** #if (USE_HAL_DAC_REGISTER_CALLBACKS == 1)
+ 758:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       hdac->DMAUnderrunCallbackCh1(hdac);
+ 759:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** #else
+ 760:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       HAL_DAC_DMAUnderrunCallbackCh1(hdac);
+ 761:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** #endif /* USE_HAL_DAC_REGISTER_CALLBACKS */
+ 762:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     }
+ 763:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   }
+ 764:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** #endif /* DAC_SR_DMAUDR1 */
+ 765:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 766:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** #if defined(DAC_SR_DMAUDR2)
+ 767:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   if (__HAL_DAC_GET_IT_SOURCE(hdac, DAC_IT_DMAUDR2))
+ 768:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   {
+ 769:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     /* Check underrun flag of DAC channel 2 */
+ 770:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     if (__HAL_DAC_GET_FLAG(hdac, DAC_FLAG_DMAUDR2))
+ 771:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     {
+ 772:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       /* Change DAC state to error state */
+ARM GAS  /tmp/ccg9siko.s 			page 26
+
+
+ 773:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       hdac->State = HAL_DAC_STATE_ERROR;
+ 774:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 775:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       /* Set DAC error code to channel2 DMA underrun error */
+ 776:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       SET_BIT(hdac->ErrorCode, HAL_DAC_ERROR_DMAUNDERRUNCH2);
+ 777:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 778:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       /* Clear the underrun flag */
+ 779:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       __HAL_DAC_CLEAR_FLAG(hdac, DAC_FLAG_DMAUDR2);
+ 780:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 781:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       /* Disable the selected DAC channel2 DMA request */
+ 782:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       CLEAR_BIT(hdac->Instance->CR, DAC_CR_DMAEN2);
+ 783:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 784:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       /* Error callback */
+ 785:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** #if (USE_HAL_DAC_REGISTER_CALLBACKS == 1)
+ 786:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       hdac->DMAUnderrunCallbackCh2(hdac);
+ 787:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** #else
+ 788:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       HAL_DACEx_DMAUnderrunCallbackCh2(hdac);
+ 789:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** #endif /* USE_HAL_DAC_REGISTER_CALLBACKS */
+ 790:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     }
+ 791:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   }
+ 792:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** #endif /* DAC_SR_DMAUDR2 */
+ 793:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** }
+ 794:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 795:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** /**
+ 796:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @brief  Set the specified data holding register value for DAC channel.
+ 797:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @param  hdac pointer to a DAC_HandleTypeDef structure that contains
+ 798:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *         the configuration information for the specified DAC.
+ 799:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @param  Channel The selected DAC channel.
+ 800:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *          This parameter can be one of the following values:
+ 801:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *            @arg DAC_CHANNEL_1: DAC Channel1 selected
+ 802:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *            @arg DAC_CHANNEL_2: DAC Channel2 selected
+ 803:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @param  Alignment Specifies the data alignment.
+ 804:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *          This parameter can be one of the following values:
+ 805:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *            @arg DAC_ALIGN_8B_R: 8bit right data alignment selected
+ 806:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *            @arg DAC_ALIGN_12B_L: 12bit left data alignment selected
+ 807:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *            @arg DAC_ALIGN_12B_R: 12bit right data alignment selected
+ 808:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @param  Data Data to be loaded in the selected data holding register.
+ 809:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @retval HAL status
+ 810:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   */
+ 811:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** HAL_StatusTypeDef HAL_DAC_SetValue(DAC_HandleTypeDef *hdac, uint32_t Channel, uint32_t Alignment, u
+ 812:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** {
+ 623              		.loc 1 812 0
+ 624              		.cfi_startproc
+ 625              		@ args = 0, pretend = 0, frame = 8
+ 626              		@ frame_needed = 0, uses_anonymous_args = 0
+ 627              		@ link register save eliminated.
+ 628              	.LVL56:
+ 629              		.loc 1 812 0
+ 630 0000 10B4     		push	{r4}
+ 631              	.LCFI12:
+ 632              		.cfi_def_cfa_offset 4
+ 633              		.cfi_offset 4, -4
+ 634 0002 83B0     		sub	sp, sp, #12
+ 635              	.LCFI13:
+ 636              		.cfi_def_cfa_offset 16
+ 813:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   __IO uint32_t tmp = 0;
+ 637              		.loc 1 813 0
+ 638 0004 0024     		movs	r4, #0
+ARM GAS  /tmp/ccg9siko.s 			page 27
+
+
+ 639 0006 0194     		str	r4, [sp, #4]
+ 814:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 815:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Check the parameters */
+ 816:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   assert_param(IS_DAC_CHANNEL(Channel));
+ 817:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   assert_param(IS_DAC_ALIGN(Alignment));
+ 818:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   assert_param(IS_DAC_DATA(Data));
+ 819:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 820:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   tmp = (uint32_t)hdac->Instance;
+ 640              		.loc 1 820 0
+ 641 0008 0068     		ldr	r0, [r0]
+ 642              	.LVL57:
+ 643 000a 0190     		str	r0, [sp, #4]
+ 821:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   if (Channel == DAC_CHANNEL_1)
+ 644              		.loc 1 821 0
+ 645 000c 49B1     		cbz	r1, .L67
+ 822:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   {
+ 823:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     tmp += DAC_DHR12R1_ALIGNMENT(Alignment);
+ 824:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   }
+ 825:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   else
+ 826:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   {
+ 827:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     tmp += DAC_DHR12R2_ALIGNMENT(Alignment);
+ 646              		.loc 1 827 0
+ 647 000e 0199     		ldr	r1, [sp, #4]
+ 648              	.LVL58:
+ 649 0010 0A44     		add	r2, r2, r1
+ 650              	.LVL59:
+ 651 0012 1432     		adds	r2, r2, #20
+ 652 0014 0192     		str	r2, [sp, #4]
+ 653              	.L65:
+ 828:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   }
+ 829:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 830:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Set the DAC channel selected data holding register */
+ 831:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *(__IO uint32_t *) tmp = Data;
+ 654              		.loc 1 831 0
+ 655 0016 019A     		ldr	r2, [sp, #4]
+ 656 0018 1360     		str	r3, [r2]
+ 832:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 833:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Return function status */
+ 834:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   return HAL_OK;
+ 835:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** }
+ 657              		.loc 1 835 0
+ 658 001a 0020     		movs	r0, #0
+ 659 001c 03B0     		add	sp, sp, #12
+ 660              	.LCFI14:
+ 661              		.cfi_remember_state
+ 662              		.cfi_def_cfa_offset 4
+ 663              		@ sp needed
+ 664 001e 10BC     		pop	{r4}
+ 665              	.LCFI15:
+ 666              		.cfi_restore 4
+ 667              		.cfi_def_cfa_offset 0
+ 668 0020 7047     		bx	lr
+ 669              	.LVL60:
+ 670              	.L67:
+ 671              	.LCFI16:
+ 672              		.cfi_restore_state
+ 823:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   }
+ARM GAS  /tmp/ccg9siko.s 			page 28
+
+
+ 673              		.loc 1 823 0
+ 674 0022 0199     		ldr	r1, [sp, #4]
+ 675              	.LVL61:
+ 676 0024 0A44     		add	r2, r2, r1
+ 677              	.LVL62:
+ 678 0026 0832     		adds	r2, r2, #8
+ 679 0028 0192     		str	r2, [sp, #4]
+ 680 002a F4E7     		b	.L65
+ 681              		.cfi_endproc
+ 682              	.LFE74:
+ 684              		.section	.text.HAL_DAC_ConvCpltCallbackCh1,"ax",%progbits
+ 685              		.align	1
+ 686              		.weak	HAL_DAC_ConvCpltCallbackCh1
+ 687              		.syntax unified
+ 688              		.thumb
+ 689              		.thumb_func
+ 690              		.fpu softvfp
+ 692              	HAL_DAC_ConvCpltCallbackCh1:
+ 693              	.LFB75:
+ 836:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 837:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** /**
+ 838:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @brief  Conversion complete callback in non-blocking mode for Channel1
+ 839:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @param  hdac pointer to a DAC_HandleTypeDef structure that contains
+ 840:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *         the configuration information for the specified DAC.
+ 841:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @retval None
+ 842:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   */
+ 843:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** __weak void HAL_DAC_ConvCpltCallbackCh1(DAC_HandleTypeDef *hdac)
+ 844:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** {
+ 694              		.loc 1 844 0
+ 695              		.cfi_startproc
+ 696              		@ args = 0, pretend = 0, frame = 0
+ 697              		@ frame_needed = 0, uses_anonymous_args = 0
+ 698              		@ link register save eliminated.
+ 699              	.LVL63:
+ 700 0000 7047     		bx	lr
+ 701              		.cfi_endproc
+ 702              	.LFE75:
+ 704              		.section	.text.DAC_DMAConvCpltCh1,"ax",%progbits
+ 705              		.align	1
+ 706              		.global	DAC_DMAConvCpltCh1
+ 707              		.syntax unified
+ 708              		.thumb
+ 709              		.thumb_func
+ 710              		.fpu softvfp
+ 712              	DAC_DMAConvCpltCh1:
+ 713              	.LFB83:
+ 845:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Prevent unused argument(s) compilation warning */
+ 846:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   UNUSED(hdac);
+ 847:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 848:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* NOTE : This function should not be modified, when the callback is needed,
+ 849:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****             the HAL_DAC_ConvCpltCallbackCh1 could be implemented in the user file
+ 850:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****    */
+ 851:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** }
+ 852:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 853:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** /**
+ 854:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @brief  Conversion half DMA transfer callback in non-blocking mode for Channel1
+ 855:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @param  hdac pointer to a DAC_HandleTypeDef structure that contains
+ARM GAS  /tmp/ccg9siko.s 			page 29
+
+
+ 856:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *         the configuration information for the specified DAC.
+ 857:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @retval None
+ 858:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   */
+ 859:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** __weak void HAL_DAC_ConvHalfCpltCallbackCh1(DAC_HandleTypeDef *hdac)
+ 860:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** {
+ 861:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Prevent unused argument(s) compilation warning */
+ 862:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   UNUSED(hdac);
+ 863:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 864:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* NOTE : This function should not be modified, when the callback is needed,
+ 865:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****             the HAL_DAC_ConvHalfCpltCallbackCh1 could be implemented in the user file
+ 866:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****    */
+ 867:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** }
+ 868:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 869:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** /**
+ 870:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @brief  Error DAC callback for Channel1.
+ 871:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @param  hdac pointer to a DAC_HandleTypeDef structure that contains
+ 872:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *         the configuration information for the specified DAC.
+ 873:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @retval None
+ 874:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   */
+ 875:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** __weak void HAL_DAC_ErrorCallbackCh1(DAC_HandleTypeDef *hdac)
+ 876:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** {
+ 877:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Prevent unused argument(s) compilation warning */
+ 878:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   UNUSED(hdac);
+ 879:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 880:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* NOTE : This function should not be modified, when the callback is needed,
+ 881:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****             the HAL_DAC_ErrorCallbackCh1 could be implemented in the user file
+ 882:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****    */
+ 883:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** }
+ 884:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 885:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** /**
+ 886:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @brief  DMA underrun DAC callback for channel1.
+ 887:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @param  hdac pointer to a DAC_HandleTypeDef structure that contains
+ 888:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *         the configuration information for the specified DAC.
+ 889:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @retval None
+ 890:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   */
+ 891:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** __weak void HAL_DAC_DMAUnderrunCallbackCh1(DAC_HandleTypeDef *hdac)
+ 892:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** {
+ 893:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Prevent unused argument(s) compilation warning */
+ 894:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   UNUSED(hdac);
+ 895:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 896:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* NOTE : This function should not be modified, when the callback is needed,
+ 897:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****             the HAL_DAC_DMAUnderrunCallbackCh1 could be implemented in the user file
+ 898:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****    */
+ 899:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** }
+ 900:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 901:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** /**
+ 902:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @}
+ 903:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   */
+ 904:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 905:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** /** @defgroup DAC_Exported_Functions_Group3 Peripheral Control functions
+ 906:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *  @brief    Peripheral Control functions
+ 907:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *
+ 908:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** @verbatim
+ 909:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   ==============================================================================
+ 910:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****              ##### Peripheral Control functions #####
+ 911:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   ==============================================================================
+ 912:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     [..]  This section provides functions allowing to:
+ARM GAS  /tmp/ccg9siko.s 			page 30
+
+
+ 913:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       (+) Configure channels.
+ 914:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       (+) Set the specified data holding register value for DAC channel.
+ 915:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 916:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** @endverbatim
+ 917:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @{
+ 918:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   */
+ 919:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 920:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** /**
+ 921:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @brief  Returns the last data output value of the selected DAC channel.
+ 922:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @param  hdac pointer to a DAC_HandleTypeDef structure that contains
+ 923:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *         the configuration information for the specified DAC.
+ 924:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @param  Channel The selected DAC channel.
+ 925:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *          This parameter can be one of the following values:
+ 926:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *            @arg DAC_CHANNEL_1: DAC Channel1 selected
+ 927:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *            @arg DAC_CHANNEL_2: DAC Channel2 selected
+ 928:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @retval The selected DAC channel data output value.
+ 929:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   */
+ 930:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** uint32_t HAL_DAC_GetValue(DAC_HandleTypeDef *hdac, uint32_t Channel)
+ 931:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** {
+ 932:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Check the parameters */
+ 933:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   assert_param(IS_DAC_CHANNEL(Channel));
+ 934:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 935:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Returns the DAC channel data output register value */
+ 936:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   if (Channel == DAC_CHANNEL_1)
+ 937:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   {
+ 938:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     return hdac->Instance->DOR1;
+ 939:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   }
+ 940:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   else
+ 941:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   {
+ 942:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     return hdac->Instance->DOR2;
+ 943:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   }
+ 944:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** }
+ 945:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 946:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** /**
+ 947:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @brief  Configures the selected DAC channel.
+ 948:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @param  hdac pointer to a DAC_HandleTypeDef structure that contains
+ 949:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *         the configuration information for the specified DAC.
+ 950:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @param  sConfig DAC configuration structure.
+ 951:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @param  Channel The selected DAC channel.
+ 952:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *          This parameter can be one of the following values:
+ 953:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *            @arg DAC_CHANNEL_1: DAC Channel1 selected
+ 954:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *            @arg DAC_CHANNEL_2: DAC Channel2 selected
+ 955:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @retval HAL status
+ 956:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   */
+ 957:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** HAL_StatusTypeDef HAL_DAC_ConfigChannel(DAC_HandleTypeDef *hdac, DAC_ChannelConfTypeDef *sConfig, u
+ 958:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** {
+ 959:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   uint32_t tmpreg1;
+ 960:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   uint32_t tmpreg2;
+ 961:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 962:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Check the DAC parameters */
+ 963:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   assert_param(IS_DAC_TRIGGER(sConfig->DAC_Trigger));
+ 964:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   assert_param(IS_DAC_OUTPUT_BUFFER_STATE(sConfig->DAC_OutputBuffer));
+ 965:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   assert_param(IS_DAC_CHANNEL(Channel));
+ 966:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 967:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Process locked */
+ 968:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   __HAL_LOCK(hdac);
+ 969:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ARM GAS  /tmp/ccg9siko.s 			page 31
+
+
+ 970:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Change DAC state */
+ 971:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   hdac->State = HAL_DAC_STATE_BUSY;
+ 972:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 973:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Get the DAC CR value */
+ 974:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   tmpreg1 = hdac->Instance->CR;
+ 975:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Clear BOFFx, TENx, TSELx, WAVEx and MAMPx bits */
+ 976:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   tmpreg1 &= ~(((uint32_t)(DAC_CR_MAMP1 | DAC_CR_WAVE1 | DAC_CR_TSEL1 | DAC_CR_TEN1 | DAC_CR_BOFF1)
+ 977:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Configure for the selected DAC channel: buffer output, trigger */
+ 978:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Set TSELx and TENx bits according to DAC_Trigger value */
+ 979:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Set BOFFx bit according to DAC_OutputBuffer value */   
+ 980:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   tmpreg2 = (sConfig->DAC_Trigger | sConfig->DAC_OutputBuffer);
+ 981:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Calculate CR register value depending on DAC_Channel */
+ 982:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   tmpreg1 |= tmpreg2 << (Channel & 0x10UL);
+ 983:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Write to DAC CR */
+ 984:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   hdac->Instance->CR = tmpreg1;
+ 985:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Disable wave generation */
+ 986:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   CLEAR_BIT(hdac->Instance->CR, (DAC_CR_WAVE1 << (Channel & 0x10UL)));
+ 987:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Disable wave generation */
+ 988:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   hdac->Instance->CR &= ~(DAC_CR_WAVE1 << (Channel & 0x10UL));
+ 989:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 990:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Change DAC state */
+ 991:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   hdac->State = HAL_DAC_STATE_READY;
+ 992:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 993:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Process unlocked */
+ 994:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   __HAL_UNLOCK(hdac);
+ 995:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 996:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Return function status */
+ 997:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   return HAL_OK;
+ 998:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** }
+ 999:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+1000:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** /**
+1001:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @}
+1002:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   */
+1003:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+1004:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** /** @defgroup DAC_Exported_Functions_Group4 Peripheral State and Errors functions
+1005:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *  @brief   Peripheral State and Errors functions
+1006:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *
+1007:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** @verbatim
+1008:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   ==============================================================================
+1009:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****             ##### Peripheral State and Errors functions #####
+1010:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   ==============================================================================
+1011:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     [..]
+1012:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     This subsection provides functions allowing to
+1013:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       (+) Check the DAC state.
+1014:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       (+) Check the DAC Errors.
+1015:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+1016:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** @endverbatim
+1017:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @{
+1018:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   */
+1019:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+1020:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** /**
+1021:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @brief  return the DAC handle state
+1022:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @param  hdac pointer to a DAC_HandleTypeDef structure that contains
+1023:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *         the configuration information for the specified DAC.
+1024:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @retval HAL state
+1025:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   */
+1026:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** HAL_DAC_StateTypeDef HAL_DAC_GetState(DAC_HandleTypeDef *hdac)
+ARM GAS  /tmp/ccg9siko.s 			page 32
+
+
+1027:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** {
+1028:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Return DAC handle state */
+1029:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   return hdac->State;
+1030:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** }
+1031:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+1032:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+1033:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** /**
+1034:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @brief  Return the DAC error code
+1035:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @param  hdac pointer to a DAC_HandleTypeDef structure that contains
+1036:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *         the configuration information for the specified DAC.
+1037:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @retval DAC Error Code
+1038:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   */
+1039:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** uint32_t HAL_DAC_GetError(DAC_HandleTypeDef *hdac)
+1040:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** {
+1041:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   return hdac->ErrorCode;
+1042:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** }
+1043:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+1044:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** /**
+1045:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @}
+1046:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   */
+1047:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+1048:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** /**
+1049:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @}
+1050:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   */
+1051:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+1052:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** /** @addtogroup DAC_Exported_Functions
+1053:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @{
+1054:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   */
+1055:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+1056:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** /** @addtogroup DAC_Exported_Functions_Group1
+1057:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @{
+1058:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   */
+1059:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** #if (USE_HAL_DAC_REGISTER_CALLBACKS == 1)
+1060:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** /**
+1061:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @brief  Register a User DAC Callback
+1062:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *         To be used instead of the weak (surcharged) predefined callback
+1063:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @param  hdac DAC handle
+1064:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @param  CallbackID ID of the callback to be registered
+1065:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *         This parameter can be one of the following values:
+1066:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *          @arg @ref HAL_DAC_ERROR_INVALID_CALLBACK   DAC Error Callback ID
+1067:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *          @arg @ref HAL_DAC_CH1_COMPLETE_CB_ID       DAC CH1 Complete Callback ID
+1068:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *          @arg @ref HAL_DAC_CH1_HALF_COMPLETE_CB_ID  DAC CH1 Half Complete Callback ID
+1069:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *          @arg @ref HAL_DAC_CH1_ERROR_ID             DAC CH1 Error Callback ID
+1070:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *          @arg @ref HAL_DAC_CH1_UNDERRUN_CB_ID       DAC CH1 UnderRun Callback ID
+1071:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *          @arg @ref HAL_DAC_CH2_COMPLETE_CB_ID       DAC CH2 Complete Callback ID
+1072:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *          @arg @ref HAL_DAC_CH2_HALF_COMPLETE_CB_ID  DAC CH2 Half Complete Callback ID
+1073:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *          @arg @ref HAL_DAC_CH2_ERROR_ID             DAC CH2 Error Callback ID
+1074:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *          @arg @ref HAL_DAC_CH2_UNDERRUN_CB_ID       DAC CH2 UnderRun Callback ID
+1075:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *          @arg @ref HAL_DAC_MSPINIT_CB_ID            DAC MSP Init Callback ID
+1076:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *          @arg @ref HAL_DAC_MSPDEINIT_CB_ID          DAC MSP DeInit Callback ID
+1077:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *
+1078:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @param  pCallback pointer to the Callback function
+1079:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @retval status
+1080:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   */
+1081:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** HAL_StatusTypeDef HAL_DAC_RegisterCallback(DAC_HandleTypeDef *hdac, HAL_DAC_CallbackIDTypeDef Callb
+1082:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****                                            pDAC_CallbackTypeDef pCallback)
+1083:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** {
+ARM GAS  /tmp/ccg9siko.s 			page 33
+
+
+1084:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   HAL_StatusTypeDef status = HAL_OK;
+1085:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+1086:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   if (pCallback == NULL)
+1087:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   {
+1088:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     /* Update the error code */
+1089:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     hdac->ErrorCode |= HAL_DAC_ERROR_INVALID_CALLBACK;
+1090:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     return HAL_ERROR;
+1091:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   }
+1092:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+1093:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Process locked */
+1094:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   __HAL_LOCK(hdac);
+1095:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+1096:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   if (hdac->State == HAL_DAC_STATE_READY)
+1097:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   {
+1098:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     switch (CallbackID)
+1099:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     {
+1100:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       case HAL_DAC_CH1_COMPLETE_CB_ID :
+1101:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         hdac->ConvCpltCallbackCh1 = pCallback;
+1102:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         break;
+1103:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       case HAL_DAC_CH1_HALF_COMPLETE_CB_ID :
+1104:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         hdac->ConvHalfCpltCallbackCh1 = pCallback;
+1105:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         break;
+1106:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       case HAL_DAC_CH1_ERROR_ID :
+1107:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         hdac->ErrorCallbackCh1 = pCallback;
+1108:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         break;
+1109:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       case HAL_DAC_CH1_UNDERRUN_CB_ID :
+1110:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         hdac->DMAUnderrunCallbackCh1 = pCallback;
+1111:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         break;
+1112:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       case HAL_DAC_CH2_COMPLETE_CB_ID :
+1113:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         hdac->ConvCpltCallbackCh2 = pCallback;
+1114:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         break;
+1115:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       case HAL_DAC_CH2_HALF_COMPLETE_CB_ID :
+1116:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         hdac->ConvHalfCpltCallbackCh2 = pCallback;
+1117:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         break;
+1118:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       case HAL_DAC_CH2_ERROR_ID :
+1119:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         hdac->ErrorCallbackCh2 = pCallback;
+1120:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         break;
+1121:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       case HAL_DAC_CH2_UNDERRUN_CB_ID :
+1122:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         hdac->DMAUnderrunCallbackCh2 = pCallback;
+1123:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         break;
+1124:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       case HAL_DAC_MSPINIT_CB_ID :
+1125:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         hdac->MspInitCallback = pCallback;
+1126:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         break;
+1127:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       case HAL_DAC_MSPDEINIT_CB_ID :
+1128:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         hdac->MspDeInitCallback = pCallback;
+1129:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         break;
+1130:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       default :
+1131:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         /* Update the error code */
+1132:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         hdac->ErrorCode |= HAL_DAC_ERROR_INVALID_CALLBACK;
+1133:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         /* update return status */
+1134:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         status =  HAL_ERROR;
+1135:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         break;
+1136:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     }
+1137:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   }
+1138:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   else if (hdac->State == HAL_DAC_STATE_RESET)
+1139:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   {
+1140:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     switch (CallbackID)
+ARM GAS  /tmp/ccg9siko.s 			page 34
+
+
+1141:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     {
+1142:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       case HAL_DAC_MSPINIT_CB_ID :
+1143:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         hdac->MspInitCallback = pCallback;
+1144:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         break;
+1145:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       case HAL_DAC_MSPDEINIT_CB_ID :
+1146:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         hdac->MspDeInitCallback = pCallback;
+1147:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         break;
+1148:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       default :
+1149:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         /* Update the error code */
+1150:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         hdac->ErrorCode |= HAL_DAC_ERROR_INVALID_CALLBACK;
+1151:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         /* update return status */
+1152:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         status =  HAL_ERROR;
+1153:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         break;
+1154:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     }
+1155:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   }
+1156:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   else
+1157:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   {
+1158:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     /* Update the error code */
+1159:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     hdac->ErrorCode |= HAL_DAC_ERROR_INVALID_CALLBACK;
+1160:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     /* update return status */
+1161:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     status =  HAL_ERROR;
+1162:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   }
+1163:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+1164:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Release Lock */
+1165:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   __HAL_UNLOCK(hdac);
+1166:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   return status;
+1167:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** }
+1168:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+1169:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** /**
+1170:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @brief  Unregister a User DAC Callback
+1171:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *         DAC Callback is redirected to the weak (surcharged) predefined callback
+1172:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @param  hdac DAC handle
+1173:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @param  CallbackID ID of the callback to be unregistered
+1174:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *         This parameter can be one of the following values:
+1175:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *          @arg @ref HAL_DAC_CH1_COMPLETE_CB_ID          DAC CH1 tranfer Complete Callback ID
+1176:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *          @arg @ref HAL_DAC_CH1_HALF_COMPLETE_CB_ID     DAC CH1 Half Complete Callback ID
+1177:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *          @arg @ref HAL_DAC_CH1_ERROR_ID                DAC CH1 Error Callback ID
+1178:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *          @arg @ref HAL_DAC_CH1_UNDERRUN_CB_ID          DAC CH1 UnderRun Callback ID
+1179:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *          @arg @ref HAL_DAC_CH2_COMPLETE_CB_ID          DAC CH2 Complete Callback ID
+1180:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *          @arg @ref HAL_DAC_CH2_HALF_COMPLETE_CB_ID     DAC CH2 Half Complete Callback ID
+1181:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *          @arg @ref HAL_DAC_CH2_ERROR_ID                DAC CH2 Error Callback ID
+1182:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *          @arg @ref HAL_DAC_CH2_UNDERRUN_CB_ID          DAC CH2 UnderRun Callback ID
+1183:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *          @arg @ref HAL_DAC_MSPINIT_CB_ID               DAC MSP Init Callback ID
+1184:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *          @arg @ref HAL_DAC_MSPDEINIT_CB_ID             DAC MSP DeInit Callback ID
+1185:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *          @arg @ref HAL_DAC_ALL_CB_ID                   DAC All callbacks
+1186:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @retval status
+1187:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   */
+1188:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** HAL_StatusTypeDef HAL_DAC_UnRegisterCallback(DAC_HandleTypeDef *hdac, HAL_DAC_CallbackIDTypeDef Cal
+1189:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** {
+1190:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   HAL_StatusTypeDef status = HAL_OK;
+1191:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+1192:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Process locked */
+1193:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   __HAL_LOCK(hdac);
+1194:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+1195:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   if (hdac->State == HAL_DAC_STATE_READY)
+1196:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   {
+1197:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     switch (CallbackID)
+ARM GAS  /tmp/ccg9siko.s 			page 35
+
+
+1198:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     {
+1199:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       case HAL_DAC_CH1_COMPLETE_CB_ID :
+1200:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         hdac->ConvCpltCallbackCh1 = HAL_DAC_ConvCpltCallbackCh1;
+1201:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         break;
+1202:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       case HAL_DAC_CH1_HALF_COMPLETE_CB_ID :
+1203:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         hdac->ConvHalfCpltCallbackCh1 = HAL_DAC_ConvHalfCpltCallbackCh1;
+1204:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         break;
+1205:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       case HAL_DAC_CH1_ERROR_ID :
+1206:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         hdac->ErrorCallbackCh1 = HAL_DAC_ErrorCallbackCh1;
+1207:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         break;
+1208:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       case HAL_DAC_CH1_UNDERRUN_CB_ID :
+1209:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         hdac->DMAUnderrunCallbackCh1 = HAL_DAC_DMAUnderrunCallbackCh1;
+1210:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         break;
+1211:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       case HAL_DAC_CH2_COMPLETE_CB_ID :
+1212:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         hdac->ConvCpltCallbackCh2 = HAL_DACEx_ConvCpltCallbackCh2;
+1213:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         break;
+1214:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       case HAL_DAC_CH2_HALF_COMPLETE_CB_ID :
+1215:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         hdac->ConvHalfCpltCallbackCh2 = HAL_DACEx_ConvHalfCpltCallbackCh2;
+1216:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         break;
+1217:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       case HAL_DAC_CH2_ERROR_ID :
+1218:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         hdac->ErrorCallbackCh2 = HAL_DACEx_ErrorCallbackCh2;
+1219:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         break;
+1220:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       case HAL_DAC_CH2_UNDERRUN_CB_ID :
+1221:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         hdac->DMAUnderrunCallbackCh2 = HAL_DACEx_DMAUnderrunCallbackCh2;
+1222:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         break;
+1223:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       case HAL_DAC_MSPINIT_CB_ID :
+1224:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         hdac->MspInitCallback = HAL_DAC_MspInit;
+1225:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         break;
+1226:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       case HAL_DAC_MSPDEINIT_CB_ID :
+1227:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         hdac->MspDeInitCallback = HAL_DAC_MspDeInit;
+1228:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         break;
+1229:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       case HAL_DAC_ALL_CB_ID :
+1230:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         hdac->ConvCpltCallbackCh1 = HAL_DAC_ConvCpltCallbackCh1;
+1231:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         hdac->ConvHalfCpltCallbackCh1 = HAL_DAC_ConvHalfCpltCallbackCh1;
+1232:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         hdac->ErrorCallbackCh1 = HAL_DAC_ErrorCallbackCh1;
+1233:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         hdac->DMAUnderrunCallbackCh1 = HAL_DAC_DMAUnderrunCallbackCh1;
+1234:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         hdac->ConvCpltCallbackCh2 = HAL_DACEx_ConvCpltCallbackCh2;
+1235:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         hdac->ConvHalfCpltCallbackCh2 = HAL_DACEx_ConvHalfCpltCallbackCh2;
+1236:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         hdac->ErrorCallbackCh2 = HAL_DACEx_ErrorCallbackCh2;
+1237:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         hdac->DMAUnderrunCallbackCh2 = HAL_DACEx_DMAUnderrunCallbackCh2;
+1238:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         hdac->MspInitCallback = HAL_DAC_MspInit;
+1239:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         hdac->MspDeInitCallback = HAL_DAC_MspDeInit;
+1240:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         break;
+1241:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       default :
+1242:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         /* Update the error code */
+1243:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         hdac->ErrorCode |= HAL_DAC_ERROR_INVALID_CALLBACK;
+1244:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         /* update return status */
+1245:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         status =  HAL_ERROR;
+1246:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         break;
+1247:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     }
+1248:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   }
+1249:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   else if (hdac->State == HAL_DAC_STATE_RESET)
+1250:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   {
+1251:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     switch (CallbackID)
+1252:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     {
+1253:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       case HAL_DAC_MSPINIT_CB_ID :
+1254:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         hdac->MspInitCallback = HAL_DAC_MspInit;
+ARM GAS  /tmp/ccg9siko.s 			page 36
+
+
+1255:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         break;
+1256:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       case HAL_DAC_MSPDEINIT_CB_ID :
+1257:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         hdac->MspDeInitCallback = HAL_DAC_MspDeInit;
+1258:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         break;
+1259:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****       default :
+1260:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         /* Update the error code */
+1261:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         hdac->ErrorCode |= HAL_DAC_ERROR_INVALID_CALLBACK;
+1262:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         /* update return status */
+1263:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         status =  HAL_ERROR;
+1264:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****         break;
+1265:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     }
+1266:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   }
+1267:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   else
+1268:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   {
+1269:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     /* Update the error code */
+1270:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     hdac->ErrorCode |= HAL_DAC_ERROR_INVALID_CALLBACK;
+1271:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     /* update return status */
+1272:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****     status =  HAL_ERROR;
+1273:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   }
+1274:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+1275:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Release Lock */
+1276:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   __HAL_UNLOCK(hdac);
+1277:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   return status;
+1278:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** }
+1279:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** #endif /* USE_HAL_DAC_REGISTER_CALLBACKS */
+1280:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+1281:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** /**
+1282:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @}
+1283:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   */
+1284:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+1285:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** /**
+1286:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @}
+1287:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   */
+1288:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+1289:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** /** @addtogroup DAC_Private_Functions
+1290:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @{
+1291:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   */
+1292:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+1293:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** /**
+1294:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @brief  DMA conversion complete callback.
+1295:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @param  hdma pointer to a DMA_HandleTypeDef structure that contains
+1296:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *                the configuration information for the specified DMA module.
+1297:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @retval None
+1298:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   */
+1299:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** void DAC_DMAConvCpltCh1(DMA_HandleTypeDef *hdma)
+1300:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** {
+ 714              		.loc 1 1300 0
+ 715              		.cfi_startproc
+ 716              		@ args = 0, pretend = 0, frame = 0
+ 717              		@ frame_needed = 0, uses_anonymous_args = 0
+ 718              	.LVL64:
+ 719              		.loc 1 1300 0
+ 720 0000 10B5     		push	{r4, lr}
+ 721              	.LCFI17:
+ 722              		.cfi_def_cfa_offset 8
+ 723              		.cfi_offset 4, -8
+ 724              		.cfi_offset 14, -4
+ARM GAS  /tmp/ccg9siko.s 			page 37
+
+
+1301:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   DAC_HandleTypeDef *hdac = (DAC_HandleTypeDef *)((DMA_HandleTypeDef *)hdma)->Parent;
+ 725              		.loc 1 1301 0
+ 726 0002 446A     		ldr	r4, [r0, #36]
+ 727              	.LVL65:
+1302:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+1303:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** #if (USE_HAL_DAC_REGISTER_CALLBACKS == 1)
+1304:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   hdac->ConvCpltCallbackCh1(hdac);
+1305:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** #else
+1306:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   HAL_DAC_ConvCpltCallbackCh1(hdac);
+ 728              		.loc 1 1306 0
+ 729 0004 2046     		mov	r0, r4
+ 730              	.LVL66:
+ 731 0006 FFF7FEFF 		bl	HAL_DAC_ConvCpltCallbackCh1
+ 732              	.LVL67:
+1307:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** #endif /* USE_HAL_DAC_REGISTER_CALLBACKS */
+1308:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+1309:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   hdac->State = HAL_DAC_STATE_READY;
+ 733              		.loc 1 1309 0
+ 734 000a 0123     		movs	r3, #1
+ 735 000c 2371     		strb	r3, [r4, #4]
+ 736 000e 10BD     		pop	{r4, pc}
+ 737              		.cfi_endproc
+ 738              	.LFE83:
+ 740              		.section	.text.HAL_DAC_ConvHalfCpltCallbackCh1,"ax",%progbits
+ 741              		.align	1
+ 742              		.weak	HAL_DAC_ConvHalfCpltCallbackCh1
+ 743              		.syntax unified
+ 744              		.thumb
+ 745              		.thumb_func
+ 746              		.fpu softvfp
+ 748              	HAL_DAC_ConvHalfCpltCallbackCh1:
+ 749              	.LFB76:
+ 860:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Prevent unused argument(s) compilation warning */
+ 750              		.loc 1 860 0
+ 751              		.cfi_startproc
+ 752              		@ args = 0, pretend = 0, frame = 0
+ 753              		@ frame_needed = 0, uses_anonymous_args = 0
+ 754              		@ link register save eliminated.
+ 755              	.LVL68:
+ 756 0000 7047     		bx	lr
+ 757              		.cfi_endproc
+ 758              	.LFE76:
+ 760              		.section	.text.DAC_DMAHalfConvCpltCh1,"ax",%progbits
+ 761              		.align	1
+ 762              		.global	DAC_DMAHalfConvCpltCh1
+ 763              		.syntax unified
+ 764              		.thumb
+ 765              		.thumb_func
+ 766              		.fpu softvfp
+ 768              	DAC_DMAHalfConvCpltCh1:
+ 769              	.LFB84:
+1310:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** }
+1311:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+1312:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** /**
+1313:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @brief  DMA half transfer complete callback.
+1314:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @param  hdma pointer to a DMA_HandleTypeDef structure that contains
+1315:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *                the configuration information for the specified DMA module.
+ARM GAS  /tmp/ccg9siko.s 			page 38
+
+
+1316:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @retval None
+1317:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   */
+1318:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** void DAC_DMAHalfConvCpltCh1(DMA_HandleTypeDef *hdma)
+1319:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** {
+ 770              		.loc 1 1319 0
+ 771              		.cfi_startproc
+ 772              		@ args = 0, pretend = 0, frame = 0
+ 773              		@ frame_needed = 0, uses_anonymous_args = 0
+ 774              	.LVL69:
+ 775              		.loc 1 1319 0
+ 776 0000 08B5     		push	{r3, lr}
+ 777              	.LCFI18:
+ 778              		.cfi_def_cfa_offset 8
+ 779              		.cfi_offset 3, -8
+ 780              		.cfi_offset 14, -4
+ 781              	.LVL70:
+1320:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   DAC_HandleTypeDef *hdac = (DAC_HandleTypeDef *)((DMA_HandleTypeDef *)hdma)->Parent;
+1321:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Conversion complete callback */
+1322:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** #if (USE_HAL_DAC_REGISTER_CALLBACKS == 1)
+1323:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   hdac->ConvHalfCpltCallbackCh1(hdac);
+1324:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** #else
+1325:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   HAL_DAC_ConvHalfCpltCallbackCh1(hdac);
+ 782              		.loc 1 1325 0
+ 783 0002 406A     		ldr	r0, [r0, #36]
+ 784              	.LVL71:
+ 785 0004 FFF7FEFF 		bl	HAL_DAC_ConvHalfCpltCallbackCh1
+ 786              	.LVL72:
+ 787 0008 08BD     		pop	{r3, pc}
+ 788              		.cfi_endproc
+ 789              	.LFE84:
+ 791              		.section	.text.HAL_DAC_ErrorCallbackCh1,"ax",%progbits
+ 792              		.align	1
+ 793              		.weak	HAL_DAC_ErrorCallbackCh1
+ 794              		.syntax unified
+ 795              		.thumb
+ 796              		.thumb_func
+ 797              		.fpu softvfp
+ 799              	HAL_DAC_ErrorCallbackCh1:
+ 800              	.LFB77:
+ 876:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Prevent unused argument(s) compilation warning */
+ 801              		.loc 1 876 0
+ 802              		.cfi_startproc
+ 803              		@ args = 0, pretend = 0, frame = 0
+ 804              		@ frame_needed = 0, uses_anonymous_args = 0
+ 805              		@ link register save eliminated.
+ 806              	.LVL73:
+ 807 0000 7047     		bx	lr
+ 808              		.cfi_endproc
+ 809              	.LFE77:
+ 811              		.section	.text.DAC_DMAErrorCh1,"ax",%progbits
+ 812              		.align	1
+ 813              		.global	DAC_DMAErrorCh1
+ 814              		.syntax unified
+ 815              		.thumb
+ 816              		.thumb_func
+ 817              		.fpu softvfp
+ 819              	DAC_DMAErrorCh1:
+ARM GAS  /tmp/ccg9siko.s 			page 39
+
+
+ 820              	.LFB85:
+1326:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** #endif  /* USE_HAL_DAC_REGISTER_CALLBACKS */
+1327:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** }
+1328:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+1329:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** /**
+1330:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @brief  DMA error callback
+1331:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @param  hdma pointer to a DMA_HandleTypeDef structure that contains
+1332:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   *                the configuration information for the specified DMA module.
+1333:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   * @retval None
+1334:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   */
+1335:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** void DAC_DMAErrorCh1(DMA_HandleTypeDef *hdma)
+1336:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** {
+ 821              		.loc 1 1336 0
+ 822              		.cfi_startproc
+ 823              		@ args = 0, pretend = 0, frame = 0
+ 824              		@ frame_needed = 0, uses_anonymous_args = 0
+ 825              	.LVL74:
+ 826              		.loc 1 1336 0
+ 827 0000 10B5     		push	{r4, lr}
+ 828              	.LCFI19:
+ 829              		.cfi_def_cfa_offset 8
+ 830              		.cfi_offset 4, -8
+ 831              		.cfi_offset 14, -4
+1337:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   DAC_HandleTypeDef *hdac = (DAC_HandleTypeDef *)((DMA_HandleTypeDef *)hdma)->Parent;
+ 832              		.loc 1 1337 0
+ 833 0002 446A     		ldr	r4, [r0, #36]
+ 834              	.LVL75:
+1338:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+1339:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Set DAC error code to DMA error */
+1340:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   hdac->ErrorCode |= HAL_DAC_ERROR_DMA;
+ 835              		.loc 1 1340 0
+ 836 0004 2369     		ldr	r3, [r4, #16]
+ 837 0006 43F00403 		orr	r3, r3, #4
+ 838 000a 2361     		str	r3, [r4, #16]
+1341:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+1342:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** #if (USE_HAL_DAC_REGISTER_CALLBACKS == 1)
+1343:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   hdac->ErrorCallbackCh1(hdac);
+1344:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** #else
+1345:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   HAL_DAC_ErrorCallbackCh1(hdac);
+ 839              		.loc 1 1345 0
+ 840 000c 2046     		mov	r0, r4
+ 841              	.LVL76:
+ 842 000e FFF7FEFF 		bl	HAL_DAC_ErrorCallbackCh1
+ 843              	.LVL77:
+1346:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** #endif /* USE_HAL_DAC_REGISTER_CALLBACKS */
+1347:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+1348:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   hdac->State = HAL_DAC_STATE_READY;
+ 844              		.loc 1 1348 0
+ 845 0012 0123     		movs	r3, #1
+ 846 0014 2371     		strb	r3, [r4, #4]
+ 847 0016 10BD     		pop	{r4, pc}
+ 848              		.cfi_endproc
+ 849              	.LFE85:
+ 851              		.section	.text.HAL_DAC_DMAUnderrunCallbackCh1,"ax",%progbits
+ 852              		.align	1
+ 853              		.weak	HAL_DAC_DMAUnderrunCallbackCh1
+ 854              		.syntax unified
+ARM GAS  /tmp/ccg9siko.s 			page 40
+
+
+ 855              		.thumb
+ 856              		.thumb_func
+ 857              		.fpu softvfp
+ 859              	HAL_DAC_DMAUnderrunCallbackCh1:
+ 860              	.LFB78:
+ 892:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Prevent unused argument(s) compilation warning */
+ 861              		.loc 1 892 0
+ 862              		.cfi_startproc
+ 863              		@ args = 0, pretend = 0, frame = 0
+ 864              		@ frame_needed = 0, uses_anonymous_args = 0
+ 865              		@ link register save eliminated.
+ 866              	.LVL78:
+ 867 0000 7047     		bx	lr
+ 868              		.cfi_endproc
+ 869              	.LFE78:
+ 871              		.section	.text.HAL_DAC_GetValue,"ax",%progbits
+ 872              		.align	1
+ 873              		.global	HAL_DAC_GetValue
+ 874              		.syntax unified
+ 875              		.thumb
+ 876              		.thumb_func
+ 877              		.fpu softvfp
+ 879              	HAL_DAC_GetValue:
+ 880              	.LFB79:
+ 931:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Check the parameters */
+ 881              		.loc 1 931 0
+ 882              		.cfi_startproc
+ 883              		@ args = 0, pretend = 0, frame = 0
+ 884              		@ frame_needed = 0, uses_anonymous_args = 0
+ 885              		@ link register save eliminated.
+ 886              	.LVL79:
+ 936:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   {
+ 887              		.loc 1 936 0
+ 888 0000 11B1     		cbz	r1, .L81
+ 942:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   }
+ 889              		.loc 1 942 0
+ 890 0002 0368     		ldr	r3, [r0]
+ 891 0004 186B     		ldr	r0, [r3, #48]
+ 892              	.LVL80:
+ 944:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 893              		.loc 1 944 0
+ 894 0006 7047     		bx	lr
+ 895              	.LVL81:
+ 896              	.L81:
+ 938:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   }
+ 897              		.loc 1 938 0
+ 898 0008 0368     		ldr	r3, [r0]
+ 899 000a D86A     		ldr	r0, [r3, #44]
+ 900              	.LVL82:
+ 901 000c 7047     		bx	lr
+ 902              		.cfi_endproc
+ 903              	.LFE79:
+ 905              		.section	.text.HAL_DAC_ConfigChannel,"ax",%progbits
+ 906              		.align	1
+ 907              		.global	HAL_DAC_ConfigChannel
+ 908              		.syntax unified
+ 909              		.thumb
+ARM GAS  /tmp/ccg9siko.s 			page 41
+
+
+ 910              		.thumb_func
+ 911              		.fpu softvfp
+ 913              	HAL_DAC_ConfigChannel:
+ 914              	.LFB80:
+ 958:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   uint32_t tmpreg1;
+ 915              		.loc 1 958 0
+ 916              		.cfi_startproc
+ 917              		@ args = 0, pretend = 0, frame = 0
+ 918              		@ frame_needed = 0, uses_anonymous_args = 0
+ 919              		@ link register save eliminated.
+ 920              	.LVL83:
+ 921 0000 70B4     		push	{r4, r5, r6}
+ 922              	.LCFI20:
+ 923              		.cfi_def_cfa_offset 12
+ 924              		.cfi_offset 4, -12
+ 925              		.cfi_offset 5, -8
+ 926              		.cfi_offset 6, -4
+ 968:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 927              		.loc 1 968 0
+ 928 0002 4479     		ldrb	r4, [r0, #5]	@ zero_extendqisi2
+ 929 0004 012C     		cmp	r4, #1
+ 930 0006 23D0     		beq	.L84
+ 968:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 931              		.loc 1 968 0 is_stmt 0 discriminator 2
+ 932 0008 0125     		movs	r5, #1
+ 933 000a 4571     		strb	r5, [r0, #5]
+ 971:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 934              		.loc 1 971 0 is_stmt 1 discriminator 2
+ 935 000c 0223     		movs	r3, #2
+ 936 000e 0371     		strb	r3, [r0, #4]
+ 974:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Clear BOFFx, TENx, TSELx, WAVEx and MAMPx bits */
+ 937              		.loc 1 974 0 discriminator 2
+ 938 0010 0668     		ldr	r6, [r0]
+ 939 0012 3468     		ldr	r4, [r6]
+ 940              	.LVL84:
+ 976:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Configure for the selected DAC channel: buffer output, trigger */
+ 941              		.loc 1 976 0 discriminator 2
+ 942 0014 02F01003 		and	r3, r2, #16
+ 943 0018 40F6FE72 		movw	r2, #4094
+ 944              	.LVL85:
+ 945 001c 9A40     		lsls	r2, r2, r3
+ 946 001e 24EA0202 		bic	r2, r4, r2
+ 947              	.LVL86:
+ 980:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Calculate CR register value depending on DAC_Channel */
+ 948              		.loc 1 980 0 discriminator 2
+ 949 0022 0C68     		ldr	r4, [r1]
+ 950 0024 4968     		ldr	r1, [r1, #4]
+ 951              	.LVL87:
+ 952 0026 2143     		orrs	r1, r1, r4
+ 953              	.LVL88:
+ 982:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Write to DAC CR */
+ 954              		.loc 1 982 0 discriminator 2
+ 955 0028 9940     		lsls	r1, r1, r3
+ 956              	.LVL89:
+ 957 002a 0A43     		orrs	r2, r2, r1
+ 958              	.LVL90:
+ 984:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Disable wave generation */
+ARM GAS  /tmp/ccg9siko.s 			page 42
+
+
+ 959              		.loc 1 984 0 discriminator 2
+ 960 002c 3260     		str	r2, [r6]
+ 961              	.LVL91:
+ 986:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Disable wave generation */
+ 962              		.loc 1 986 0 discriminator 2
+ 963 002e 0468     		ldr	r4, [r0]
+ 964 0030 2168     		ldr	r1, [r4]
+ 965 0032 C022     		movs	r2, #192
+ 966              	.LVL92:
+ 967 0034 9A40     		lsls	r2, r2, r3
+ 968 0036 D243     		mvns	r2, r2
+ 969 0038 1140     		ands	r1, r1, r2
+ 970 003a 2160     		str	r1, [r4]
+ 971              	.LVL93:
+ 988:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 972              		.loc 1 988 0 discriminator 2
+ 973 003c 0368     		ldr	r3, [r0]
+ 974 003e 1968     		ldr	r1, [r3]
+ 975 0040 0A40     		ands	r2, r2, r1
+ 976 0042 1A60     		str	r2, [r3]
+ 991:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 977              		.loc 1 991 0 discriminator 2
+ 978 0044 0571     		strb	r5, [r0, #4]
+ 994:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 979              		.loc 1 994 0 discriminator 2
+ 980 0046 0023     		movs	r3, #0
+ 981 0048 4371     		strb	r3, [r0, #5]
+ 997:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** }
+ 982              		.loc 1 997 0 discriminator 2
+ 983 004a 1846     		mov	r0, r3
+ 984              	.LVL94:
+ 985              	.L83:
+ 998:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 986              		.loc 1 998 0
+ 987 004c 70BC     		pop	{r4, r5, r6}
+ 988              	.LCFI21:
+ 989              		.cfi_remember_state
+ 990              		.cfi_restore 6
+ 991              		.cfi_restore 5
+ 992              		.cfi_restore 4
+ 993              		.cfi_def_cfa_offset 0
+ 994 004e 7047     		bx	lr
+ 995              	.LVL95:
+ 996              	.L84:
+ 997              	.LCFI22:
+ 998              		.cfi_restore_state
+ 968:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 999              		.loc 1 968 0
+ 1000 0050 0220     		movs	r0, #2
+ 1001              	.LVL96:
+ 1002 0052 FBE7     		b	.L83
+ 1003              		.cfi_endproc
+ 1004              	.LFE80:
+ 1006              		.section	.text.HAL_DAC_GetState,"ax",%progbits
+ 1007              		.align	1
+ 1008              		.global	HAL_DAC_GetState
+ 1009              		.syntax unified
+ARM GAS  /tmp/ccg9siko.s 			page 43
+
+
+ 1010              		.thumb
+ 1011              		.thumb_func
+ 1012              		.fpu softvfp
+ 1014              	HAL_DAC_GetState:
+ 1015              	.LFB81:
+1027:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   /* Return DAC handle state */
+ 1016              		.loc 1 1027 0
+ 1017              		.cfi_startproc
+ 1018              		@ args = 0, pretend = 0, frame = 0
+ 1019              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1020              		@ link register save eliminated.
+ 1021              	.LVL97:
+1029:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** }
+ 1022              		.loc 1 1029 0
+ 1023 0000 0079     		ldrb	r0, [r0, #4]	@ zero_extendqisi2
+ 1024              	.LVL98:
+1030:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 1025              		.loc 1 1030 0
+ 1026 0002 7047     		bx	lr
+ 1027              		.cfi_endproc
+ 1028              	.LFE81:
+ 1030              		.section	.text.HAL_DAC_GetError,"ax",%progbits
+ 1031              		.align	1
+ 1032              		.global	HAL_DAC_GetError
+ 1033              		.syntax unified
+ 1034              		.thumb
+ 1035              		.thumb_func
+ 1036              		.fpu softvfp
+ 1038              	HAL_DAC_GetError:
+ 1039              	.LFB82:
+1040:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c ****   return hdac->ErrorCode;
+ 1040              		.loc 1 1040 0
+ 1041              		.cfi_startproc
+ 1042              		@ args = 0, pretend = 0, frame = 0
+ 1043              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1044              		@ link register save eliminated.
+ 1045              	.LVL99:
+1041:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** }
+ 1046              		.loc 1 1041 0
+ 1047 0000 0069     		ldr	r0, [r0, #16]
+ 1048              	.LVL100:
+1042:Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dac.c **** 
+ 1049              		.loc 1 1042 0
+ 1050 0002 7047     		bx	lr
+ 1051              		.cfi_endproc
+ 1052              	.LFE82:
+ 1054              		.text
+ 1055              	.Letext0:
+ 1056              		.file 2 "/usr/include/newlib/machine/_default_types.h"
+ 1057              		.file 3 "/usr/include/newlib/sys/_stdint.h"
+ 1058              		.file 4 "Drivers/CMSIS/Include/core_cm3.h"
+ 1059              		.file 5 "Drivers/CMSIS/Device/ST/STM32F1xx/Include/system_stm32f1xx.h"
+ 1060              		.file 6 "Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f103xe.h"
+ 1061              		.file 7 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_def.h"
+ 1062              		.file 8 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_dma.h"
+ 1063              		.file 9 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_dac.h"
+ 1064              		.file 10 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h"
+ARM GAS  /tmp/ccg9siko.s 			page 44
+
+
+ARM GAS  /tmp/ccg9siko.s 			page 45
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 stm32f1xx_hal_dac.c
+     /tmp/ccg9siko.s:16     .text.HAL_DAC_MspInit:0000000000000000 $t
+     /tmp/ccg9siko.s:23     .text.HAL_DAC_MspInit:0000000000000000 HAL_DAC_MspInit
+     /tmp/ccg9siko.s:37     .text.HAL_DAC_Init:0000000000000000 $t
+     /tmp/ccg9siko.s:44     .text.HAL_DAC_Init:0000000000000000 HAL_DAC_Init
+     /tmp/ccg9siko.s:98     .text.HAL_DAC_MspDeInit:0000000000000000 $t
+     /tmp/ccg9siko.s:105    .text.HAL_DAC_MspDeInit:0000000000000000 HAL_DAC_MspDeInit
+     /tmp/ccg9siko.s:118    .text.HAL_DAC_DeInit:0000000000000000 $t
+     /tmp/ccg9siko.s:125    .text.HAL_DAC_DeInit:0000000000000000 HAL_DAC_DeInit
+     /tmp/ccg9siko.s:170    .text.HAL_DAC_Start:0000000000000000 $t
+     /tmp/ccg9siko.s:177    .text.HAL_DAC_Start:0000000000000000 HAL_DAC_Start
+     /tmp/ccg9siko.s:273    .text.HAL_DAC_Stop:0000000000000000 $t
+     /tmp/ccg9siko.s:280    .text.HAL_DAC_Stop:0000000000000000 HAL_DAC_Stop
+     /tmp/ccg9siko.s:315    .text.HAL_DAC_Start_DMA:0000000000000000 $t
+     /tmp/ccg9siko.s:322    .text.HAL_DAC_Start_DMA:0000000000000000 HAL_DAC_Start_DMA
+     /tmp/ccg9siko.s:516    .text.HAL_DAC_Start_DMA:00000000000000d8 $d
+     /tmp/ccg9siko.s:712    .text.DAC_DMAConvCpltCh1:0000000000000000 DAC_DMAConvCpltCh1
+     /tmp/ccg9siko.s:768    .text.DAC_DMAHalfConvCpltCh1:0000000000000000 DAC_DMAHalfConvCpltCh1
+     /tmp/ccg9siko.s:819    .text.DAC_DMAErrorCh1:0000000000000000 DAC_DMAErrorCh1
+     /tmp/ccg9siko.s:526    .text.HAL_DAC_Stop_DMA:0000000000000000 $t
+     /tmp/ccg9siko.s:533    .text.HAL_DAC_Stop_DMA:0000000000000000 HAL_DAC_Stop_DMA
+     /tmp/ccg9siko.s:594    .text.HAL_DAC_IRQHandler:0000000000000000 $t
+     /tmp/ccg9siko.s:601    .text.HAL_DAC_IRQHandler:0000000000000000 HAL_DAC_IRQHandler
+     /tmp/ccg9siko.s:614    .text.HAL_DAC_SetValue:0000000000000000 $t
+     /tmp/ccg9siko.s:621    .text.HAL_DAC_SetValue:0000000000000000 HAL_DAC_SetValue
+     /tmp/ccg9siko.s:685    .text.HAL_DAC_ConvCpltCallbackCh1:0000000000000000 $t
+     /tmp/ccg9siko.s:692    .text.HAL_DAC_ConvCpltCallbackCh1:0000000000000000 HAL_DAC_ConvCpltCallbackCh1
+     /tmp/ccg9siko.s:705    .text.DAC_DMAConvCpltCh1:0000000000000000 $t
+     /tmp/ccg9siko.s:741    .text.HAL_DAC_ConvHalfCpltCallbackCh1:0000000000000000 $t
+     /tmp/ccg9siko.s:748    .text.HAL_DAC_ConvHalfCpltCallbackCh1:0000000000000000 HAL_DAC_ConvHalfCpltCallbackCh1
+     /tmp/ccg9siko.s:761    .text.DAC_DMAHalfConvCpltCh1:0000000000000000 $t
+     /tmp/ccg9siko.s:792    .text.HAL_DAC_ErrorCallbackCh1:0000000000000000 $t
+     /tmp/ccg9siko.s:799    .text.HAL_DAC_ErrorCallbackCh1:0000000000000000 HAL_DAC_ErrorCallbackCh1
+     /tmp/ccg9siko.s:812    .text.DAC_DMAErrorCh1:0000000000000000 $t
+     /tmp/ccg9siko.s:852    .text.HAL_DAC_DMAUnderrunCallbackCh1:0000000000000000 $t
+     /tmp/ccg9siko.s:859    .text.HAL_DAC_DMAUnderrunCallbackCh1:0000000000000000 HAL_DAC_DMAUnderrunCallbackCh1
+     /tmp/ccg9siko.s:872    .text.HAL_DAC_GetValue:0000000000000000 $t
+     /tmp/ccg9siko.s:879    .text.HAL_DAC_GetValue:0000000000000000 HAL_DAC_GetValue
+     /tmp/ccg9siko.s:906    .text.HAL_DAC_ConfigChannel:0000000000000000 $t
+     /tmp/ccg9siko.s:913    .text.HAL_DAC_ConfigChannel:0000000000000000 HAL_DAC_ConfigChannel
+     /tmp/ccg9siko.s:1007   .text.HAL_DAC_GetState:0000000000000000 $t
+     /tmp/ccg9siko.s:1014   .text.HAL_DAC_GetState:0000000000000000 HAL_DAC_GetState
+     /tmp/ccg9siko.s:1031   .text.HAL_DAC_GetError:0000000000000000 $t
+     /tmp/ccg9siko.s:1038   .text.HAL_DAC_GetError:0000000000000000 HAL_DAC_GetError
+                     .debug_frame:0000000000000010 $d
+
+UNDEFINED SYMBOLS
+HAL_DMA_Start_IT
+DAC_DMAConvCpltCh2
+DAC_DMAHalfConvCpltCh2
+DAC_DMAErrorCh2
+HAL_DMA_Abort

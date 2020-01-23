@@ -1,4 +1,5 @@
 EESchema Schematic File Version 4
+LIBS:prockeckv2-cache
 EELAYER 30 0
 EELAYER END
 $Descr A4 11693 8268
@@ -115,7 +116,7 @@ U 1 1 5E57511A
 P 7800 3650
 F 0 "J4" V 7672 3930 50  0000 L CNN
 F 1 "Screw_Terminal_01x06" V 7763 3930 50  0000 L CNN
-F 2 "TerminalBlock:TerminalBlock_bornier-6_P5.08mm" H 7800 3650 50  0001 C CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x06_P2.54mm_Vertical" H 7800 3650 50  0001 C CNN
 F 3 "~" H 7800 3650 50  0001 C CNN
 	1    7800 3650
 	0    1    1    0   
@@ -126,7 +127,7 @@ U 1 1 5E07BAAA
 P 2450 2000
 F 0 "J2" H 2530 1992 50  0000 L CNN
 F 1 "Screw_Terminal_01x02" H 2530 1901 50  0000 L CNN
-F 2 "TerminalBlock:TerminalBlock_bornier-2_P5.08mm" H 2450 2000 50  0001 C CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical" H 2450 2000 50  0001 C CNN
 F 3 "~" H 2450 2000 50  0001 C CNN
 	1    2450 2000
 	1    0    0    -1  

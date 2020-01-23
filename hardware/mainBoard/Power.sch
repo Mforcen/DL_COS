@@ -1,4 +1,5 @@
 EESchema Schematic File Version 4
+LIBS:prockeckv2-cache
 EELAYER 30 0
 EELAYER END
 $Descr A4 11693 8268
@@ -23,6 +24,7 @@ F 0 "U6" H 2250 1565 50  0000 C CNN
 F 1 "SGM3204" H 2250 1474 50  0000 C CNN
 F 2 "Package_TO_SOT_SMD:SOT-23-6_Handsoldering" H 2250 1150 50  0001 C CNN
 F 3 "" H 2250 1150 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/DC-DC-Converters_SGMICRO-SGM3204YN6G-TR_C194031.html" H 2250 1150 50  0001 C CNN "URL"
 	1    2250 1150
 	1    0    0    -1  
 $EndComp
@@ -66,6 +68,7 @@ F 0 "C6" V 2452 1700 50  0000 C CNN
 F 1 "3.3u" V 2361 1700 50  0000 C CNN
 F 2 "Capacitor_SMD:C_0603_1608Metric_Pad1.05x0.95mm_HandSolder" H 2238 1550 50  0001 C CNN
 F 3 "~" H 2200 1700 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL10A335KP8NNNC_3-3uF-335-10-10V_C51412.html" H 2200 1700 50  0001 C CNN "URL"
 	1    2200 1700
 	0    -1   -1   0   
 $EndComp
@@ -91,6 +94,7 @@ F 0 "R7" V 2693 1150 50  0000 C CNN
 F 1 "10k" V 2784 1150 50  0000 C CNN
 F 2 "Resistor_SMD:R_0603_1608Metric_Pad1.05x0.95mm_HandSolder" V 2830 1150 50  0001 C CNN
 F 3 "~" H 2900 1150 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/New-Arrivals_SANYEAR-SY0603JN10KP_C380762.html" H 2900 1150 50  0001 C CNN "URL"
 	1    2900 1150
 	0    1    1    0   
 $EndComp
@@ -127,6 +131,7 @@ F 0 "C4" V 1802 1400 50  0000 C CNN
 F 1 "3.3u" V 1711 1400 50  0000 C CNN
 F 2 "Capacitor_SMD:C_0603_1608Metric_Pad1.05x0.95mm_HandSolder" H 1588 1250 50  0001 C CNN
 F 3 "~" H 1550 1400 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL10A335KP8NNNC_3-3uF-335-10-10V_C51412.html" H 1550 1400 50  0001 C CNN "URL"
 	1    1550 1400
 	-1   0    0    1   
 $EndComp
@@ -140,6 +145,7 @@ F 0 "C3" V 1302 1400 50  0000 C CNN
 F 1 "3.3u" V 1211 1400 50  0000 C CNN
 F 2 "Capacitor_SMD:C_0603_1608Metric_Pad1.05x0.95mm_HandSolder" H 1088 1250 50  0001 C CNN
 F 3 "~" H 1050 1400 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL10A335KP8NNNC_3-3uF-335-10-10V_C51412.html" H 1050 1400 50  0001 C CNN "URL"
 	1    1050 1400
 	-1   0    0    1   
 $EndComp
@@ -193,6 +199,7 @@ F 0 "R8" V 3100 1300 50  0000 C CNN
 F 1 "10k" V 3000 1300 50  0000 C CNN
 F 2 "Resistor_SMD:R_0603_1608Metric_Pad1.05x0.95mm_HandSolder" V 2830 1300 50  0001 C CNN
 F 3 "~" H 2900 1300 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/New-Arrivals_SANYEAR-SY0603JN10KP_C380762.html" H 2900 1300 50  0001 C CNN "URL"
 	1    2900 1300
 	0    1    1    0   
 $EndComp
@@ -240,6 +247,7 @@ F 0 "C8" H 4665 1196 50  0000 L CNN
 F 1 "10u" H 4665 1105 50  0000 L CNN
 F 2 "Capacitor_SMD:C_0603_1608Metric_Pad1.05x0.95mm_HandSolder" H 4588 1000 50  0001 C CNN
 F 3 "~" H 4550 1150 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Others_Samsung-Electro-Mechanics_CL10A106MQ8NNNL_Samsung-Electro-Mechanics-CL10A106MQ8NNNL_C307461.html" H 4550 1150 50  0001 C CNN "URL"
 	1    4550 1150
 	1    0    0    -1  
 $EndComp
@@ -275,6 +283,7 @@ F 0 "C10" H 5715 1196 50  0000 L CNN
 F 1 "22u" H 5715 1105 50  0000 L CNN
 F 2 "Capacitor_SMD:C_0603_1608Metric_Pad1.05x0.95mm_HandSolder" H 5638 1000 50  0001 C CNN
 F 3 "~" H 5600 1150 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL10A226MQ8NRNE_22uF-226-20-6-3V_C159801.html" H 5600 1150 50  0001 C CNN "URL"
 	1    5600 1150
 	1    0    0    -1  
 $EndComp
@@ -307,6 +316,7 @@ F 0 "C11" H 6115 1196 50  0000 L CNN
 F 1 "100n" H 6115 1105 50  0000 L CNN
 F 2 "Capacitor_SMD:C_0603_1608Metric_Pad1.05x0.95mm_HandSolder" H 6038 1000 50  0001 C CNN
 F 3 "~" H 6000 1150 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL10F104ZB8NNNC_100nF-104-80-20-50V_C1688.html" H 6000 1150 50  0001 C CNN "URL"
 	1    6000 1150
 	1    0    0    -1  
 $EndComp
@@ -356,6 +366,7 @@ F 0 "U11" H 9200 1350 50  0000 C CNN
 F 1 "HX3242" H 9200 900 50  0000 C CNN
 F 2 "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm" H 9200 1150 50  0001 C CNN
 F 3 "" H 9200 1150 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/DC-DC-Converters_HEXIN-HX3242_C172357.html" H 9200 1300 50  0001 C CNN "URL"
 	1    9200 1300
 	1    0    0    -1  
 $EndComp
@@ -382,6 +393,7 @@ F 0 "L2" V 9200 800 50  0000 C CNN
 F 1 "4.7u" V 9050 800 50  0000 C CNN
 F 2 "Inductor_SMD:L_Taiyo-Yuden_NR-60xx_HandSoldering" H 9100 800 50  0001 C CNN
 F 3 "~" H 9100 800 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Power-Inductors_Taiyo-Yuden_NR6028T4R7M_Taiyo-Yuden-NR6028T4R7M_C77758.html" H 9100 800 50  0001 C CNN "URL"
 	1    9100 800 
 	0    -1   -1   0   
 $EndComp
@@ -401,6 +413,7 @@ F 0 "R16" V 7993 1200 50  0000 C CNN
 F 1 "10k" V 8084 1200 50  0000 C CNN
 F 2 "Resistor_SMD:R_0603_1608Metric_Pad1.05x0.95mm_HandSolder" V 8130 1200 50  0001 C CNN
 F 3 "~" H 8200 1200 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/New-Arrivals_SANYEAR-SY0603JN10KP_C380762.html" H 8200 1200 50  0001 C CNN "URL"
 	1    8200 1200
 	0    1    1    0   
 $EndComp
@@ -411,9 +424,10 @@ P 8400 1550
 AR Path="/5E87EE89" Ref="C?"  Part="1" 
 AR Path="/5E851D3B/5E87EE89" Ref="C15"  Part="1" 
 F 0 "C15" H 8200 1600 50  0000 L CNN
-F 1 "0.1u" H 8150 1450 50  0000 L CNN
+F 1 "100n" H 8150 1450 50  0000 L CNN
 F 2 "Capacitor_SMD:C_0603_1608Metric_Pad1.05x0.95mm_HandSolder" H 8438 1400 50  0001 C CNN
 F 3 "~" H 8400 1550 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL10F104ZB8NNNC_100nF-104-80-20-50V_C1688.html" H 8400 1550 50  0001 C CNN "URL"
 	1    8400 1550
 	1    0    0    -1  
 $EndComp
@@ -446,6 +460,7 @@ F 0 "D4" H 9900 700 50  0000 C CNN
 F 1 "SS34A" H 9900 950 50  0000 C CNN
 F 2 "Diode_SMD:D_SMA" H 9900 800 50  0001 C CNN
 F 3 "~" H 9900 800 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Schottky-Barrier-Diodes-SBD_SS34_C183891.html" H 9900 800 50  0001 C CNN "URL"
 	1    9900 800 
 	-1   0    0    1   
 $EndComp
@@ -462,6 +477,7 @@ F 0 "R18" H 10130 1054 50  0000 R CNN
 F 1 "10k" H 10130 1145 50  0000 R CNN
 F 2 "Resistor_SMD:R_0603_1608Metric_Pad1.05x0.95mm_HandSolder" V 10130 1100 50  0001 C CNN
 F 3 "~" H 10200 1100 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/New-Arrivals_SANYEAR-SY0603JN10KP_C380762.html" H 10200 1100 50  0001 C CNN "URL"
 	1    10200 1100
 	-1   0    0    1   
 $EndComp
@@ -475,6 +491,7 @@ F 0 "R19" H 10130 1504 50  0000 R CNN
 F 1 "10k" H 10130 1595 50  0000 R CNN
 F 2 "Resistor_SMD:R_0603_1608Metric_Pad1.05x0.95mm_HandSolder" V 10130 1550 50  0001 C CNN
 F 3 "~" H 10200 1550 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/New-Arrivals_SANYEAR-SY0603JN10KP_C380762.html" H 10200 1550 50  0001 C CNN "URL"
 	1    10200 1550
 	-1   0    0    1   
 $EndComp
@@ -515,6 +532,7 @@ F 0 "R17" H 9580 1604 50  0000 R CNN
 F 1 "50m" H 9580 1695 50  0000 R CNN
 F 2 "Resistor_SMD:R_0603_1608Metric_Pad1.05x0.95mm_HandSolder" V 9580 1650 50  0001 C CNN
 F 3 "~" H 9650 1650 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount_0-05R-R050-1_C158895.html" H 9650 1650 50  0001 C CNN "URL"
 	1    9650 1650
 	-1   0    0    1   
 $EndComp
@@ -532,6 +550,7 @@ F 0 "C20" H 10665 1646 50  0000 L CNN
 F 1 "22p" H 10665 1555 50  0000 L CNN
 F 2 "Capacitor_SMD:C_0603_1608Metric_Pad1.05x0.95mm_HandSolder" H 10588 1450 50  0001 C CNN
 F 3 "~" H 10550 1600 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_Walsin-Tech-Corp-0603N220J500_C107451.html" H 10550 1600 50  0001 C CNN "URL"
 	1    10550 1600
 	1    0    0    -1  
 $EndComp
@@ -553,6 +572,7 @@ F 0 "C22" H 10965 1396 50  0000 L CNN
 F 1 "47u" H 10965 1305 50  0000 L CNN
 F 2 "Capacitor_SMD:C_1206_3216Metric_Pad1.42x1.75mm_HandSolder" H 10888 1200 50  0001 C CNN
 F 3 "~" H 10850 1350 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_TDK_C3216X5R1E476MTJ00E_47uF-476-20-25V_C76659.html" H 10850 1350 50  0001 C CNN "URL"
 	1    10850 1350
 	1    0    0    -1  
 $EndComp
@@ -580,9 +600,10 @@ P 8600 1550
 AR Path="/5E87EEE9" Ref="C?"  Part="1" 
 AR Path="/5E851D3B/5E87EEE9" Ref="C17"  Part="1" 
 F 0 "C17" H 8650 1650 50  0000 L CNN
-F 1 "0.1u" H 8650 1450 50  0000 L CNN
+F 1 "100n" H 8650 1450 50  0000 L CNN
 F 2 "Capacitor_SMD:C_0603_1608Metric_Pad1.05x0.95mm_HandSolder" H 8638 1400 50  0001 C CNN
 F 3 "~" H 8600 1550 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL10F104ZB8NNNC_100nF-104-80-20-50V_C1688.html" H 8600 1550 50  0001 C CNN "URL"
 	1    8600 1550
 	1    0    0    -1  
 $EndComp
@@ -613,6 +634,7 @@ F 0 "R15" V 7743 1550 50  0000 C CNN
 F 1 "10k" V 7834 1550 50  0000 C CNN
 F 2 "Resistor_SMD:R_0603_1608Metric_Pad1.05x0.95mm_HandSolder" V 7880 1550 50  0001 C CNN
 F 3 "~" H 7950 1550 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/New-Arrivals_SANYEAR-SY0603JN10KP_C380762.html" H 7950 1550 50  0001 C CNN "URL"
 	1    7950 1550
 	1    0    0    -1  
 $EndComp
@@ -668,6 +690,7 @@ F 0 "U3" H 1450 3515 50  0000 C CNN
 F 1 "HY2213" H 1450 3424 50  0000 C CNN
 F 2 "Package_TO_SOT_SMD:SOT-23-6_Handsoldering" H 1450 3050 50  0001 C CNN
 F 3 "" H 1450 3050 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/PMIC-Battery-Management_HYCON-Tech-HY2213-BB3A_C113632.html" H 1450 3050 50  0001 C CNN "URL"
 	1    1450 3050
 	1    0    0    -1  
 $EndComp
@@ -680,6 +703,7 @@ F 1 "HY2213" H 1450 4324 50  0000 C CNN
 F 2 "Package_TO_SOT_SMD:SOT-23-6_Handsoldering" H 1450 3950 50  0001 C CNN
 F 3 "" H 1450 3950 50  0001 C CNN
 F 4 "HY2213-BB3A" H 1450 3950 50  0001 C CNN "MPN"
+F 5 "https://lcsc.com/product-detail/PMIC-Battery-Management_HYCON-Tech-HY2213-BB3A_C113632.html" H 1450 3950 50  0001 C CNN "URL"
 	1    1450 3950
 	1    0    0    -1  
 $EndComp
@@ -691,6 +715,7 @@ F 0 "U5" H 1700 5615 50  0000 C CNN
 F 1 "HY2120" H 1700 5524 50  0000 C CNN
 F 2 "Package_TO_SOT_SMD:SOT-23-6_Handsoldering" H 1700 5200 50  0001 C CNN
 F 3 "" H 1700 5200 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Battery-Protection-ICs_HYCON-Tech-HY2120-AB_C168776.html" H 1700 5150 50  0001 C CNN "URL"
 	1    1700 5150
 	1    0    0    -1  
 $EndComp
@@ -736,9 +761,10 @@ L Device:R R5
 U 1 1 5DF8793B
 P 2400 5900
 F 0 "R5" H 2330 5854 50  0000 R CNN
-F 1 "2k" H 2330 5945 50  0000 R CNN
+F 1 "2k2" H 2330 5945 50  0000 R CNN
 F 2 "Resistor_SMD:R_0603_1608Metric_Pad1.05x0.95mm_HandSolder" V 2330 5900 50  0001 C CNN
 F 3 "~" H 2400 5900 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount_2KR-202-5_C105581.html" H 2400 5900 50  0001 C CNN "URL"
 	1    2400 5900
 	-1   0    0    1   
 $EndComp
@@ -778,9 +804,10 @@ L Device:R R4
 U 1 1 5E062DE5
 P 2400 3700
 F 0 "R4" H 2470 3746 50  0000 L CNN
-F 1 "62" H 2470 3655 50  0000 L CNN
+F 1 "100" H 2470 3655 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric_Pad1.05x0.95mm_HandSolder" V 2330 3700 50  0001 C CNN
 F 3 "~" H 2400 3700 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount_UNI-ROYAL-Uniroyal-Elec-0603WAJ0620T5E_C25252.html" H 2400 3700 50  0001 C CNN "URL"
 	1    2400 3700
 	1    0    0    -1  
 $EndComp
@@ -789,9 +816,10 @@ L Device:R R3
 U 1 1 5E063210
 P 2400 2800
 F 0 "R3" H 2470 2846 50  0000 L CNN
-F 1 "62" H 2470 2755 50  0000 L CNN
+F 1 "100" H 2470 2755 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric_Pad1.05x0.95mm_HandSolder" V 2330 2800 50  0001 C CNN
 F 3 "~" H 2400 2800 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount_UNI-ROYAL-Uniroyal-Elec-0603WAJ0620T5E_C25252.html" H 2400 2800 50  0001 C CNN "URL"
 	1    2400 2800
 	1    0    0    -1  
 $EndComp
@@ -838,6 +866,7 @@ F 0 "R1" H 870 2796 50  0000 L CNN
 F 1 "100" H 870 2705 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric_Pad1.05x0.95mm_HandSolder" V 730 2750 50  0001 C CNN
 F 3 "~" H 800 2750 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount_UNI-ROYAL-Uniroyal-Elec-0603WAJ0620T5E_C25252.html" H 800 2750 50  0001 C CNN "URL"
 	1    800  2750
 	1    0    0    -1  
 $EndComp
@@ -849,6 +878,7 @@ F 0 "R2" H 870 3696 50  0000 L CNN
 F 1 "100" H 870 3605 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric_Pad1.05x0.95mm_HandSolder" V 730 3650 50  0001 C CNN
 F 3 "~" H 800 3650 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount_UNI-ROYAL-Uniroyal-Elec-0603WAJ0620T5E_C25252.html" H 800 3650 50  0001 C CNN "URL"
 	1    800  3650
 	1    0    0    -1  
 $EndComp
@@ -860,6 +890,7 @@ F 0 "C1" H 892 3146 50  0000 L CNN
 F 1 "100n" H 892 3055 50  0000 L CNN
 F 2 "Capacitor_SMD:C_0603_1608Metric_Pad1.05x0.95mm_HandSolder" H 800 3100 50  0001 C CNN
 F 3 "~" H 800 3100 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL10F104ZB8NNNC_100nF-104-80-20-50V_C1688.html" H 800 3100 50  0001 C CNN "URL"
 	1    800  3100
 	1    0    0    -1  
 $EndComp
@@ -871,6 +902,7 @@ F 0 "C2" H 892 4046 50  0000 L CNN
 F 1 "100n" H 892 3955 50  0000 L CNN
 F 2 "Capacitor_SMD:C_0603_1608Metric_Pad1.05x0.95mm_HandSolder" H 800 4000 50  0001 C CNN
 F 3 "~" H 800 4000 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL10F104ZB8NNNC_100nF-104-80-20-50V_C1688.html" H 800 4000 50  0001 C CNN "URL"
 	1    800  4000
 	1    0    0    -1  
 $EndComp
@@ -919,6 +951,7 @@ F 0 "R6" V 2500 5150 50  0000 C CNN
 F 1 "330" V 2700 5150 50  0000 C CNN
 F 2 "Resistor_SMD:R_0603_1608Metric_Pad1.05x0.95mm_HandSolder" V 2530 5150 50  0001 C CNN
 F 3 "~" H 2600 5150 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount_FH-Guangdong-Fenghua-Advanced-Tech-RS-03K331JT_C22104.html" H 2600 5150 50  0001 C CNN "URL"
 	1    2600 5150
 	0    1    1    0   
 $EndComp
@@ -930,6 +963,7 @@ F 0 "R9" V 3350 5350 50  0000 C CNN
 F 1 "330" V 3550 5350 50  0000 C CNN
 F 2 "Resistor_SMD:R_0603_1608Metric_Pad1.05x0.95mm_HandSolder" V 3380 5350 50  0001 C CNN
 F 3 "~" H 3450 5350 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount_FH-Guangdong-Fenghua-Advanced-Tech-RS-03K331JT_C22104.html" H 3450 5350 50  0001 C CNN "URL"
 	1    3450 5350
 	0    1    1    0   
 $EndComp
@@ -945,6 +979,7 @@ F 0 "C5" H 2242 5096 50  0000 L CNN
 F 1 "100n" H 2242 5005 50  0000 L CNN
 F 2 "Capacitor_SMD:C_0603_1608Metric_Pad1.05x0.95mm_HandSolder" H 2150 5050 50  0001 C CNN
 F 3 "~" H 2150 5050 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL10F104ZB8NNNC_100nF-104-80-20-50V_C1688.html" H 2150 5050 50  0001 C CNN "URL"
 	1    2150 5050
 	1    0    0    -1  
 $EndComp
@@ -962,6 +997,7 @@ F 0 "C7" H 3192 5196 50  0000 L CNN
 F 1 "100n" H 3192 5105 50  0000 L CNN
 F 2 "Capacitor_SMD:C_0603_1608Metric_Pad1.05x0.95mm_HandSolder" H 3100 5150 50  0001 C CNN
 F 3 "~" H 3100 5150 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL10F104ZB8NNNC_100nF-104-80-20-50V_C1688.html" H 3100 5150 50  0001 C CNN "URL"
 	1    3100 5150
 	1    0    0    -1  
 $EndComp
@@ -1000,6 +1036,7 @@ F 1 "15u" V 5649 2400 50  0000 C CNN
 F 2 "chinalandfoot:SLO0630h" H 5550 2400 50  0001 C CNN
 F 3 "~" H 5550 2400 50  0001 C CNN
 F 4 "SLO0630H150MTT" V 5550 2400 50  0001 C CNN "MPN"
+F 5 "https://lcsc.com/product-detail/Power-Inductors_Sunltech-Tech-SLO0630H150MTT_C182182.html" H 5550 2400 50  0001 C CNN "URL"
 	1    5550 2400
 	0    -1   -1   0   
 $EndComp
@@ -1011,6 +1048,7 @@ F 0 "D1" V 5254 2679 50  0000 L CNN
 F 1 "SS34A" V 5345 2679 50  0000 L CNN
 F 2 "Diode_SMD:D_SMA" H 5300 2600 50  0001 C CNN
 F 3 "~" H 5300 2600 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Schottky-Barrier-Diodes-SBD_SS34_C183891.html" H 5300 2600 50  0001 C CNN "URL"
 	1    5300 2600
 	0    1    1    0   
 $EndComp
@@ -1022,6 +1060,7 @@ F 0 "C12" H 6118 2646 50  0000 L CNN
 F 1 "220u" H 6118 2555 50  0000 L CNN
 F 2 "Capacitor_SMD:CP_Elec_6.3x5.4" H 6038 2450 50  0001 C CNN
 F 3 "~" H 6000 2600 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Others_ROQANG-RT1A221M0605_C267466.html" H 6000 2600 50  0001 C CNN "URL"
 	1    6000 2600
 	1    0    0    -1  
 $EndComp
@@ -1033,6 +1072,7 @@ F 0 "R12" H 6820 2646 50  0000 L CNN
 F 1 "100k" H 6820 2555 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric_Pad1.05x0.95mm_HandSolder" V 6680 2600 50  0001 C CNN
 F 3 "~" H 6750 2600 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount_100KR-1003-1_C14675.html" H 6750 2600 50  0001 C CNN "URL"
 	1    6750 2600
 	1    0    0    -1  
 $EndComp
@@ -1135,6 +1175,7 @@ F 0 "U7" H 4200 3173 50  0000 C CNN
 F 1 "RT8279" H 4200 3264 50  0000 C CNN
 F 2 "Package_SO:SOIC-8-1EP_3.9x4.9mm_P1.27mm_EP2.514x3.2mm_ThermalVias" H 4210 2730 50  0001 C CNN
 F 3 "" H 4210 2730 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/DC-DC-Converters_RT8279GSP_C53194.html" H 4200 2800 50  0001 C CNN "URL"
 	1    4200 2800
 	-1   0    0    1   
 $EndComp
@@ -1176,6 +1217,7 @@ F 0 "C9" V 4571 3000 50  0000 C CNN
 F 1 "10n" V 4662 3000 50  0000 C CNN
 F 2 "Capacitor_SMD:C_0603_1608Metric_Pad1.05x0.95mm_HandSolder" H 4800 3000 50  0001 C CNN
 F 3 "~" H 4800 3000 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_FH-Guangdong-Fenghua-Advanced-Tech-0603B103K500NT_C57112.html" H 4800 3000 50  0001 C CNN "URL"
 	1    4800 3000
 	0    1    1    0   
 $EndComp
@@ -1194,6 +1236,7 @@ F 0 "C13" H 6308 2554 50  0000 R CNN
 F 1 "100n" H 6308 2645 50  0000 R CNN
 F 2 "Capacitor_SMD:C_0603_1608Metric_Pad1.05x0.95mm_HandSolder" H 6400 2600 50  0001 C CNN
 F 3 "~" H 6400 2600 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL10F104ZB8NNNC_100nF-104-80-20-50V_C1688.html" H 6400 2600 50  0001 C CNN "URL"
 	1    6400 2600
 	-1   0    0    1   
 $EndComp
@@ -1236,6 +1279,7 @@ F 0 "R13" H 6820 3046 50  0000 L CNN
 F 1 "31k6" H 6820 2955 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric_Pad1.05x0.95mm_HandSolder" V 6680 3000 50  0001 C CNN
 F 3 "~" H 6750 3000 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount_UNI-ROYAL-Uniroyal-Elec-0603WAF3162T5E_C25967.html" H 6750 3000 50  0001 C CNN "URL"
 	1    6750 3000
 	1    0    0    -1  
 $EndComp
@@ -1247,6 +1291,7 @@ F 0 "C14" H 7008 2554 50  0000 R CNN
 F 1 "82p" H 7008 2645 50  0000 R CNN
 F 2 "Capacitor_SMD:C_0603_1608Metric_Pad1.05x0.95mm_HandSolder" H 7100 2600 50  0001 C CNN
 F 3 "~" H 7100 2600 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_FH-Guangdong-Fenghua-Advanced-Tech-0603CG820J500NT_C1683.html" H 7100 2600 50  0001 C CNN "URL"
 	1    7100 2600
 	-1   0    0    1   
 $EndComp
@@ -1279,6 +1324,7 @@ F 0 "D3" V 8854 5079 50  0000 L CNN
 F 1 "SS34A" V 8945 5079 50  0000 L CNN
 F 2 "Diode_SMD:D_SMA" H 8900 5000 50  0001 C CNN
 F 3 "~" H 8900 5000 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Schottky-Barrier-Diodes-SBD_SS34_C183891.html" H 8900 5000 50  0001 C CNN "URL"
 	1    8900 5000
 	0    1    1    0   
 $EndComp
@@ -1309,6 +1355,7 @@ F 0 "RV1" V 8150 6000 50  0000 C CNN
 F 1 "3313J-1-503E" V 7800 5850 50  0000 C CNN
 F 2 "chinalandfoot:Bourns 3313J" H 7950 5850 50  0001 C CNN
 F 3 "~" H 7950 5850 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Precision-Potentiometer_BOURNS_3313J-1-204E_200KR-10_C124622.html" H 7950 5850 50  0001 C CNN "URL"
 	1    7950 5850
 	1    0    0    -1  
 $EndComp
@@ -1336,6 +1383,7 @@ F 0 "U9" H 8550 5617 50  0000 C CNN
 F 1 "LM358" H 8550 5526 50  0000 C CNN
 F 2 "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm" H 8550 5250 50  0001 C CNN
 F 3 "http://www.ti.com/lit/ds/symlink/lm2904-n.pdf" H 8550 5250 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Others_IDCHIP-LM358_C329455.html" H 8550 5250 50  0001 C CNN "URL"
 	2    8550 5250
 	1    0    0    -1  
 $EndComp
@@ -1357,6 +1405,7 @@ F 0 "C21" H 10608 3954 50  0000 R CNN
 F 1 "82p" H 10608 4045 50  0000 R CNN
 F 2 "Capacitor_SMD:C_0603_1608Metric_Pad1.05x0.95mm_HandSolder" H 10700 4000 50  0001 C CNN
 F 3 "~" H 10700 4000 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_FH-Guangdong-Fenghua-Advanced-Tech-0603CG820J500NT_C1683.html" H 10700 4000 50  0001 C CNN "URL"
 	1    10700 4000
 	-1   0    0    1   
 $EndComp
@@ -1424,6 +1473,7 @@ F 0 "R14" V 7350 6050 50  0000 C CNN
 F 1 "100k" V 7450 6050 50  0000 C CNN
 F 2 "Resistor_SMD:R_0603_1608Metric_Pad1.05x0.95mm_HandSolder" V 7180 6050 50  0001 C CNN
 F 3 "~" H 7250 6050 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount_100KR-1003-1_C14675.html" H 7250 6050 50  0001 C CNN "URL"
 	1    7250 6050
 	0    1    1    0   
 $EndComp
@@ -1435,6 +1485,7 @@ F 0 "R11" V 6800 5800 50  0000 C CNN
 F 1 "10k" V 6900 5800 50  0000 C CNN
 F 2 "Resistor_SMD:R_0603_1608Metric_Pad1.05x0.95mm_HandSolder" V 6630 5800 50  0001 C CNN
 F 3 "~" H 6700 5800 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/New-Arrivals_SANYEAR-SY0603JN10KP_C380762.html" H 6700 5800 50  0001 C CNN "URL"
 	1    6700 5800
 	0    1    1    0   
 $EndComp
@@ -1445,9 +1496,10 @@ L Device:R R10
 U 1 1 5E27C8C8
 P 6250 5600
 F 0 "R10" V 6350 5600 50  0000 C CNN
-F 1 "0.05" V 6450 5600 50  0000 C CNN
+F 1 "50m" V 6450 5600 50  0000 C CNN
 F 2 "Resistor_SMD:R_0603_1608Metric_Pad1.05x0.95mm_HandSolder" V 6180 5600 50  0001 C CNN
 F 3 "~" H 6250 5600 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount_0-05R-R050-1_C158895.html" H 6250 5600 50  0001 C CNN "URL"
 	1    6250 5600
 	0    1    1    0   
 $EndComp
@@ -1496,6 +1548,7 @@ F 0 "U9" H 10208 5096 50  0000 L CNN
 F 1 "LM358" H 10208 5005 50  0000 L CNN
 F 2 "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm" H 10250 5050 50  0001 C CNN
 F 3 "http://www.ti.com/lit/ds/symlink/lm2904-n.pdf" H 10250 5050 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Others_IDCHIP-LM358_C329455.html" H 10250 5050 50  0001 C CNN "URL"
 	3    10250 5050
 	0    -1   -1   0   
 $EndComp
@@ -1507,6 +1560,7 @@ F 0 "U9" V 7254 5930 50  0000 L CNN
 F 1 "LM358" V 7345 5930 50  0000 L CNN
 F 2 "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm" H 7300 5700 50  0001 C CNN
 F 3 "http://www.ti.com/lit/ds/symlink/lm2904-n.pdf" H 7300 5700 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Others_IDCHIP-LM358_C329455.html" H 7300 5700 50  0001 C CNN "URL"
 	1    7300 5700
 	1    0    0    -1  
 $EndComp
@@ -1549,6 +1603,7 @@ F 0 "C19" H 9908 3954 50  0000 R CNN
 F 1 "100n" H 9908 4045 50  0000 R CNN
 F 2 "Capacitor_SMD:C_0603_1608Metric_Pad1.05x0.95mm_HandSolder" H 10000 4000 50  0001 C CNN
 F 3 "~" H 10000 4000 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL10F104ZB8NNNC_100nF-104-80-20-50V_C1688.html" H 10000 4000 50  0001 C CNN "URL"
 	1    10000 4000
 	-1   0    0    1   
 $EndComp
@@ -1567,6 +1622,7 @@ F 0 "C16" V 8171 4400 50  0000 C CNN
 F 1 "10n" V 8262 4400 50  0000 C CNN
 F 2 "Capacitor_SMD:C_0603_1608Metric_Pad1.05x0.95mm_HandSolder" H 8400 4400 50  0001 C CNN
 F 3 "~" H 8400 4400 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_FH-Guangdong-Fenghua-Advanced-Tech-0603B103K500NT_C57112.html" H 8400 4400 50  0001 C CNN "URL"
 	1    8400 4400
 	0    1    1    0   
 $EndComp
@@ -1606,6 +1662,7 @@ F 0 "U10" H 7800 4573 50  0000 C CNN
 F 1 "RT8279" H 7800 4664 50  0000 C CNN
 F 2 "Package_SO:SOIC-8-1EP_3.9x4.9mm_P1.27mm_EP2.514x3.2mm_ThermalVias" H 7810 4130 50  0001 C CNN
 F 3 "" H 7810 4130 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/DC-DC-Converters_RT8279GSP_C53194.html" H 7800 4200 50  0001 C CNN "URL"
 	1    7800 4200
 	-1   0    0    1   
 $EndComp
@@ -1684,6 +1741,7 @@ F 0 "R21" H 10420 4446 50  0000 L CNN
 F 1 "16.9k" H 10420 4355 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric_Pad1.05x0.95mm_HandSolder" V 10280 4400 50  0001 C CNN
 F 3 "~" H 10350 4400 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount_FH-Guangdong-Fenghua-Advanced-Tech-RS-03K1692FT_C304709.html" H 10350 4400 50  0001 C CNN "URL"
 	1    10350 4400
 	1    0    0    -1  
 $EndComp
@@ -1695,6 +1753,7 @@ F 0 "R20" H 10420 4046 50  0000 L CNN
 F 1 "100k" H 10420 3955 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric_Pad1.05x0.95mm_HandSolder" V 10280 4000 50  0001 C CNN
 F 3 "~" H 10350 4000 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount_100KR-1003-1_C14675.html" H 10350 4000 50  0001 C CNN "URL"
 	1    10350 4000
 	1    0    0    -1  
 $EndComp
@@ -1706,6 +1765,7 @@ F 0 "C18" H 9718 4046 50  0000 L CNN
 F 1 "220u" H 9718 3955 50  0000 L CNN
 F 2 "Capacitor_SMD:CP_Elec_6.3x5.4" H 9638 3850 50  0001 C CNN
 F 3 "~" H 9600 4000 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Others_ROQANG-RT1A221M0605_C267466.html" H 9600 4000 50  0001 C CNN "URL"
 	1    9600 4000
 	1    0    0    -1  
 $EndComp
@@ -1717,6 +1777,7 @@ F 0 "D2" V 8854 4079 50  0000 L CNN
 F 1 "SS34A" V 8945 4079 50  0000 L CNN
 F 2 "Diode_SMD:D_SMA" H 8900 4000 50  0001 C CNN
 F 3 "~" H 8900 4000 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Schottky-Barrier-Diodes-SBD_SS34_C183891.html" H 8900 4000 50  0001 C CNN "URL"
 	1    8900 4000
 	0    1    1    0   
 $EndComp
@@ -1728,6 +1789,7 @@ F 0 "L3" V 9340 3800 50  0000 C CNN
 F 1 "15u" V 9249 3800 50  0000 C CNN
 F 2 "chinalandfoot:SLO0630h" H 9150 3800 50  0001 C CNN
 F 3 "~" H 9150 3800 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Power-Inductors_Sunltech-Tech-SLO0630H150MTT_C182182.html" H 9150 3800 50  0001 C CNN "URL"
 	1    9150 3800
 	0    -1   -1   0   
 $EndComp
@@ -1773,6 +1835,7 @@ F 0 "Q1" H 1600 6715 50  0000 C CNN
 F 1 "FS8205A" H 1600 6624 50  0000 C CNN
 F 2 "Package_SO:TSSOP-8_4.4x3mm_P0.65mm" H 1550 6300 50  0001 C CNN
 F 3 "" H 1550 6300 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/MOSFET_Fortune-Semicon-8205A_C14212.html" H 1600 6200 50  0001 C CNN "URL"
 	1    1600 6200
 	1    0    0    -1  
 $EndComp

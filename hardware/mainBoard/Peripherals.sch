@@ -1,4 +1,5 @@
 EESchema Schematic File Version 4
+LIBS:prockeckv2-cache
 EELAYER 30 0
 EELAYER END
 $Descr A4 11693 8268
@@ -21,6 +22,7 @@ F 0 "J5" H 4550 3367 50  0000 C CNN
 F 1 "MicroSD" H 4550 3276 50  0000 C CNN
 F 2 "chinalandfoot:MicroSD-KoreanHroparts" H 4550 2650 50  0001 C CNN
 F 3 "" H 4550 2650 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Connector-Card-Sockets_XUNPU-TF-115_C266620.html" H 4550 2650 50  0001 C CNN "URL"
 	1    4550 2650
 	1    0    0    -1  
 $EndComp
@@ -475,6 +477,7 @@ F 0 "U1" H 4000 4765 50  0000 C CNN
 F 1 "W25Q64JV" H 4000 4674 50  0000 C CNN
 F 2 "Package_SO:SOIC-8_5.23x5.23mm_P1.27mm" H 4000 4350 50  0001 C CNN
 F 3 "" H 4000 4350 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/FLASH_Winbond-Elec-W25Q64JVSSIQ_C83140.html" H 4000 4350 50  0001 C CNN "URL"
 	1    4000 4350
 	1    0    0    -1  
 $EndComp

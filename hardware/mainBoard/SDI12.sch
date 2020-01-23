@@ -1,4 +1,5 @@
 EESchema Schematic File Version 4
+LIBS:prockeckv2-cache
 EELAYER 30 0
 EELAYER END
 $Descr A4 11693 8268
@@ -23,6 +24,7 @@ F 0 "U20" H 5150 3111 50  0000 C CNN
 F 1 "TXB0104PW" H 5150 3020 50  0000 C CNN
 F 2 "Package_SO:TSSOP-14_4.4x5mm_P0.65mm" H 5150 3150 50  0001 C CNN
 F 3 "http://www.ti.com/lit/ds/symlink/txb0104.pdf" H 5260 3995 50  0001 C CNN
+F 4 "https://lcsc.com/product-detail/Level-Translators-Shifters_Texas-Instruments-TXB0104PWR_C60708.html" H 5150 3900 50  0001 C CNN "URL"
 	1    5150 3900
 	1    0    0    -1  
 $EndComp
