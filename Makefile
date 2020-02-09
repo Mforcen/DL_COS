@@ -36,6 +36,8 @@ BUILD_DIR = build
 ######################################
 # C sources
 C_SOURCES =  \
+Src/printf.c \
+Src/tinyscript.c \
 Src/stm32f1xx_it.c \
 Src/stm32f1xx_hal_msp.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_gpio_ex.c \
@@ -62,11 +64,15 @@ Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_spi.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_tim.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_tim_ex.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_uart.c \
-Src/system_stm32f1xx.c
+Src/system_stm32f1xx.c \
+Src/cppabi.c
 
 CPP_SOURCES = \
 Src/main.cpp \
-Src/FwLogger.cpp
+Src/FwLogger.cpp \
+Src/SDI12_Driver.cpp \
+Src/SPI_Device.cpp \
+SPIFlash.cpp
 
 # ASM sources
 ASM_SOURCES =  \

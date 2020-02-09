@@ -222,21 +222,37 @@
 			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
 		<Unit filename="Inc/FwLogger.h" />
+		<Unit filename="Inc/SDI12_Driver.h" />
+		<Unit filename="Inc/SPIFlash.h" />
+		<Unit filename="Inc/SPI_Device.h" />
+		<Unit filename="Inc/errno.h" />
 		<Unit filename="Inc/main.h">
 			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
+		<Unit filename="Inc/mem_structs.hpp" />
+		<Unit filename="Inc/printf.h" />
 		<Unit filename="Inc/stm32f1xx_hal_conf.h">
 			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
 		<Unit filename="Inc/stm32f1xx_it.h">
 			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
+		<Unit filename="Inc/tinyscript.h" />
 		<Unit filename="Makefile">
 			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
 		<Unit filename="Src/FwLogger.cpp" />
+		<Unit filename="Src/SDI12_Driver.cpp" />
+		<Unit filename="Src/SPIFlash.cpp" />
+		<Unit filename="Src/SPI_Device.cpp" />
+		<Unit filename="Src/cppabi.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="Src/main.cpp">
 			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="Src/printf.c">
+			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="Src/stm32f1xx_hal_msp.c">
 			<Option compilerVar="CC" />
@@ -250,6 +266,9 @@
 			<Option compilerVar="CC" />
 			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
+		<Unit filename="Src/tinyscript.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="startup_stm32f103xe.s" />
 		<Extensions>
 			<code_completion />
@@ -258,10 +277,10 @@
 				<remote_debugging>
 					<options conn_type="0" serial_baud="115200" additional_cmds="set arch arm&#x0A;file build/FLogger.elf&#x0A;load&#x0A;monitor reset halt&#x0A;" additional_cmds_before="tar extended-remote :3333" />
 				</remote_debugging>
-				<remote_debugging target="flash">
+				<remote_debugging target="all">
 					<options conn_type="0" serial_baud="115200" extended_remote="1" />
 				</remote_debugging>
-				<remote_debugging target="all">
+				<remote_debugging target="flash">
 					<options conn_type="0" serial_baud="115200" extended_remote="1" />
 				</remote_debugging>
 			</debugger>

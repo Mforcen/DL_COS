@@ -65,6 +65,8 @@ TIM_HandleTypeDef htim1;
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
 TIM_HandleTypeDef htim4;
+TIM_HandleTypeDef htim6;
+TIM_HandleTypeDef htim7;
 
 UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
@@ -80,9 +82,51 @@ uint8_t rx_char;
 uint8_t transmitting;
 uint8_t command_received;
 
-uint16_t adc1_data[6], adc3_data[6];
+int16_t adc1_data[6], adc3_data[6];
 
 FwLogger logger;
+
+static Val getRawADC(Val port, Val chan)
+{
+	return logger.get_adc_val(6*port+chan);
+}
+
+static Val getADC(Val port, Val chan)
+{
+	return getRawADC(port, chan) * 3300 / 4096;
+}
+
+static Val getJedec(Val whatever)
+{
+	uint8_t data[6];
+	logger.flash.jedecId(data);
+	return 0;
+}
+
+static Val readFlash()
+{
+	logger.flash.readPage(16,0);
+	return 0;
+}
+
+static Val eraseFlash()
+{
+	logger.flash.eraseChip();
+	return 0;
+}
+
+struct def {
+	const char* name;
+	intptr_t val;
+	int nargs;
+} defs[] = {
+	{"getRawADC", (intptr_t) getRawADC, 2},
+	{"getADC", (intptr_t) getADC, 2},
+	{"jedec", (intptr_t) getJedec, 1},
+	{"flash", (intptr_t) readFlash, 0},
+	{"erase", (intptr_t) eraseFlash, 0},
+	{NULL, 0, 0}
+};
 
 /* USER CODE END PV */
 
@@ -104,6 +148,8 @@ static void MX_TIM1_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_TIM3_Init(void);
 static void MX_TIM4_Init(void);
+static void MX_TIM6_Init(void);
+static void MX_TIM7_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_USART3_UART_Init(void);
@@ -111,6 +157,7 @@ static void MX_USART3_UART_Init(void);
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart);
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart);
+uint16_t getUS();
 
 /* USER CODE END PFP */
 
@@ -163,6 +210,8 @@ int main(void)
 	MX_TIM2_Init();
 	MX_TIM3_Init();
 	MX_TIM4_Init();
+	MX_TIM6_Init();
+	MX_TIM7_Init();
 	MX_USART1_UART_Init();
 	MX_USART2_UART_Init();
 	MX_USART3_UART_Init();
@@ -178,11 +227,19 @@ int main(void)
 	HAL_UART_Receive_IT(&huart1, &rx_char, 1);
 
 	uint32_t last_tick = 0;
+
 	transmitting = 0;
 	command_received = 0;
 
 	HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc1_data, 6);
 	HAL_ADC_Start_DMA(&hadc3, (uint32_t*)adc3_data, 6);
+
+	HAL_TIM_Base_Start_IT(&htim6);
+
+	for(int i = 0; defs[i].name; ++i)
+		TinyScript_Define(defs[i].name, CFUNC(defs[i].nargs), defs[i].val);
+	logger.enablePower(1);
+
 	/* USER CODE END 2 */
 
 
@@ -191,28 +248,29 @@ int main(void)
 	/* USER CODE BEGIN WHILE */
 	while (1)
 	{
-		if(HAL_GetTick()-last_tick > 1000)
+		/*if(HAL_GetTick()-last_tick > 1000)
 		{
 			HAL_GPIO_TogglePin(GPIOE, GPIO_PIN_1);
 			last_tick = HAL_GetTick();
-		}
+		}*/
 
 		if(command_received)
 		{
 			command_received = 0;
 			logger.eval(rx_buffer.buf);
-			rx_buffer.reset();
+			rx_buffer.clear();
 		}
 
 		uint8_t ph;
 		if(!transmitting) // esto se podría ver como un flush
 		{
-			if(tx_buffer.pop(&ph) == 0)
+			if(tx_buffer.pop_front(&ph) == 0)
 			{
 				HAL_UART_Transmit_IT(&huart1, &ph, 1);
 				transmitting = 1;
 			}
 		}
+		logger.loop();
 		/* USER CODE END WHILE */
 
 		/* USER CODE BEGIN 3 */
@@ -874,7 +932,6 @@ static void MX_TIM3_Init(void)
 	/* USER CODE END TIM3_Init 0 */
 
 	TIM_MasterConfigTypeDef sMasterConfig = {0};
-	TIM_OC_InitTypeDef sConfigOC = {0};
 
 	/* USER CODE BEGIN TIM3_Init 1 */
 
@@ -892,14 +949,6 @@ static void MX_TIM3_Init(void)
 	sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
 	sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
 	if (HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig) != HAL_OK)
-	{
-		Error_Handler();
-	}
-	sConfigOC.OCMode = TIM_OCMODE_PWM1;
-	sConfigOC.Pulse = 0;
-	sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
-	sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-	if (HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
 	{
 		Error_Handler();
 	}
@@ -956,6 +1005,82 @@ static void MX_TIM4_Init(void)
 
 	/* USER CODE END TIM4_Init 2 */
 	HAL_TIM_MspPostInit(&htim4);
+
+}
+
+/**
+  * @brief TIM6 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM6_Init(void)
+{
+
+	/* USER CODE BEGIN TIM6_Init 0 */
+
+	/* USER CODE END TIM6_Init 0 */
+
+	TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+	/* USER CODE BEGIN TIM6_Init 1 */
+
+	/* USER CODE END TIM6_Init 1 */
+	htim6.Instance = TIM6;
+	htim6.Init.Prescaler = 132;
+	htim6.Init.CounterMode = TIM_COUNTERMODE_UP;
+	htim6.Init.Period = 401;
+	htim6.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+	if (HAL_TIM_Base_Init(&htim6) != HAL_OK)
+	{
+		Error_Handler();
+	}
+	sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+	sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+	if (HAL_TIMEx_MasterConfigSynchronization(&htim6, &sMasterConfig) != HAL_OK)
+	{
+		Error_Handler();
+	}
+	/* USER CODE BEGIN TIM6_Init 2 */
+
+	/* USER CODE END TIM6_Init 2 */
+
+}
+
+/**
+  * @brief TIM7 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM7_Init(void)
+{
+
+	/* USER CODE BEGIN TIM6_Init 0 */
+
+	/* USER CODE END TIM6_Init 0 */
+
+	TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+	/* USER CODE BEGIN TIM6_Init 1 */
+
+	/* USER CODE END TIM6_Init 1 */
+	htim7.Instance = TIM7;
+	htim7.Init.Prescaler = 64;
+	htim7.Init.CounterMode = TIM_COUNTERMODE_UP;
+	htim7.Init.Period = 0xffff;
+	htim7.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+	if (HAL_TIM_Base_Init(&htim7) != HAL_OK)
+	{
+		Error_Handler();
+	}
+	sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+	sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+	if (HAL_TIMEx_MasterConfigSynchronization(&htim7, &sMasterConfig) != HAL_OK)
+	{
+		Error_Handler();
+	}
+	/* USER CODE BEGIN TIM6_Init 2 */
+
+	/* USER CODE END TIM6_Init 2 */
 
 }
 
@@ -1067,6 +1192,7 @@ static void MX_DMA_Init(void)
 
 	/* DMA controller clock enable */
 	__HAL_RCC_DMA1_CLK_ENABLE();
+	__HAL_RCC_DMA2_CLK_ENABLE();
 
 	/* DMA interrupt init */
 	/* DMA1_Channel2_IRQn interrupt configuration */
@@ -1084,7 +1210,9 @@ static void MX_DMA_Init(void)
 	/* DMA1_Channel7_IRQn interrupt configuration */
 	HAL_NVIC_SetPriority(DMA1_Channel7_IRQn, 0, 0);
 	HAL_NVIC_EnableIRQ(DMA1_Channel7_IRQn);
-
+	 /* DMA2_Channel4_5_IRQn interrupt configuration */
+	 HAL_NVIC_SetPriority(DMA2_Channel4_5_IRQn, 0, 0);
+	 HAL_NVIC_EnableIRQ(DMA2_Channel4_5_IRQn);
 }
 
 /**
@@ -1107,12 +1235,13 @@ static void MX_GPIO_Init(void)
 	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2|GPIO_PIN_12, GPIO_PIN_RESET);
 
 	/*Configure GPIO pin Output Level */
-	HAL_GPIO_WritePin(GPIOE, GPIO_PIN_7|GPIO_PIN_8|GPIO_PIN_10|GPIO_PIN_11
-	                  |GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOE, GPIO_PIN_7|GPIO_PIN_8|GPIO_PIN_10|GPIO_PIN_11 |GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15, GPIO_PIN_RESET);
 
 	/*Configure GPIO pin Output Level */
-	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_10|GPIO_PIN_11|GPIO_PIN_13|GPIO_PIN_14
-	                  |GPIO_PIN_15|GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_3, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_10|GPIO_PIN_11|GPIO_PIN_13|GPIO_PIN_14 |GPIO_PIN_15|GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_3, GPIO_PIN_RESET);
+
+	/*Configure GPIO for CS pins*/
+	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_0, GPIO_PIN_SET);
 
 	/*Configure GPIO pin Output Level */
 	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET);
@@ -1120,8 +1249,7 @@ static void MX_GPIO_Init(void)
 	/*Configure GPIO pin Output Level */
 	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_RESET);
 
-	/*Configure GPIO pins : PE2 PE3 PE4 PE5
-	                         PE6 PE0 PE1 */
+	/*Configure GPIO pins : PE2 PE3 PE4 PE5 PE6 PE0 PE1 */
 	GPIO_InitStruct.Pin = GPIO_PIN_2|GPIO_PIN_3|GPIO_PIN_4|GPIO_PIN_5
 	                      |GPIO_PIN_6|GPIO_PIN_0|GPIO_PIN_1;
 	GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
@@ -1141,8 +1269,7 @@ static void MX_GPIO_Init(void)
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-	/*Configure GPIO pins : PE7 PE8 PE10 PE11
-	                         PE12 PE13 PE14 PE15 */
+	/*Configure GPIO pins : PE7 PE8 PE10 PE11 PE12 PE13 PE14 PE15 */
 	GPIO_InitStruct.Pin = GPIO_PIN_7|GPIO_PIN_8|GPIO_PIN_10|GPIO_PIN_11
 	                      |GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15;
 	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
@@ -1150,17 +1277,21 @@ static void MX_GPIO_Init(void)
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 	HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
-	/*Configure GPIO pins : PD10 PD11 PD13 PD14
-	                         PD15 PD0 PD1 PD3 */
+	/*Configure GPIO pins : PD10 PD11 PD13 PD14 PD15 PD1 PD3 */
 	GPIO_InitStruct.Pin = GPIO_PIN_10|GPIO_PIN_11|GPIO_PIN_13|GPIO_PIN_14
-	                      |GPIO_PIN_15|GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_3;
+	                      |GPIO_PIN_15|GPIO_PIN_1|GPIO_PIN_3;
 	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 	HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
+	/* Añadido para darle alta frecuencia al CS de la Flash*/
+	GPIO_InitStruct.Pin = GPIO_PIN_0;
+	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+	HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+
 	/*Configure GPIO pin : PC7 */
-	GPIO_InitStruct.Pin = GPIO_PIN_7;
+	GPIO_InitStruct.Pin = GPIO_PIN_6 | GPIO_PIN_7;
 	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -1190,18 +1321,53 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-	rx_buffer.push(rx_char);
-	tx_buffer.push(rx_char);
+	rx_buffer.push_back(rx_char);
+	tx_buffer.push_back(rx_char);
+	if(rx_char == '\n')
+		command_received = 1;
 	HAL_UART_Receive_IT(huart, &rx_char, 1);
 }
 
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 {
 	uint8_t ph;
-	if(tx_buffer.pop(&ph) == 0)
+	if(tx_buffer.pop_front(&ph) == 0)
 		HAL_UART_Transmit_IT(huart, &ph, 1);
 	else
 		transmitting = 0;
+}
+
+void outchar(int c)
+{
+	logger.write(0, (void*) (&c), 1);
+}
+
+void _putchar(char c)
+{
+	logger.write(0, (void*) (&c), 1);
+}
+
+uint16_t getUS()
+{
+	return htim7.Instance->CNT;
+}
+
+void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef* hspi)
+{
+	if(hspi->Instance == SPI1)
+		SPI_Device::CpltCallback();
+}
+
+void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef* hspi)
+{
+	if(hspi->Instance == SPI1)
+		SPI_Device::CpltCallback();
+}
+
+void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef* hspi)
+{
+	if(hspi->Instance == SPI1)
+		SPI_Device::CpltCallback();
 }
 
 /* USER CODE END 4 */

@@ -2,24 +2,24 @@
 <CodeBlocks_layout_file>
 	<FileVersion major="1" minor="0" />
 	<ActiveTarget name="all" />
-	<File name="Src/main.cpp" open="1" top="1" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_cortex.h" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="9824" topLine="249" />
+			<Cursor1 position="10410" topLine="225" />
 		</Cursor>
 	</File>
-	<File name="Inc/FwLogger.h" open="1" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="startup_stm32f103xe.s" open="0" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="587" topLine="0" />
+			<Cursor1 position="5601" topLine="139" />
 		</Cursor>
 	</File>
-	<File name="Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dma.c" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="Src/cppabi.c" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="1091" topLine="0" />
+			<Cursor1 position="40" topLine="0" />
 		</Cursor>
 	</File>
-	<File name="Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_adc.c" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_spi.h" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="81260" topLine="1972" />
+			<Cursor1 position="32341" topLine="650" />
 		</Cursor>
 	</File>
 	<File name="Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_uart.c" open="0" top="0" tabpos="7" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
@@ -27,14 +27,34 @@
 			<Cursor1 position="79322" topLine="2127" />
 		</Cursor>
 	</File>
-	<File name="Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_adc_ex.c" open="0" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal.c" open="0" top="0" tabpos="7" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="1721" topLine="75" />
+			<Cursor1 position="9930" topLine="229" />
 		</Cursor>
 	</File>
-	<File name="Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_adc.h" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="Src/FwLogger.cpp" open="1" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="3046" topLine="120" />
+			<Cursor1 position="157" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="Src/stm32f1xx_it.c" open="0" top="0" tabpos="8" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="9322" topLine="219" />
+		</Cursor>
+	</File>
+	<File name="Inc/mem_structs.hpp" open="0" top="0" tabpos="8" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="648" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim.h" open="0" top="0" tabpos="10" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="15471" topLine="285" />
+		</Cursor>
+	</File>
+	<File name="Src/SPIFlash.cpp" open="1" top="0" tabpos="8" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="3382" topLine="127" />
 		</Cursor>
 	</File>
 	<File name="Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h" open="0" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
@@ -42,9 +62,14 @@
 			<Cursor1 position="14660" topLine="263" />
 		</Cursor>
 	</File>
-	<File name="Src/stm32f1xx_it.c" open="0" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_adc.h" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="8033" topLine="166" />
+			<Cursor1 position="3046" topLine="120" />
+		</Cursor>
+	</File>
+	<File name="Src/tinyscript.c" open="0" top="0" tabpos="8" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="2268" topLine="42" />
 		</Cursor>
 	</File>
 	<File name="Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_dma_ex.h" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
@@ -52,34 +77,89 @@
 			<Cursor1 position="12842" topLine="200" />
 		</Cursor>
 	</File>
-	<File name="Src/stm32f1xx_hal_msp.c" open="1" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="Src/stm32f1xx_hal_msp.c" open="0" top="0" tabpos="9" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="5201" topLine="127" />
+			<Cursor1 position="21391" topLine="792" />
 		</Cursor>
 	</File>
-	<File name="Makefile" open="1" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="Src/SDI12_Driver.cpp" open="0" top="0" tabpos="7" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="4755" topLine="105" />
+			<Cursor1 position="459" topLine="0" />
 		</Cursor>
 	</File>
-	<File name="Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal.c" open="1" top="0" tabpos="7" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="9930" topLine="229" />
-		</Cursor>
-	</File>
-	<File name="Inc/main.h" open="1" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="Inc/main.h" open="0" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
 			<Cursor1 position="1483" topLine="0" />
 		</Cursor>
 	</File>
-	<File name="Src/FwLogger.cpp" open="1" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dma.c" open="1" top="0" tabpos="10" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="161" topLine="0" />
+			<Cursor1 position="20823" topLine="583" />
 		</Cursor>
 	</File>
-	<File name="startup_stm32f103xe.s" open="0" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_gpio.c" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="3176" topLine="24" />
+			<Cursor1 position="20690" topLine="496" />
+		</Cursor>
+	</File>
+	<File name="Makefile" open="1" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="2720" topLine="39" />
+		</Cursor>
+	</File>
+	<File name="Inc/SPIFlash.h" open="1" top="0" tabpos="7" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="703" topLine="29" />
+		</Cursor>
+	</File>
+	<File name="Inc/errno.h" open="1" top="0" tabpos="9" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="253" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="0" topLine="318" />
+		</Cursor>
+	</File>
+	<File name="Inc/SDI12_Driver.h" open="0" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="814" topLine="9" />
+		</Cursor>
+	</File>
+	<File name="Inc/SPI_Device.h" open="1" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="111" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_adc.c" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="23749" topLine="491" />
+		</Cursor>
+	</File>
+	<File name="Inc/tinyscript.h" open="0" top="0" tabpos="7" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1797" topLine="52" />
+		</Cursor>
+	</File>
+	<File name="Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_adc_ex.c" open="0" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1721" topLine="75" />
+		</Cursor>
+	</File>
+	<File name="Src/main.cpp" open="1" top="1" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="33245" topLine="1340" />
+		</Cursor>
+	</File>
+	<File name="Src/SPI_Device.cpp" open="1" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1215" topLine="24" />
+		</Cursor>
+	</File>
+	<File name="Inc/FwLogger.h" open="1" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1701" topLine="42" />
 		</Cursor>
 	</File>
 </CodeBlocks_layout_file>
