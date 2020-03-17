@@ -9,6 +9,10 @@
 
 #include "stm32f1xx_hal.h"
 #include "SPIFlash.h"
+#include "eTSDB.hpp"
+#include "LoRa.h"
+
+#include "SDI12_Driver.h"
 
 #include "errno.h"
 
@@ -53,7 +57,20 @@
 #define IO29 GPIOD,GPIO_PIN_15
 #define IO210 GPIOB,GPIO_PIN_12
 
+#define SDI12_1 GPIOC,GPIO_PIN_14
+#define SDI12_2 GPIOC,GPIO_PIN_15
+#define SDI12_OE GPIOA,GPIO_PIN_15
+
 #define FLASH_CS IO20
+
+#define LORA_CS		IO22
+#define LORA_DIO0	IO23
+#define LORA_DIO1	IO24
+#define LORA_DIO2	IO25
+#define LORA_DIO3	IO26
+#define LORA_TXEN	IO27
+#define LORA_RXEN	IO28
+#define LORA_RST	IO21
 
 extern ADC_HandleTypeDef hadc1;
 extern ADC_HandleTypeDef hadc3;
@@ -79,8 +96,8 @@ extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim3;
 extern TIM_HandleTypeDef htim4;
-extern TIM_HandleTypeDef htim6;
-extern TIM_HandleTypeDef htim7;
+extern TIM_HandleTypeDef htim6; // SDI12 Timer
+extern TIM_HandleTypeDef htim7; // uS timer
 
 extern UART_HandleTypeDef huart1;
 extern UART_HandleTypeDef huart2;
@@ -98,6 +115,8 @@ class FwLogger
 		//static FwLogger* getInstance();
 		FwLogger();
 
+		void init();
+
 		void loop();
 		void eval(uint8_t* input_str);
 		int open(char* path, int oflag);
@@ -107,8 +126,12 @@ class FwLogger
 		int16_t get_adc_val(int channel);
 
 		void enablePower(int enable);
-		SPIFlash flash;
 
+		SPIFlash flash;
+		eTSDB::Driver etsdb;
+		SDI12_Driver sdi12;
+
+		LoRa radio;
 	protected:
 
 	private:

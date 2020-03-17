@@ -24,6 +24,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "FwLogger.h"
+#include "eTSDB.hpp"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -82,6 +83,9 @@ uint8_t rx_char;
 uint8_t transmitting;
 uint8_t command_received;
 
+eTSDB::HeaderPage hp;
+eTSDB::DataPage dp;
+
 int16_t adc1_data[6], adc3_data[6];
 
 FwLogger logger;
@@ -103,15 +107,161 @@ static Val getJedec(Val whatever)
 	return 0;
 }
 
-static Val readFlash()
+static Val readFlash(Val addr, Val len)
 {
-	logger.flash.readPage(16,0);
+	logger.flash.readPage(len,addr);
+	HAL_Delay(1);
+	logger.flash.poll();
+	for(int i = 0; i < len; ++i)
+	{
+		printf_("%0x ", logger.flash.pop());
+	}
+	printf_("\n");
+	return 0;
+}
+
+static Val unlockDriver()
+{
+	logger.etsdb.unlock();
 	return 0;
 }
 
 static Val eraseFlash()
 {
 	logger.flash.eraseChip();
+	return 0;
+}
+
+static Val writeFlash()
+{
+	uint8_t data[] = {0xaa, 0xaa, 0xaa, 0xaa};
+	logger.flash.writePage(data, 4, 0);
+	return 0;
+}
+
+static Val createHeader()
+{
+	eTSDB::Format formats[2];
+	formats[0] = eTSDB::Format::Uint32;
+	formats[1] = eTSDB::Format::Invalid;
+
+	uint8_t** colNames;
+	uint8_t colName[] = "cola";
+	colNames = (uint8_t**)&colName;
+
+	logger.etsdb.createHeader((uint8_t*)"hola", 30, 1, formats, colNames);
+	return 0;
+}
+
+static Val getHeader()
+{
+	eTSDB::HeaderPage* hptr = static_cast<eTSDB::HeaderPage*>(logger.etsdb.getPage());
+	if(hptr == nullptr) printf_("Error getting header page\n");
+	else hp.copy(hptr);
+	return 0;
+}
+
+static Val createDataPage()
+{
+	eTSDB::Date date(2020,2, 2, 2, 0, 0);
+	logger.etsdb.createDataPage(hp, date);
+	return 0;
+}
+
+static Val getDataPage()
+{
+	eTSDB::DataPage* dptr = static_cast<eTSDB::DataPage*>(logger.etsdb.getPage());
+	if(dptr == nullptr) printf_("Error getting data page\n");
+	else dp.copy(dptr);
+	return 0;
+}
+
+static Val appendValue()
+{
+	eTSDB::Row row;
+	row.clear();
+	row.rowDate = eTSDB::Date(2020,2, 2, 2, 0, 0);
+	row.vals[0].format = eTSDB::Format::Uint32;
+	row.vals[0].data._uint32 = 0x12345678;
+	if(logger.etsdb.appendValue(dp, row)!= eTSDB::RetValue::Ok) printf_("Append error\n");
+	return 0;
+}
+
+static Val power(Val val)
+{
+	if(val == 1) logger.enablePower(1);
+	else logger.enablePower(0);
+	return 0;
+}
+
+static Val sdi12Ask()
+{
+	uint8_t buf[3];
+	buf[0] = '?';
+	buf[1] = '!';
+	buf[2] = 0;
+	logger.sdi12.write(buf);
+	return 0;
+}
+
+static Val sdi12Read()
+{
+	for(int i = 0; i < 128; ++i)
+	{
+		if(logger.sdi12.available())
+		{
+			uint8_t c;
+			if(logger.sdi12.pop_front(&c) != 0) break;
+			printf_("%c", c);
+		}
+		else break;
+	}
+	return 0;
+}
+
+static Val sdi12High()
+{
+	HAL_GPIO_WritePin(SDI12_1, GPIO_PIN_SET);
+	return 0;
+}
+
+static Val sdi12Low()
+{
+	HAL_GPIO_WritePin(SDI12_1, GPIO_PIN_RESET);
+	return 0;
+}
+
+static Val sdiOeHigh()
+{
+	HAL_GPIO_WritePin(SDI12_OE, GPIO_PIN_SET);
+	return 0;
+}
+
+static Val sdiOeLow()
+{
+	HAL_GPIO_WritePin(SDI12_OE, GPIO_PIN_RESET);
+	return 0;
+}
+
+static Val getUSTerm()
+{
+	return getUS();
+}
+
+static Val getLoRaVer()
+{
+	return logger.radio.getChipVersion();
+}
+
+static Val sendLoRa()
+{
+	if(logger.radio.send(12, (const uint8_t*)"holacaracola")) printf_("error\n");
+	return 0;
+}
+
+static Val unLockRa()
+{
+	logger.radio.unlock();
 	return 0;
 }
 
@@ -123,8 +273,26 @@ struct def {
 	{"getRawADC", (intptr_t) getRawADC, 2},
 	{"getADC", (intptr_t) getADC, 2},
 	{"jedec", (intptr_t) getJedec, 1},
-	{"flash", (intptr_t) readFlash, 0},
+	{"read", (intptr_t) readFlash, 2},
+	{"unlock", (intptr_t) unlockDriver, 0},
 	{"erase", (intptr_t) eraseFlash, 0},
+	{"write", (intptr_t) writeFlash, 0},
+	{"getUS", (intptr_t) getUSTerm, 0},
+	{"createHeader", (intptr_t) createHeader, 0},
+	{"getHeader", (intptr_t) getHeader, 0},
+	{"createDataPage", (intptr_t) createDataPage, 0},
+	{"getDataPage", (intptr_t) getDataPage, 0},
+	{"appendValue", (intptr_t) appendValue, 0},
+	{"power", (intptr_t) power, 1},
+	{"sdiRead", (intptr_t) sdi12Read, 0},
+	{"sdiAsk", (intptr_t) sdi12Ask, 0},
+	{"sdiHigh", (intptr_t) sdi12High, 0},
+	{"sdiLow", (intptr_t) sdi12Low, 0},
+	{"sdiOeHigh", (intptr_t) sdiOeHigh, 0},
+	{"sdiOeLow", (intptr_t) sdiOeLow, 0},
+	{"getLoRaVersion", (intptr_t)getLoRaVer, 0},
+	{"sendLoRa", (intptr_t) sendLoRa, 0},
+	{"unLockRa", (intptr_t) unLockRa, 0},
 	{NULL, 0, 0}
 };
 
@@ -226,6 +394,14 @@ int main(void)
 
 	HAL_UART_Receive_IT(&huart1, &rx_char, 1);
 
+	GPIO_InitStruct.Pin = GPIO_PIN_15;
+	HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+	GPIO_InitStruct.Pin = GPIO_PIN_14;
+	HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_SET);
+
 	uint32_t last_tick = 0;
 
 	transmitting = 0;
@@ -238,6 +414,11 @@ int main(void)
 
 	for(int i = 0; defs[i].name; ++i)
 		TinyScript_Define(defs[i].name, CFUNC(defs[i].nargs), defs[i].val);
+	logger.enablePower(1);
+	logger.init();
+
+	HAL_TIM_Base_Start(&htim7);
+
 	logger.enablePower(1);
 
 	/* USER CODE END 2 */
@@ -1028,7 +1209,7 @@ static void MX_TIM6_Init(void)
 	htim6.Instance = TIM6;
 	htim6.Init.Prescaler = 132;
 	htim6.Init.CounterMode = TIM_COUNTERMODE_UP;
-	htim6.Init.Period = 401;
+	htim6.Init.Period = 404;
 	htim6.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
 	if (HAL_TIM_Base_Init(&htim6) != HAL_OK)
 	{
@@ -1232,63 +1413,70 @@ static void MX_GPIO_Init(void)
 	__HAL_RCC_GPIOD_CLK_ENABLE();
 
 	/*Configure GPIO pin Output Level */
-	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2|GPIO_PIN_12, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2 | GPIO_PIN_12, GPIO_PIN_RESET);
 
 	/*Configure GPIO pin Output Level */
-	HAL_GPIO_WritePin(GPIOE, GPIO_PIN_7|GPIO_PIN_8|GPIO_PIN_10|GPIO_PIN_11 |GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOE, GPIO_PIN_7 | GPIO_PIN_8 | GPIO_PIN_10 | GPIO_PIN_11 | GPIO_PIN_12 | GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15, GPIO_PIN_RESET);
 
-	/*Configure GPIO pin Output Level */
-	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_10|GPIO_PIN_11|GPIO_PIN_13|GPIO_PIN_14 |GPIO_PIN_15|GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_3, GPIO_PIN_RESET);
+	/*Configure GPIO pin Output Level (D1->LoRa RST, D13->LoRa TXEN, D14->LoRaRXEN) */
+	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_1 | GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15, GPIO_PIN_RESET);
 
-	/*Configure GPIO for CS pins*/
-	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_0, GPIO_PIN_SET);
+	/*Configure GPIO for CS pins (0 Flash, 3 LoRa)*/
+	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_0 | GPIO_PIN_3, GPIO_PIN_SET); // reset
 
 	/*Configure GPIO pin Output Level */
 	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET);
 
 	/*Configure GPIO pin Output Level */
-	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8 | GPIO_PIN_15, GPIO_PIN_RESET);
 
 	/*Configure GPIO pins : PE2 PE3 PE4 PE5 PE6 PE0 PE1 */
-	GPIO_InitStruct.Pin = GPIO_PIN_2|GPIO_PIN_3|GPIO_PIN_4|GPIO_PIN_5
-	                      |GPIO_PIN_6|GPIO_PIN_0|GPIO_PIN_1;
+	GPIO_InitStruct.Pin = GPIO_PIN_2 |GPIO_PIN_3 | GPIO_PIN_4 | GPIO_PIN_5
+	                      |GPIO_PIN_6|GPIO_PIN_0 | GPIO_PIN_1;
 	GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
 	/*Configure GPIO pins : PC13 PC14 PC15 */
-	GPIO_InitStruct.Pin = GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15;
+	GPIO_InitStruct.Pin = GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15;
 	GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
 	/*Configure GPIO pins : PB2 PB12 */
-	GPIO_InitStruct.Pin = GPIO_PIN_2|GPIO_PIN_12;
+	GPIO_InitStruct.Pin = GPIO_PIN_2 | GPIO_PIN_12;
 	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
 	/*Configure GPIO pins : PE7 PE8 PE10 PE11 PE12 PE13 PE14 PE15 */
-	GPIO_InitStruct.Pin = GPIO_PIN_7|GPIO_PIN_8|GPIO_PIN_10|GPIO_PIN_11
-	                      |GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15;
+	GPIO_InitStruct.Pin =  GPIO_PIN_7 | GPIO_PIN_8 | GPIO_PIN_10 | GPIO_PIN_11
+	                      |GPIO_PIN_12|GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15;
 	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 	HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
-	/*Configure GPIO pins : PD10 PD11 PD13 PD14 PD15 PD1 PD3 */
-	GPIO_InitStruct.Pin = GPIO_PIN_10|GPIO_PIN_11|GPIO_PIN_13|GPIO_PIN_14
-	                      |GPIO_PIN_15|GPIO_PIN_1|GPIO_PIN_3;
+	/*Configure GPIO pins : PD1(LoRaRST) PD3(LoRaCS) PD13 PD14 PD15*/
+	GPIO_InitStruct.Pin = GPIO_PIN_1 | GPIO_PIN_3 | GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15 ;
 	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 	HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
-	/* Añadido para darle alta frecuencia al CS de la Flash*/
-	GPIO_InitStruct.Pin = GPIO_PIN_0;
+	/* Añadido para darle alta frecuencia al CS de la Flash y el LoRa*/
+	GPIO_InitStruct.Pin = GPIO_PIN_0 | GPIO_PIN_3;
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
 	HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+
+	/* Pines de entrada para los DIO del LoRa */
+	GPIO_InitStruct.Pin = GPIO_PIN_4;// | GPIO_PIN_7 | GPIO_PIN_10 | GPIO_PIN_11;
+	GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+	HAL_NVIC_SetPriority(EXTI4_IRQn, 0, 0);
+	HAL_NVIC_EnableIRQ(EXTI4_IRQn);
 
 	/*Configure GPIO pin : PC7 */
 	GPIO_InitStruct.Pin = GPIO_PIN_6 | GPIO_PIN_7;
@@ -1297,34 +1485,35 @@ static void MX_GPIO_Init(void)
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 	HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-	/*Configure GPIO pin : PA8 */
-	GPIO_InitStruct.Pin = GPIO_PIN_8;
+	/*Configure GPIO pin : PA8 PA15*/
+	GPIO_InitStruct.Pin = GPIO_PIN_8 | GPIO_PIN_15;
 	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 	HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
 	/*Configure GPIO pins : PD4 PD7 */
-	GPIO_InitStruct.Pin = GPIO_PIN_4|GPIO_PIN_7;
+	GPIO_InitStruct.Pin = GPIO_PIN_4 | GPIO_PIN_7;
 	GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
 	/*Configure GPIO pins : PB8 PB9 */
-	GPIO_InitStruct.Pin = GPIO_PIN_8|GPIO_PIN_9;
+	GPIO_InitStruct.Pin = GPIO_PIN_8 | GPIO_PIN_9;
 	GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
 }
 
 /* USER CODE BEGIN 4 */
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-	rx_buffer.push_back(rx_char);
+	if(rx_char == 0x08) rx_buffer.buf[--rx_buffer.idx] = 0; // borrar uno
+	else rx_buffer.push_back(rx_char);
 	tx_buffer.push_back(rx_char);
-	if(rx_char == '\n')
-		command_received = 1;
+
+	if(rx_char == '\n') command_received = 1;
+
 	HAL_UART_Receive_IT(huart, &rx_char, 1);
 }
 
@@ -1368,6 +1557,21 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef* hspi)
 {
 	if(hspi->Instance == SPI1)
 		SPI_Device::CpltCallback();
+}
+
+void sdi12_Isr()
+{
+	logger.sdi12.timer_isr();
+}
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+	if(GPIO_Pin == GPIO_PIN_14)
+		logger.sdi12.pin_isr();
+	else if(GPIO_Pin == GPIO_PIN_15)
+		logger.sdi12.pin_isr();
+	else if(GPIO_Pin == GPIO_PIN_4)
+		logger.radio.isrDIO(0);
 }
 
 /* USER CODE END 4 */

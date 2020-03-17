@@ -1,15 +1,23 @@
 #include "FwLogger.h"
 
-FwLogger::FwLogger():flash(&hspi1, FLASH_CS)
+FwLogger::FwLogger():flash(&hspi1, FLASH_CS), etsdb(0, 4096*1024, &hspi1, FLASH_CS), sdi12(SDI12_1),
+radio(&hspi1, LORA_DIO0, LORA_DIO1, LORA_DIO2, LORA_DIO3, LORA_RXEN, LORA_TXEN, LORA_CS, LORA_RST)
 {
 	TinyScript_Init(ts_inter_arena, 4096);
 	errno = 0;
 	//ctor
 }
 
+void FwLogger::init()
+{
+	radio.init(868000000);
+}
+
 void FwLogger::loop()
 {
-	flash.pollNextAction();
+	etsdb.poll(); // esto sería interesante pasarlo a estático
+	flash.poll();
+	radio.poll();
 }
 
 void FwLogger::eval(uint8_t* input_str)

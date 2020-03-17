@@ -3,22 +3,21 @@
 
 #include "SPI_Device.h"
 
-uint16_t getUS();
-
 class SPIFlash : public SPI_Device
 {
 	public:
 		SPIFlash(SPI_HandleTypeDef* hspi, GPIO_TypeDef* gpio, uint16_t pin);
-		int writePage(uint8_t* data, uint8_t len, uint32_t addr);
-		int readPage(uint8_t len, uint32_t addr);
+		int writePage(uint8_t* data, uint16_t len, uint32_t addr);
+		int readPage(uint16_t len, uint32_t addr);
 		int eraseSector(uint32_t addr);
 		int eraseChip();
 		int jedecId(uint8_t* data);
 		int powerDown();
 		int wakeUp();
 
-		void CpltCallbackModule();
-		void pollNextAction();
+		void ISR();
+		virtual void flashModuleISR();
+		void poll();
 
 		int available();
 		int peek();
@@ -29,7 +28,7 @@ class SPIFlash : public SPI_Device
 		GPIO_TypeDef* _gpio;
 		uint16_t _pin;
 
-		enum NextAction
+		enum Action
 		{
 			None,
 			WENDelay,
@@ -44,10 +43,10 @@ class SPIFlash : public SPI_Device
 		uint8_t _rx_status[2];
 		uint8_t _tx_status[2];
 
-		uint8_t tx_buffer[260];
+		uint8_t tx_buffer[330];
 		int16_t tx_size;
 
-		uint8_t rx_buffer[260];
+		uint8_t rx_buffer[330];
 		uint16_t rx_idx;
 		uint16_t rx_size;
 
@@ -60,6 +59,7 @@ class SPIFlash : public SPI_Device
 
 		void readStatus(int statusreg);
 		void writeStatus(uint16_t status);
+		bool _isr_launched = false;
 };
 
 #endif // SPIFLASH_H

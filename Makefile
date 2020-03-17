@@ -72,7 +72,10 @@ Src/main.cpp \
 Src/FwLogger.cpp \
 Src/SDI12_Driver.cpp \
 Src/SPI_Device.cpp \
-SPIFlash.cpp
+Src/SPIFlash.cpp \
+Src/eTSDB_Driver.cpp \
+Src/eTSDB_Pages.cpp \
+Src/LoRa.cpp
 
 # ASM sources
 ASM_SOURCES =  \

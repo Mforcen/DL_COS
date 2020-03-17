@@ -10,13 +10,13 @@ class SDI12_Driver
 {
 	public:
 		SDI12_Driver(GPIO_TypeDef* gpio, uint32_t pin);
-		virtual ~SDI12_Driver();
 		int available();
 		int pop_front(uint8_t* ph);
 		int write(uint8_t* cmd);
 
 		void timer_isr();
 		void pin_isr();
+		void setFudge(uint8_t fudge);
 
 
 		enum SDI12Status
@@ -25,7 +25,6 @@ class SDI12_Driver
 			Breaking,
 			MarkingTx,
 			MarkingRx,
-			Holding,
 			Receiving,
 			Transmitting
 		};
@@ -46,12 +45,13 @@ class SDI12_Driver
 
 		int _error;
 		int _counter;
+		int _last_rx_counter;
 
 		uint8_t parity_even(uint8_t byte);
 
 		uint8_t rx_char;
 		uint32_t last_rx;
-		const static uint8_t rxFudge = 0;
+		const static uint8_t rxFudge = 75;
 };
 
 #endif // SDI12_DRIVER_H

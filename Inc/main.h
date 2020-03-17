@@ -62,7 +62,7 @@ void Error_Handler(void);
 
 /* Private defines -----------------------------------------------------------*/
 /* USER CODE BEGIN Private defines */
-
+void sdi12_Isr();
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

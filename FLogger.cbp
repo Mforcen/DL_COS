@@ -8,9 +8,11 @@
 		<Option compiler="gnu_gcc_compiler_for_arm_mcu" />
 		<Build>
 			<Target title="all">
-				<Option output="FLogger" prefix_auto="1" extension_auto="1" />
-				<Option type="0" />
+				<Option output="FLogger" prefix_auto="0" extension_auto="0" />
+				<Option object_output="/home/forcen/Nextcloud/Proyectos/FLogger/.objs" />
+				<Option type="1" />
 				<Option compiler="gnu_gcc_compiler_for_arm_mcu" />
+				<Option use_console_runner="0" />
 				<Compiler>
 					<Add directory="include" />
 					<Add directory="Inc" />
@@ -222,9 +224,14 @@
 			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
 		<Unit filename="Inc/FwLogger.h" />
+		<Unit filename="Inc/LoRa.h" />
 		<Unit filename="Inc/SDI12_Driver.h" />
 		<Unit filename="Inc/SPIFlash.h" />
 		<Unit filename="Inc/SPI_Device.h" />
+		<Unit filename="Inc/eTSDB.hpp" />
+		<Unit filename="Inc/eTSDB_Driver.hpp" />
+		<Unit filename="Inc/eTSDB_Pages.hpp" />
+		<Unit filename="Inc/eTSDB_Utils.hpp" />
 		<Unit filename="Inc/errno.h" />
 		<Unit filename="Inc/main.h">
 			<Option target="&lt;{~None~}&gt;" />
@@ -242,12 +249,15 @@
 			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
 		<Unit filename="Src/FwLogger.cpp" />
+		<Unit filename="Src/LoRa.cpp" />
 		<Unit filename="Src/SDI12_Driver.cpp" />
 		<Unit filename="Src/SPIFlash.cpp" />
 		<Unit filename="Src/SPI_Device.cpp" />
 		<Unit filename="Src/cppabi.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="Src/eTSDB_Driver.cpp" />
+		<Unit filename="Src/eTSDB_Pages.cpp" />
 		<Unit filename="Src/main.cpp">
 			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
@@ -275,7 +285,7 @@
 			<envvars />
 			<debugger>
 				<remote_debugging>
-					<options conn_type="0" serial_baud="115200" additional_cmds="set arch arm&#x0A;file build/FLogger.elf&#x0A;load&#x0A;monitor reset halt&#x0A;" additional_cmds_before="tar extended-remote :3333" />
+					<options conn_type="0" serial_baud="115200" additional_cmds="set arch arm&#x0A;file build/FLogger.elf&#x0A;load&#x0A;monitor reset halt&#x0A;" />
 				</remote_debugging>
 				<remote_debugging target="all">
 					<options conn_type="0" serial_baud="115200" extended_remote="1" />

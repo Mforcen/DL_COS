@@ -41,23 +41,25 @@ int SPIFlash::writeDisable()
 	return 0;
 }
 
-int SPIFlash::writePage(uint8_t* data, uint8_t len, uint32_t addr)
+int SPIFlash::writePage(uint8_t* data, uint16_t len, uint32_t addr)
 {
+	if(len == 0) return EIO;
 	if(_action != None) return EBUSY;
 	if(try_lock() != 0) return EBUSY;
 
-	if(writeEnable() == 0) _max_delay_time = 3;
 	tx_buffer[0] = CMD_WRITE_DATA;
 	tx_buffer[1] = (addr >> 16) & 0xff;
 	tx_buffer[2] = (addr >> 8) & 0xff;
 	tx_buffer[3] = addr & 0xff;
-	for(int i = 4; i < len+4; ++i) tx_buffer[i] = data[i];
+	for(int i = 0; i < len; ++i) tx_buffer[i+4] = data[i];
 	tx_size = len+4;
+
+	if(writeEnable() == 0) _max_delay_time = 3;
 
 	return 0;
 }
 
-int SPIFlash::readPage(uint8_t len, uint32_t addr)
+int SPIFlash::readPage(uint16_t len, uint32_t addr)
 {
 	if(try_lock() != 0) return EBUSY;
 	if(_action != None) return EBUSY;
@@ -70,8 +72,8 @@ int SPIFlash::readPage(uint8_t len, uint32_t addr)
 	tx_buffer[3] = addr & 0xff;
 	for(int i = 4; i < len+4; ++i) rx_buffer[i] = 0;
 
-	rx_size = len+1;
-	rx_idx = 0;
+	rx_size = len+4;
+	rx_idx = 4;
 
 	_action = Read;
 	startTxRx(tx_buffer, rx_buffer, len+4); // más cuatro para mandar la shitty shit de la cabecera
@@ -84,14 +86,14 @@ int SPIFlash::eraseSector(uint32_t addr)
 	if(try_lock() != 0) return EBUSY;
 	if(_action != None) return EBUSY;
 
-	if(writeEnable() == 0) _max_delay_time = 400;
-
 	tx_buffer[0] = CMD_SECTOR_ERASE;
 	tx_buffer[1] = (addr >> 16) & 0xff;
 	tx_buffer[2] = (addr >> 8) & 0xff;
 	tx_buffer[3] = addr & 0xff;
 
 	tx_size = 4;
+
+	if(writeEnable() == 0) _max_delay_time = 400;
 
 	return 0;
 }
@@ -101,11 +103,11 @@ int SPIFlash::eraseChip()
 	if(try_lock() != 0) return EBUSY;
 	if(_action != None) return EBUSY;
 
-	if(writeEnable() == 0) _max_delay_time = 100000;
-
 	tx_buffer[0] = CMD_CHIP_ERASE;
 
 	tx_size = 1;
+
+	if(writeEnable() == 0) _max_delay_time = 100000;
 
 	return 0;
 }
@@ -139,12 +141,14 @@ int SPIFlash::wakeUp()
 	return 0;
 }
 
-void SPIFlash::CpltCallbackModule()
+void SPIFlash::ISR()
 {
 	HAL_GPIO_WritePin(_gpio, _pin, GPIO_PIN_SET); // Hay que dar pulsos en ss para que se procesen las órdenes
 	_last_us = getUS();// aquí irán las cosas inmediatas
 
-	if(_action == WaitBusy) // ha leído el status, por lo que seguirá en polling
+	_isr_launched = true;
+
+	/*if(_action == WaitBusy) // ha leído el status, por lo que seguirá en polling
 	{
 		if(_rx_status[1] & 0x01) // está busy
 		{
@@ -162,18 +166,63 @@ void SPIFlash::CpltCallbackModule()
 	}
 	else if(_action == Write)
 	{
-		unlock();
+		//unlock();
 		_action = None;
 	}
 	else if(_action == Read)
 	{
-		unlock();
+		//unlock();
 		_action = None;
 	}
+	if(_action == None)
+		flashModuleISR(); // cuando se termina la transacción, en el caso de ser un módulo, se ejecuta dicha función
+		*/
 }
 
-void SPIFlash::pollNextAction()
+void SPIFlash::flashModuleISR()
 {
+	unlock();
+}
+
+void SPIFlash::poll()
+{
+	if(_isr_launched)
+	{
+		_isr_launched = false;
+
+		if(_action == WaitBusy) // ha leído el status, por lo que seguirá en polling
+		{
+			if(_rx_status[1] & 0x01) // está busy
+			{
+				_last_write_ms = HAL_GetTick();
+			}
+			else
+			{
+				_max_delay_time = 0;
+				_action = WENDelay; // se llamará en polling
+			}
+		}
+		else if(_action == WriteEnable)
+		{
+			_action = WriteStart; // pero tendrá que esperar
+		}
+		else if(_action == Write)
+		{
+			//unlock();
+			_action = None;
+		}
+		else if(_action == Read)
+		{
+			//unlock();
+			_action = None;
+		}
+		if(_action == None)
+			flashModuleISR(); // cuando se termina la transacción, en el caso de ser un módulo, se ejecuta dicha función
+
+		return;
+	}
+
+
 	switch(_action)
 	{
 	case WENDelay:
@@ -252,7 +301,7 @@ void SPIFlash::pollNextAction()
 int SPIFlash::available()
 {
 	if(_action != None) return 0;
-    return rx_size-rx_idx;
+    return (rx_size-rx_idx);
 }
 
 int SPIFlash::peek()
