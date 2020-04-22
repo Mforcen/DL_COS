@@ -8,6 +8,7 @@
 #define	EBADF	9		//bad file number
 #define	EBUSY	16		//device or resource busy
 #define	EEXIST	17		//file exists
+#define EAGAIN	18		//resource temporally unavailable
 #define	ENOSPC	28		//no space left on buffer
 
 #endif // ERRNO_H_INCLUDED

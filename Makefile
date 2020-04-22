@@ -37,7 +37,6 @@ BUILD_DIR = build
 # C sources
 C_SOURCES =  \
 Src/printf.c \
-Src/tinyscript.c \
 Src/stm32f1xx_it.c \
 Src/stm32f1xx_hal_msp.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_gpio_ex.c \
@@ -65,7 +64,8 @@ Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_tim.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_tim_ex.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_uart.c \
 Src/system_stm32f1xx.c \
-Src/cppabi.c
+Src/cppabi.c \
+Src/fasthash.c
 
 CPP_SOURCES = \
 Src/main.cpp \
@@ -75,7 +75,10 @@ Src/SPI_Device.cpp \
 Src/SPIFlash.cpp \
 Src/eTSDB_Driver.cpp \
 Src/eTSDB_Pages.cpp \
-Src/LoRa.cpp
+Src/LoRa.cpp \
+Src/Module.cpp \
+Src/VirtualMachine.cpp \
+Src/VMBuiltin.cpp
 
 # ASM sources
 ASM_SOURCES =  \
@@ -146,7 +149,7 @@ ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffuncti
 
 CFLAGS = $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
 
-CPPFLAGS = -fno-rtti -fno-exceptions
+CPPFLAGS = -fno-rtti -fno-exceptions -std=c++11
 
 ifeq ($(DEBUG), 1)
 CFLAGS += -g -gdwarf-2

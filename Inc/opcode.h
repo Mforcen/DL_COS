@@ -1,0 +1,105 @@
+#pragma once
+
+#ifndef __OPCODE_CULEBRA__
+#define __OPCODE_CULEBRA__
+
+#include <cstring>
+#include <inttypes.h>
+
+enum class Opcode : char
+{
+	BAD = 0xff,
+	NOP = 0x7f, // yield hara esto
+	//Memory Manipulation
+	LITERAL1 = 0,
+	LITERAL4,
+	LITERAL1_ARRAY,
+	LITERAL4_ARRAY,
+
+	LOAD1,
+	LOAD4,
+	LOAD1_ARRAY,
+	LOAD4_ARRAY,
+
+	STORE1,
+	STORE4,
+	STORE1_ARRAY,
+	STORE4_ARRAY,
+
+	LOAD1_LCL,
+	LOAD4_LCL,
+	LOAD1_ARRAY_LCL,
+	LOAD4_ARRAY_LCL,
+
+	STORE1_LCL,
+	STORE4_LCL,
+	STORE1_ARRAY_LCL,
+	STORE4_ARRAY_LCL,
+
+	LOAD1_ARG,
+	LOAD4_ARG,
+	LOAD1_ARRAY_ARG,
+	LOAD4_ARRAY_ARG,
+
+	STORE1_ARG,
+	STORE4_ARG,
+	STORE1_ARRAY_ARG,
+	STORE4_ARRAY_ARG,
+
+	POP1 = 28,
+	POP4,
+
+	CLONE1,
+	CLONE4,
+
+	ALLOC,
+	FREE,
+
+	//Arithmetic / Logic
+	ADD,
+	SUB,
+	MUL,
+	DIV,
+	MOD,
+
+	FADD,
+	FSUB,
+	FMUL,
+	FDIV,
+
+	DEC_S,
+	INC_S,
+
+	LESS,
+	GREATER,
+	NOT,
+	EQUALS,
+
+	FLESS,
+	FGREATER,
+	FNOT,
+	FEQUALS,
+
+	//Casting ops
+	CHAR2INT,
+	INT2FLOAT,
+
+	FLOAT2INT,
+	INT2CHAR,
+
+	//Bitwise ops
+	BIT_AND,
+	BIT_OR,
+	BIT_LS,
+	BIT_RS,
+
+	//Flow Control
+	JMP ,
+	JMP_IF,
+	JMP_SZ,
+
+	CALL,
+	RETURN
+};
+
+#endif

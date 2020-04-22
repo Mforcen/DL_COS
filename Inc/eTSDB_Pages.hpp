@@ -3,117 +3,166 @@
 
 #include "eTSDB_Utils.hpp"
 
-namespace eTSDB
+namespace FwLogger
 {
-	class Driver;
-
-	enum PageType : uint8_t
+	namespace eTSDB
 	{
-		Deleted = 0,
-		HeaderType,
-		DataType
-	};
+		class Driver;
 
-	class Page // a Page object is valid only if _page_idx is other than 0, because 0 is the index for the root page
-	{
-	public:
-		uint32_t getPageIdx() { return _page_idx; }
-		PageType getType() { return _type; }
-		uint16_t getTableIdx() { return _table_idx; }
+		enum PageType : uint8_t
+		{
+			Deleted = 0,
+			HeaderType,
+			DataType,
+			FileType,
+			EmptyType = 0xff
+		};
 
-		int getSize();
+		class Page // a Page object is valid only if _page_idx is other than 0, because 0 is the index for the root page
+		{
+		public:
+			uint32_t getPageIdx() { return _page_idx; }
+			PageType getType() { return _type; }
+			uint16_t getObjectIdx() { return _object_idx; }
 
-		virtual int getTypeSize();
+			PageAccessMode getAccessMode() { return _page_mode; }
 
-		virtual int serialize(uint8_t* buf);
+			int getSize();
+			uint8_t* getName();
 
-		static void setAllocator(Allocator* alloc){_alloc = alloc; }
-		void* operator new(std::size_t size) { return _alloc->Allocate(size); }
-		void operator delete(void *ptr) { _alloc->Deallocate(ptr); }
+			virtual int getTypeSize();
 
-	protected:
-		Page(uint32_t page_idx, PageType type, uint16_t table_idx) : _page_idx(page_idx), _type(type), _table_idx(table_idx) {}
-		uint16_t _page_idx;
-		PageType _type;
-		uint16_t _table_idx;
+			virtual int serialize(uint8_t* buf);
+			virtual int deserialize(uint8_t* buf);
 
-	private:
-		static Allocator* _alloc;
+			static void setAllocator(Allocator<128>* alloc){_alloc = alloc; }
+			void* operator new(std::size_t size) { return _alloc->Allocate(size); }
+			void operator delete(void *ptr) { _alloc->Deallocate(ptr); }
 
-		friend class Driver;
-	};
+		protected:
+			Page(uint32_t page_idx, PageType type, uint16_t object_idx) : _page_idx(page_idx), _type(type), _object_idx(object_idx), _page_mode(PageAccessMode::PageEmpty) {}
+			Page(uint32_t page_idx, PageType type, uint16_t object_idx, PageAccessMode am) : _page_idx(page_idx), _type(type), _object_idx(object_idx), _page_mode(am) {}
+			uint16_t _page_idx;
+			PageType _type;
+			uint16_t _object_idx;
+			uint8_t _name[16];
+			static Allocator<128>* _alloc;
+			PageAccessMode _page_mode;
 
-	class HeaderPage;
+		private:
+			friend class Driver;
+		};
 
-	class DataPage : public Page
-	{
-	public:
-		DataPage();
-		Date getBlockDate();
+		class HeaderPage;
 
-		int getTypeSize();
-		int serialize(uint8_t* dst);
+		class DataPage : public Page
+		{
+		public:
+			DataPage();
+			Date getBlockDate();
 
-		void copy(DataPage* dp);
-	protected:
+			int getTypeSize();
+			int serialize(uint8_t* dst);
 
-	private:
-		DataPage(uint16_t page_idx, uint16_t table_idx, Date block_date, HeaderPage* header);
+			void copy(DataPage* dp);
+		protected:
 
-		static const uint8_t _header_span = 10;
-		static const uint8_t _starter_magic[2];
-		static const uint8_t _ender_magic[2];
+		private:
+			DataPage(uint16_t page_idx, uint16_t object_idx, Date block_date, HeaderPage* header);
 
-		uint16_t _rowIdx; ///< This helps to find the writing address of the block
-		uint8_t _rowWidth;
-		//uint8_t _numCols;
-		uint8_t _period;
+			static const uint8_t _header_span = 10;
+			static const uint8_t _starter_magic[2];
+			static const uint8_t _ender_magic[2];
 
-		Date _block_date; ///< This stores the first measure date, used to check the measures
-		HeaderPage* _header; // Will be stored at page as block_idx of header page
-		Format _formats[16];
+			uint16_t _rowIdx; ///< This helps to find the writing address of the block
+			uint8_t _rowWidth;
+			//uint8_t _numCols;
+			uint8_t _period;
 
-		friend class Driver;
-	};
+			Date _block_date; ///< This stores the first measure date, used to check the measures
+			HeaderPage* _header; // Will be stored at page as block_idx of header page
+			Format _formats[16];
 
+			friend class Driver;
+		};
 
-	class HeaderPage : public Page
-	{
-	public:
+		struct HeaderInitializer
+		{
+			uint8_t colNames[16][16];
+			Format formats[16];
+			uint8_t period;
+			uint8_t colLen;
+		};
 
-		HeaderPage();
-		HeaderPage(HeaderPage* hp);
+		class HeaderPage : public Page
+		{
+		public:
 
-		uint8_t* getName();
-		uint8_t getNumColumn();
-		uint8_t* getColumnName(uint8_t colIdx);
-		Format getColumnFormat(uint8_t colIdx);
-		uint8_t getColumnStride();
-		int8_t getColumnIdx(int8_t span);
+			HeaderPage();
+			HeaderPage(HeaderPage* hp);
 
-		uint8_t getPeriod();
+			uint8_t getNumColumn();
+			uint8_t* getColumnName(uint8_t colIdx);
+			Format getColumnFormat(uint8_t colIdx);
+			uint8_t getColumnStride();
+			int8_t getColumnIdx(int8_t span);
 
-		int getTypeSize();
-		int serialize(uint8_t* dst);
-		int deserialize(uint8_t* dst);
+			uint8_t getPeriod();
 
-		void copy(HeaderPage* hp);
+			int getTypeSize();
+			int serialize(uint8_t* dst);
+			int deserialize(uint8_t* dst);
 
-	protected:
+			void copy(HeaderPage* hp);
 
-	private:
-		HeaderPage(uint16_t page_idx, uint16_t table_idx);
-		uint8_t _name[16];
-		uint8_t _colNames[16][16];
-        Format _formats[16];
+		protected:
 
-        uint16_t _header_spacing; ///< This variable indicates how many space uses the header, up to 304 bytes
-        uint8_t _data_index; ///< This variable indicates where the next data index could be stored
-        uint8_t _data_stride; ///< This variable holds the space that a row needs to be fully stored. It's only calculated once based on the format array
-        uint8_t _period; ///< This allows to know how many times there will be between samples
+		private:
+			HeaderPage(uint16_t page_idx, uint16_t object_idx);
+			uint8_t _colNames[16][16];
+			Format _formats[16];
 
-        friend class Driver;
-	};
+			uint16_t _header_spacing; ///< This variable indicates how many space uses the header, up to 304 bytes
+			uint8_t _data_index; ///< This variable indicates where the next data index could be stored
+			uint8_t _data_stride; ///< This variable holds the space that a row needs to be fully stored. It's only calculated once based on the format array
+			uint8_t _period; ///< This allows to know how many times there will be between samples
+
+			DataPage* _currDP;
+
+			friend class Driver;
+		};
+
+		class FilePage: public Page
+		{
+			public:
+			FilePage();
+			~FilePage();
+
+			int getTypeSize();
+			int serialize(uint8_t* dst);
+
+			bool getDataReady();
+			uint8_t* getDataPage();
+			bool freeDataPage();
+			uint16_t getFileSize();
+
+			void copy(FilePage* fp);
+		protected:
+
+		private:
+			FilePage(uint16_t page_idx, uint16_t object_idx);
+			uint8_t _page_state; // msb (1-0) -> primer página o no, (111-000) escrito o vacío, (1111-0000) escrito o eliminado
+			uint16_t _file_size; // se debe recorrer el conjunto de todas las páginas enlazadas
+			uint16_t _next_page;
+			uint8_t *_databuf;
+			uint8_t _data_status;
+			uint8_t _read_status;
+			uint8_t _read_blocks;
+			uint8_t _data_idx;
+
+			friend class Driver;
+		};
+	}
 }
 
 #endif // ETSDB_BLOCK_H

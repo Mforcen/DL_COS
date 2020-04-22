@@ -2,6 +2,7 @@
 #define ETSDB_DRIVER_INCLUDED
 
 #include "SPIFlash.h"
+#include "Module.h"
 
 #include "eTSDB_Utils.hpp"
 #include "eTSDB_Pages.hpp"
@@ -32,102 +33,123 @@
   * functions will indicate if the driver is busy doing other things. After the operation is configured, a polling will be required in order to get the results.
   */
 
-namespace eTSDB
+namespace FwLogger
 {
-	class Driver : public SPIFlash
+
+	namespace eTSDB
 	{
-	public:
-		Driver(uint32_t offsetAddress, uint32_t size, SPI_HandleTypeDef* hspi, GPIO_TypeDef* gpio, uint16_t pin);
-
-		/**
-		  * Create, find and delete header pages
-		  */
-		RetValue createHeader(uint8_t* name, uint8_t period, uint8_t colLen, Format* formats, uint8_t* colNames[16]);
-		RetValue findHeader(uint8_t* name);
-		RetValue deleteHeader(HeaderPage& header);
-
-		/**
-		  * Create, find and delete data pages
-		  */
-		RetValue createDataPage(HeaderPage& header, Date& date);
-		RetValue findDataPage(HeaderPage& header, uint16_t headerIdx);
-		RetValue deleteDataPage(DataPage& dp);
-
-		/**
-		  * Read and write values
-		  */
-		RetValue readValue(DataPage& dp, uint16_t meas_idx);
-		RetValue appendValue(DataPage& dp, Row& row);
-
-		void flashModuleISR(); // this advances the fsm, will be called when the flash operation is finished
-
-		enum class State : uint8_t
+		class Driver : public SPIFlash, public Module
 		{
-			Nop = 0,
+		public:
+			Driver(uint32_t offsetAddress, uint32_t size, SPI_HandleTypeDef* hspi, GPIO_TypeDef* gpio, uint16_t pin, Allocator<128>* alloc);
 
-			Find, //operations
-			Write,
-			Read,
-			FindString, //finds against _opBuf in a uint8_t* fashion
-			ReadValue,
+			/**
+			  * Create, find and delete header pages
+			  */
+			RetValue openHeader(const uint8_t* name, PageAccessMode am, uint8_t period = 0, uint8_t colLen = 0, const Format* formats = nullptr, const uint8_t* colNames[16] = nullptr);
+			RetValue openHeader(const uint8_t* name, PageAccessMode am, HeaderInitializer hi);
+			RetValue deleteHeader(HeaderPage& header);
 
-			StoreIndexInPage, //generic actions
-			WritePageTableIndexInRoot,
-			WritePageHeader,
-			ReadPageHeader,
+			/**
+			  * Create, find and delete data pages
+			  */
+			RetValue createDataPage(HeaderPage& header, Date& date);
+			RetValue findDataPage(HeaderPage& header, uint16_t headerIdx);
+			RetValue deleteDataPage(DataPage& dp);
 
-			HeaderPageReadDataIndex,// a lo mejor no hace falta si lo pongo en read
+			/**
+			  * Read and write values
+			  */
+			RetValue readValue(DataPage& dp, uint16_t meas_idx);
+			RetValue appendValue(DataPage& dp, Row& row);
 
-			DataPageFindEmptyInHeader,
-			DataPageWriteInHeader, //DataPage actions
-			DataPageReadHeader,
-			DataPageFindEmptyBody,
+			/**
+			  * File functions-> Write function only can write once
+			  */
+			RetValue openFile(const uint8_t* name, PageAccessMode mode);
+			RetValue writeFile(FilePage& file, const uint8_t* data, uint16_t data_length);
+			RetValue readNextBlockFile(FilePage& file);
+			RetValue closeFile(FilePage& file);
+			RetValue deleteFile(FilePage& file);
 
-			ReadDataBody,
-			Full = 0x80,
-			FreePage,
-			Wait = 0xff
+			void flashModuleISR(); // this advances the fsm, will be called when the flash operation is finished
+
+			enum class State : uint8_t
+			{
+				Nop = 0,
+
+				Find, //operations
+				Write,
+				Read,
+				ReadValue, // optimized actions for Row
+
+				//generic actions
+				WritePageObjectIndexInRoot,
+				WritePageHeader,
+				WritePageUpdate,
+
+				HeaderPageReadDataIndex,// a lo mejor no hace falta si lo pongo en read
+
+				DataPageFindEmptyInHeader,
+				DataPageWriteInHeader, //DataPage actions
+				DataPageReadHeader,
+				DataPageFindEmptyBody,
+
+				ReadDataBody,
+
+				FindNewObject,
+				FindObjectName,
+				WriteFileHeader,
+				LoadPage,
+				ReadFile,
+				CloseFile,
+
+				Full = 0x80,
+				FreePage,
+				Error,
+				Wait = 0xff
+			};
+
+			State getState();
+
+			Page* getPage(); // this allow to have the pending page, but it should be copied since the memory buffer will be reused
+			Row* getDataRow();
+
+			int getError(); //returns a value indicating an error
+
+			void reset();
+
+		protected:
+
+		private:
+			Allocator<128>* _alloc;
+
+			State _states[16];
+			int _stateIdx;
+
+			Page* _page;
+			Row* _row;
+
+			uint32_t _offset, _size;
+			int _error;
+
+			uint32_t _opAddr; ///< Indicates where the next read/write operation should be done
+			uint32_t _opIdx; ///< In case of iterating procceses, this will indicate the iteration number
+			uint32_t _opLen; ///< This variable will indicate the length of the current operation (read/write or max iteration)
+			uint16_t _opFind; ///< This variable will hold the value that the driver is looking for in search operations
+			uint16_t _opFindMax; ///< This variable will hold the maximum value that appeared during the search operation (used in table creation)
+			void* _opBuf; ///< This variable will hold the buffer of the current operation (read/write or iteration)
+
+			/**
+			  * Private methods
+			  */
+			RetValue flushFile(FilePage& file);
+			RetValue findEmptyPage();
+			RetValue findNewObject();
+			void step();
+			RetValue prepareCom();
 		};
-
-		State getState();
-
-		Page* getPage(); // this allow to have the pending page, but it should be copied since the memory buffer will be reused
-		Row* getDataRow();
-
-		int getError(); //returns a value indicating an error
-
-		void reset();
-
-	protected:
-
-	private:
-		Allocator _alloc;
-		uint8_t _alloc_buf[4128];
-
-		State _states[16];
-		int _stateIdx;
-
-		Page* _page;
-		Row* _row;
-
-		uint32_t _offset, _size;
-		int _error;
-
-		uint32_t _opAddr; ///< Indicates where the next read/write operation should be done
-		uint32_t _opIdx; ///< In case of iterating procceses, this will indicate the iteration number
-		uint32_t _opLen; ///< This variable will indicate the length of the current operation (read/write or max iteration)
-		uint16_t _opFind; ///< This variable will hold the value that the driver is looking for in search operations
-		uint16_t _opFindMax; ///< This variable will hold the maximum value that appeared during the search operation (used in table creation)
-		void* _opBuf; ///< This variable will hold the buffer of the current operation (read/write or iteration)
-
-		/**
-		  * Private methods
-		  */
-		RetValue findEmptyPage();
-		void step();
-		RetValue prepareCom();
-	};
+	}
 }
-
 
 #endif // ETSDB_DRIVER_INCLUDED
