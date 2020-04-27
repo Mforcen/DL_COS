@@ -145,6 +145,7 @@ namespace FwLogger
 			uint8_t* getDataPage();
 			bool freeDataPage();
 			uint16_t getFileSize();
+			uint16_t getBytesRead();
 
 			void copy(FilePage* fp);
 		protected:
@@ -157,7 +158,7 @@ namespace FwLogger
 			uint8_t *_databuf;
 			uint8_t _data_status;
 			uint8_t _read_status;
-			uint8_t _read_blocks;
+			uint16_t _read_bytes;
 			uint8_t _data_idx;
 
 			friend class Driver;

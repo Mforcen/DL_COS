@@ -236,10 +236,12 @@
 		<Unit filename="Inc/eTSDB_Pages.hpp" />
 		<Unit filename="Inc/eTSDB_Utils.hpp" />
 		<Unit filename="Inc/errno.h" />
+		<Unit filename="Inc/io.h" />
 		<Unit filename="Inc/main.h">
 			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
 		<Unit filename="Inc/mem_structs.hpp" />
+		<Unit filename="Inc/opcode.h" />
 		<Unit filename="Inc/pin_defs.h" />
 		<Unit filename="Inc/printf.h" />
 		<Unit filename="Inc/stm32f1xx_hal_conf.h">
@@ -264,9 +266,11 @@
 		</Unit>
 		<Unit filename="Src/eTSDB_Driver.cpp" />
 		<Unit filename="Src/eTSDB_Pages.cpp" />
+		<Unit filename="Src/io.cpp" />
 		<Unit filename="Src/main.cpp">
 			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
+		<Unit filename="Src/opcode.cpp" />
 		<Unit filename="Src/printf.c">
 			<Option compilerVar="CC" />
 		</Unit>

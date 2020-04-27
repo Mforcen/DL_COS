@@ -353,7 +353,7 @@ namespace FwLogger
 			_data_status = 0;
 			_data_idx = 0;
 			_read_status = 0;
-			_read_blocks = 0;
+			_read_bytes = 0;
 			_databuf = nullptr;
 		}
 
@@ -366,7 +366,7 @@ namespace FwLogger
 			_data_status = 0;
 			_data_idx = 0;
 			_read_status = 0;
-			_read_blocks = 0;
+			_read_bytes = 0;
 			_databuf = nullptr;
 		}
 
@@ -437,12 +437,14 @@ namespace FwLogger
 			_page_mode = fp->_page_mode;
 			_read_status = fp->_read_status;
 			_data_status = fp->_data_status;
-			_read_blocks = fp->_read_blocks;
+			_read_bytes = fp->_read_bytes;
 			if(fp->_databuf != nullptr)
 			{
 				_databuf = reinterpret_cast<uint8_t*>(_alloc->Allocate(128));
 				for(int i = 0; i<128; ++i) _databuf[i] = fp->_databuf[i];
 			}
+			else
+				_databuf = nullptr;
 		}
 
 		uint8_t* FilePage::getDataPage()
@@ -471,6 +473,10 @@ namespace FwLogger
 		uint16_t FilePage::getFileSize()
 		{
 			return _file_size;
+		}
+		uint16_t FilePage::getBytesRead()
+		{
+            return _read_bytes;
 		}
 	}
 }

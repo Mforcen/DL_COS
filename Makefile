@@ -78,7 +78,8 @@ Src/eTSDB_Pages.cpp \
 Src/LoRa.cpp \
 Src/Module.cpp \
 Src/VirtualMachine.cpp \
-Src/VMBuiltin.cpp
+Src/VMBuiltin.cpp \
+Src/io.cpp
 
 # ASM sources
 ASM_SOURCES =  \

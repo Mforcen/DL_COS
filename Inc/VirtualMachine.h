@@ -3,7 +3,6 @@
 
 #include "opcode.h"
 #include "VMBuiltin.h"
-#include "eTSDB.hpp"
 #include "Module.h"
 
 uint16_t getUS(); // funcion del timer
@@ -24,7 +23,7 @@ struct cFuncCall
 	intptr_t func_addr;
 };
 
-class VirtualMachine
+class VirtualMachine : public FwLogger::Module
 {
 	public:
 		VirtualMachine();
@@ -36,6 +35,7 @@ class VirtualMachine
         int HeaderFD;
 
         void loop();
+        void reset();
 
         bool cycle(); // ejecuta una instrucción de la máquina virtual
 
@@ -51,6 +51,9 @@ class VirtualMachine
 		uint32_t m_programCounter;
 		bool m_execBuiltin;
 		cFuncCall m_currBuiltin;
+
+		uint32_t m_delayStart, m_delayTime;
+		bool m_delayEnabled;
 
 		void prepareBuiltin();
         void callBuiltin();

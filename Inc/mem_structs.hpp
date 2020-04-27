@@ -48,11 +48,32 @@ public:
 		return 0;
 	}
 
+	int8_t push_front(T val)
+	{
+		if(full)
+			return -1;
+		uint8_t new_write = read_ptr-1;
+		if(new_write > sizeval-1) new_write = sizeval-1;
+		read_ptr = new_write;
+		buffer[read_ptr] = val;
+		full = write_ptr == read_ptr;
+		return 0;
+	}
+
 	int8_t pop_front(T* ph)
 	{
 		if(read_ptr == write_ptr && !full)
 			return -1;
 		*ph = buffer[read_ptr];
+		read_ptr = (read_ptr+1)%sizeval;
+		full = 0;
+		return 0;
+	}
+
+	int8_t delete_front()
+	{
+		if(read_ptr == write_ptr && !full)
+			return -1;
 		read_ptr = (read_ptr+1)%sizeval;
 		full = 0;
 		return 0;
@@ -64,6 +85,15 @@ public:
 			return -1;
 		*ph = buffer[read_ptr];
 		return 0;
+	}
+
+	T* at_front()
+	{
+		if(read_ptr == write_ptr && !full) //vacío
+		{
+            return nullptr;
+		}
+		return &buffer[read_ptr];
 	}
 
 	void clear()
@@ -87,6 +117,134 @@ private:
 	uint8_t full;
 };
 
+template <typename T>
+class prio_queue
+{
+	public:
+		prio_queue();
+		int insert(uint8_t prio, T val);
+		int del(int node_idx);
+		T getMin();
+		T extractMin();
+
+	private:
+		int parent(int id);
+		int left(int id);
+		int right(int id);
+		void fix_up(int idx);
+		void fix_down(int idx);
+
+		struct pair
+		{
+			uint8_t prio;
+			T val;
+		};
+		void swap(pair* a, pair *b)
+		{
+			pair aux;
+			aux = *b;
+			*b = *a;
+			*a = aux;
+		}
+
+		pair arr[15];
+		int heap_size;
+		int cap;
+};
+
+template <typename T>
+prio_queue<T>::prio_queue()
+{
+	cap = 15;
+	heap_size = 0;
+	for(int i = 0; i < 15; ++i)
+		arr[i].prio = 0;
+}
+
+template <typename T>
+int prio_queue<T>::insert(unsigned char prio, T val)
+{
+	if(heap_size == cap) return -1;
+	int i = heap_size;
+	heap_size++;
+
+	arr[i].prio = prio;
+	arr[i].val = val;
+	fix_up(i);
+
+}
+
+template <typename T>
+int prio_queue<T>::del(int idx)
+{
+	arr[idx].prio = 0xff;
+	fix_down(idx);
+}
+
+template <typename T>
+void prio_queue<T>::fix_up(int idx)
+{
+	while(idx != 0 && arr[parent(idx)].prio > arr[idx].prio)
+	{
+		int par = parent(idx);
+		swap(&arr[par], &arr[idx]);
+		idx = par;
+	}
+}
+
+template <typename T>
+T prio_queue<T>::extractMin()
+{
+	if(heap_size <= 0) return 0xff;
+	if(heap_size == 1)
+	{
+		heap_size--;
+		return arr[0];
+	}
+
+	pair root = arr[0];
+	arr[0] = arr[heap_size-1];
+	heap_size--;
+	fix_down(0);
+
+	return 0;
+}
+
+template <typename T>
+void prio_queue<T>::fix_down(int idx)
+{
+	int l = left(idx);
+	int r = right(idx);
+	int smallest = idx;
+
+	if(l < heap_size && arr[l].prio < arr[idx].prio)
+		smallest = l;
+	if(r < heap_size && arr[r].prio < arr[smallest].prio)
+		smallest = r;
+	if(smallest != idx)
+	{
+		swap(&arr[idx], &arr[smallest]);
+		fix_down(smallest);
+	}
+}
+
+template <typename T>
+int prio_queue<T>::parent(int id)
+{
+	return (id-1)/2;
+}
+
+template <typename T>
+int prio_queue<T>::left(int id)
+{
+	return (2*id + 1);
+}
+
+template <typename T>
+int prio_queue<T>::right(int id)
+{
+	return (2*id + 2);
+}
 
 template <std::size_t pageSize>
 class Allocator // 128bytes per object

@@ -9,10 +9,10 @@
 #include "printf.h"
 
 #include "stm32f1xx_hal.h"
+#include "VirtualMachine.h"
 #include "SPIFlash.h"
 #include "eTSDB.hpp"
 #include "LoRa.h"
-#include "VirtualMachine.h"
 #include "pin_defs.h"
 
 #include "SDI12_Driver.h"
@@ -67,8 +67,9 @@ namespace FwLogger
 	class OS
 	{
 		public:
-			//static FwLogger* getInstance();
+			static OS& get();
 			OS();
+			static void setOS(OS* os);
 
 			void init();
 			void push_rx(uint8_t c);
@@ -80,6 +81,8 @@ namespace FwLogger
 			int poll(int fd);
 			int write(int fd, const void* buf, size_t count);
 			int close(int fd);
+
+			eTSDB::Date time();
 
 			int16_t get_adc_val(int channel);
 
@@ -94,6 +97,8 @@ namespace FwLogger
 		protected:
 
 		private:
+			static OS* ptr;
+
 			enum class Operation : uint8_t
 			{
 				None,
@@ -152,7 +157,6 @@ namespace FwLogger
 				uint32_t static_vars;
 			};
 
-			Task _currTask;
 			int errno;
 			circular_buffer<16, Task> _ops; // implementar una priority queue
 

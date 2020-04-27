@@ -118,7 +118,7 @@ namespace FwLogger
 			uint64_t seconds() const
 			{
 				uint64_t retval;
-				retval = second + minute*60 + hour*3600 + day*86400;
+				retval = second + minute*60 + hour*3600 + (day-1)*86400;
 
 				for(int i = 0; i < year; ++i)
 					retval += ((i%4 == 0 )|( i%400 == 0) ? 366 : 365)*86400;
@@ -126,7 +126,7 @@ namespace FwLogger
 				uint8_t days[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 				if(year % 4 == 0 || year % 400 == 0) days[1] = 29;
 
-				for(uint8_t month_idx = 0; month_idx < month; ++month_idx) retval += days[month_idx] * 86400;
+				for(uint8_t month_idx = 0; month_idx < (month-1); ++month_idx) retval += days[month_idx] * 86400;
 				return retval;
 			}
 
@@ -153,8 +153,9 @@ namespace FwLogger
 					month++;
 					seconds_in_month = 86400*days[month];
 				}
+				month++;
 
-				day = seconds/86400;
+				day = (seconds/86400)+1;
 				seconds = seconds % 86400;
 				hour = seconds/3600;
 				seconds %= 3600;

@@ -99,7 +99,10 @@ enum class Opcode : char
 	JMP_SZ,
 
 	CALL,
-	RETURN
+	RETURN,
+
+	DELAY,
+	WAIT_TABLE
 };
 
 #endif

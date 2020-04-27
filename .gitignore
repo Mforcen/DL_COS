@@ -4,3 +4,4 @@
 *.old
 hardware/mainBoard/Fabricación
 build/*
+test.bin

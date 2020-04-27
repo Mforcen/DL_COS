@@ -83,181 +83,72 @@ fixed_string<128> rx_buffer;
 uint8_t _UART_rx_char;
 uint8_t _UART_txing;
 
-FwLogger::eTSDB::HeaderPage hp;
-FwLogger::eTSDB::DataPage dp;
-FwLogger::eTSDB::FilePage fp;
-
 int16_t adc1_data[6], adc3_data[6];
 
-FwLogger::OS logger;
-
-static int getRawADC(int port, int chan)
-{
-	return logger.get_adc_val(6*port+chan);
-}
-
-static int getADC(int port, int chan)
-{
-	return getRawADC(port, chan) * 3300 / 4096;
-}
-
-static int getJedec(int whatever)
-{
-	uint8_t data[6];
-	logger.flash.jedecId(data);
-	return 0;
-}
-
-static int readFlash(int addr, int len)
-{
-	logger.flash.readPage(len,addr);
-	HAL_Delay(1);
-	logger.flash.poll();
-	for(int i = 0; i < len; ++i)
-	{
-		printf_("%0x ", logger.flash.pop());
-	}
-	printf_("\n");
-	return 0;
-}
-
-static int unlockDriver()
-{
-	logger.etsdb.unlock();
-	return 0;
-}
-
-static int eraseFlash()
-{
-	logger.flash.eraseChip();
-	return 0;
-}
-
-static int writeFlash()
-{
-	uint8_t data[] = {0xaa, 0xaa, 0xaa, 0xaa};
-	logger.flash.writePage(data, 4, 0);
-	return 0;
-}
-
-static int createHeader()
-{
-	FwLogger::eTSDB::Format formats[2];
-	formats[0] = FwLogger::eTSDB::Format::Uint32;
-	formats[1] = FwLogger::eTSDB::Format::Invalid;
-
-	uint8_t** colNames;
-	uint8_t colName[] = "cola";
-	colNames = (uint8_t**)&colName;
-	const uint8_t hdrname[] = "hola";
-
-	logger.etsdb.openHeader(hdrname, FwLogger::eTSDB::PageAccessMode::PageWrite, 30, 1, formats, (const uint8_t**)colNames);
-	return 0;
-}
-
-static int getHeader()
-{
-	FwLogger::eTSDB::HeaderPage* hptr = static_cast<FwLogger::eTSDB::HeaderPage*>(logger.etsdb.getPage());
-	if(hptr == nullptr) printf_("Error getting header page\n");
-	else hp.copy(hptr);
-	return 0;
-}
-
-static int createDataPage()
-{
-	FwLogger::eTSDB::Date date(2020,2, 2, 2, 0, 0);
-	logger.etsdb.createDataPage(hp, date);
-	return 0;
-}
-
-static int getDataPage()
-{
-	FwLogger::eTSDB::DataPage* dptr = static_cast<FwLogger::eTSDB::DataPage*>(logger.etsdb.getPage());
-	if(dptr == nullptr) printf_("Error getting data page\n");
-	else dp.copy(dptr);
-	return 0;
-}
-
-static int appendValue()
-{
-	FwLogger::eTSDB::Row row;
-	row.clear();
-	row.rowDate = FwLogger::eTSDB::Date(2020,2, 2, 2, 0, 0);
-	row.vals[0].format = FwLogger::eTSDB::Format::Uint32;
-	row.vals[0].data._uint32 = 0x12345678;
-	if(logger.etsdb.appendValue(dp, row)!= FwLogger::eTSDB::RetValue::Ok) printf_("Append error\n");
-	return 0;
-}
-
-static int power(int val)
-{
-	if(val == 1) logger.enablePower(1);
-	else logger.enablePower(0);
-	return 0;
-}
+FwLogger::OS os;
 
 static int getLoRaVer()
 {
-	return logger.radio.getChipVersion();
+	return FwLogger::OS::get().radio.getChipVersion();
 }
 
 static int sendLoRa()
 {
-	if(logger.radio.send(12, (const uint8_t*)"holacaracola")) printf_("error\n");
+	if(FwLogger::OS::get().radio.send(12, (const uint8_t*)"holacaracola")) printf_("error\n");
 	return 0;
 }
 
 static int recvLoRa()
 {
-	if(logger.radio.receive(0)) printf_("recvLoRa error\n");
+	if(FwLogger::OS::get().radio.receive(0)) printf_("recvLoRa error\n");
 	return 0;
 }
 
 static int recvCont()
 {
-	if(logger.radio.receive(1)) printf_("recvCont error\n");
+	if(FwLogger::OS::get().radio.receive(1)) printf_("recvCont error\n");
 	return 0;
 }
 
 static int unLockRa()
 {
-	logger.radio.unlock();
+	FwLogger::OS::get().radio.unlock();
 	return 0;
 }
 
 static int ackActive()
 {
-	logger.sdi12.ackActive(0);
+	FwLogger::OS::get().sdi12.ackActive(0);
 	return 0;
 }
 
 static int sensorId()
 {
-	logger.sdi12.sensorId(0);
+	FwLogger::OS::get().sdi12.sensorId(0);
 	return 0;
 }
 
 static int queryAddr()
 {
-	logger.sdi12.queryAddr();
+	FwLogger::OS::get().sdi12.queryAddr();
 	return 0;
 }
 
 static int startVerification()
 {
-	logger.sdi12.startVerification(0);
+	FwLogger::OS::get().sdi12.startVerification(0);
 	return 0;
 }
 
 static int getCmdResponse()
 {
-	logger.sdi12.getCmdResponse();
+	FwLogger::OS::get().sdi12.getCmdResponse();
 	return 0;
 }
 
 static int startMeasurement()
 {
-	logger.sdi12.startMeasurement(0);
+	FwLogger::OS::get().sdi12.startMeasurement(0);
 	return 0;
 }
 
@@ -271,49 +162,11 @@ static int getModules()
 	return 0;
 }
 
-static int openFile()
-{
-	uint8_t name[] = "hola.txt";
-	logger.etsdb.openFile(name, FwLogger::eTSDB::PageAccessMode::PageWrite);
-	return 0;
-}
-
-static int getFile()
-{
-	FwLogger::eTSDB::FilePage* _fp = static_cast<FwLogger::eTSDB::FilePage*>(logger.etsdb.getPage());
-	if(_fp != nullptr)
-	{
-		fp.copy(_fp);
-		return 0;
-	}
-	return 1;
-}
-
-static int writeFile()
-{
-	uint8_t file[] = "hola esto es una prueba de almacenamiento de archivos jaj";
-	logger.etsdb.writeFile(fp, file, 58);
-	return 0;
-}
-
 struct def {
 	const char* name;
 	intptr_t val;
 	int nargs;
 } defs[] = {
-	{"getRawADC", (intptr_t) getRawADC, 2},
-	{"getADC", (intptr_t) getADC, 2},
-	{"jedec", (intptr_t) getJedec, 1},
-	{"read", (intptr_t) readFlash, 2},
-	{"unlock", (intptr_t) unlockDriver, 0},
-	{"erase", (intptr_t) eraseFlash, 0},
-	{"write", (intptr_t) writeFlash, 0},
-	{"createHeader", (intptr_t) createHeader, 0},
-	{"getHeader", (intptr_t) getHeader, 0},
-	{"createDataPage", (intptr_t) createDataPage, 0},
-	{"getDataPage", (intptr_t) getDataPage, 0},
-	{"appendValue", (intptr_t) appendValue, 0},
-	{"power", (intptr_t) power, 1},
 	{"getLoRaVersion", (intptr_t)getLoRaVer, 0},
 	{"sendLoRa", (intptr_t) sendLoRa, 0},
 	{"unLockRa", (intptr_t) unLockRa, 0},
@@ -324,9 +177,6 @@ struct def {
 	{"getCmdResponse", (intptr_t) getCmdResponse, 0},
 	{"startMeasurement", (intptr_t) startMeasurement, 0},
 	{"getModules", (intptr_t) getModules, 0},
-	{"openFile", (intptr_t) openFile, 0},
-	{"getFile", (intptr_t) getFile, 0},
-	{"writeFile", (intptr_t) writeFile, 0},
 	{NULL, 0, 0}
 };
 
@@ -443,14 +293,17 @@ int main(void)
 	HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc1_data, 6);
 	HAL_ADC_Start_DMA(&hadc3, (uint32_t*)adc3_data, 6);
 
+	FwLogger::OS::setOS(&os);
+
 	HAL_TIM_Base_Start_IT(&htim6);
 
-	logger.enablePower(1);
-	logger.init();
+
+	os.enablePower(1);
+	os.init();
 
 	HAL_TIM_Base_Start(&htim7);
 
-	logger.enablePower(1);
+	os.enablePower(1);
 
 	/* USER CODE END 2 */
 
@@ -466,7 +319,7 @@ int main(void)
 		}*/
 
 
-		logger.loop();
+		os.loop();
 		/* USER CODE END WHILE */
 
 		/* USER CODE BEGIN 3 */
@@ -1519,7 +1372,7 @@ static void MX_GPIO_Init(void)
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 	//tx_buffer.push_back(_UART_rx_char);
-	logger.push_rx(_UART_rx_char);
+	FwLogger::OS::get().push_rx(_UART_rx_char);
 
 	HAL_UART_Receive_IT(huart, &_UART_rx_char, 1);
 }
@@ -1535,12 +1388,12 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 
 void outchar(int c)
 {
-	logger.write(0, (void*) (&c), 1);
+	FwLogger::OS::get().write(0, (void*) (&c), 1);
 }
 
 void _putchar(char c)
 {
-	logger.write(0, (void*) (&c), 1);
+	FwLogger::OS::get().write(0, (void*) (&c), 1);
 }
 
 uint16_t getUS()
@@ -1568,17 +1421,17 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef* hspi)
 
 void sdi12_Isr()
 {
-	logger.sdi12.timer_isr();
+	FwLogger::OS::get().sdi12.timer_isr();
 }
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
 	if(GPIO_Pin == GPIO_PIN_14)
-		logger.sdi12.pin_isr();
+		FwLogger::OS::get().sdi12.pin_isr();
 	else if(GPIO_Pin == GPIO_PIN_15)
-		logger.sdi12.pin_isr();
+		FwLogger::OS::get().sdi12.pin_isr();
 	else if(GPIO_Pin == GPIO_PIN_4)
-		logger.radio.isrDIO(GPIO_PIN_4);
+		FwLogger::OS::get().radio.isrDIO(GPIO_PIN_4);
 }
 
 /* USER CODE END 4 */

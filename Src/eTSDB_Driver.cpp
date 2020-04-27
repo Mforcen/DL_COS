@@ -300,18 +300,18 @@ namespace FwLogger
 			if(file._page_mode == PageAccessMode::PageEmpty) return NotFound;
 
 			_states[0] = State::Read;
+			_page = &file;
 
-			uint16_t read_bytes = file._read_blocks*128;
 
-			if(file._file_size < read_bytes) return FileEnded;
+			if(file._file_size <= file._read_bytes) return FileEnded;
 
 			_opLen = 128;
-			if(file._file_size - read_bytes < _opLen) _opLen = file._file_size - read_bytes;
-			_opAddr = file.getPageIdx()*PageWidth + file.getTypeSize() + read_bytes;
+			if(file._file_size - file._read_bytes < _opLen) _opLen = file._file_size - file._read_bytes;
+			_opAddr = file.getPageIdx()*PageWidth + file.getSize() + file._read_bytes;
 
-			++file._read_blocks;
+			file._read_bytes += _opLen;
 
-			if(file._databuf != nullptr)
+			if(file._databuf == nullptr)
 				file._databuf = static_cast<uint8_t*>(_alloc->Allocate(_opLen));
 
 			readPage(_opLen, _opAddr, file._databuf);
@@ -780,10 +780,10 @@ namespace FwLogger
 
 					uint8_t read_len = 128;
 
-					fp->_read_blocks = 1;
 					fp->_read_status = 1;
 
 					if(read_len > fp->_file_size) read_len = fp->_file_size;
+					fp->_read_bytes = read_len;
 					if(fp->_databuf == nullptr)
 					{
 						fp->_databuf = reinterpret_cast<uint8_t*>(_alloc->Allocate(128));
@@ -814,9 +814,10 @@ namespace FwLogger
                 FilePage* fp = reinterpret_cast<FilePage*>(_page);
                 _states[_stateIdx] = State::Read;
                 uint32_t addr = fp->getPageIdx()*PageWidth + fp->getSize();
-                fp->_read_blocks = 1;
+
                 uint8_t read_len = 128;
                 if(read_len > fp->_file_size) read_len = fp->_file_size;
+                fp->_read_bytes = read_len;
                 readPage(read_len, addr, fp->_databuf);
  			}
 			else if(_states[_stateIdx] == State::Full || _states[_stateIdx] == State::FreePage || _states[_stateIdx] == State::Error || _states[_stateIdx] == State::Wait)

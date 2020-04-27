@@ -4,6 +4,10 @@
 #include <cstdint>
 #include <cmath>
 #include "printf.h"
+#include "io.h"
+
+#include "stm32f1xx_hal.h"
+#include "pin_defs.h"
 
 enum TypeVal : uint8_t
 {
@@ -54,8 +58,12 @@ uint32_t _exp(float* rv, float val);
 
 uint32_t _print(void* rv, char* fmt);
 
+uint32_t _getAdc(uint32_t* rv, int port, int chan);
 
-extern BuiltinFunc builtinFuncs[16];
+uint32_t _setPin(void* rv, int pin, int level);
+
+
+extern BuiltinFunc builtinFuncs[17];
 void init_builtinFuncs();
 
 

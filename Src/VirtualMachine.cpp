@@ -1,6 +1,6 @@
 #include "VirtualMachine.h"
 
-VirtualMachine::VirtualMachine()
+VirtualMachine::VirtualMachine() : FwLogger::Module("CuleVM 0.1")
 {
 	//ctor
 	for(int i= 0; i < 4096; ++i) m_ram[i] = 0;
@@ -12,6 +12,7 @@ VirtualMachine::VirtualMachine()
 	m_localVarAddr = 0;
 	m_execBuiltin = false;
 	m_enabled = false;
+	m_delayEnabled = false;
 	init_builtinFuncs();
 }
 
@@ -66,11 +67,23 @@ T VirtualMachine::pop()
 void VirtualMachine::loop()
 {
 	if(!m_enabled) return;
+	if(m_delayEnabled)
+	{
+		if(HAL_GetTick() - m_delayStart < m_delayTime) return;
+		m_delayEnabled = false;
+	}
     uint16_t startUS = getUS();
     while(getUS()-startUS < 50000)
 	{
 		if(!cycle()) return; //false cycle means exit from loop
 	}
+}
+
+void VirtualMachine::reset()
+{
+	m_programCounter = m_stackSize;
+	m_stackPointer = 0;
+	m_execBuiltin = false;
 }
 
 bool VirtualMachine::cycle()
@@ -467,6 +480,14 @@ bool VirtualMachine::cycle()
 		m_returnAddr = unpack<uint32_t>(m_localVarAddr-12);
 		m_localVarAddr = unpack<uint32_t>(m_localVarAddr-8);
 	}
+	else if(op == Opcode::DELAY)
+	{
+		m_delayEnabled = true;
+		m_delayTime = pop<uint32_t>();
+		m_delayStart = HAL_GetTick();
+		m_programCounter++;
+		return false;
+	}
 	else // solo se ejecuta en caso de que se esté procesando una instrucción no listada
 	{
 		return false;
@@ -500,7 +521,7 @@ void VirtualMachine::prepareBuiltin()
 void VirtualMachine::callBuiltin()
 {
 	Arg rv;
-	uint32_t rc;
+	uint32_t rc = 0;
     if(m_currBuiltin.nArgs == 0)
 		rc = reinterpret_cast<uint32_t (*)(Arg*)>(builtinFuncs[m_currBuiltin.func_addr].func_ptr)(&rv);
 	else if(m_currBuiltin.nArgs == 1)

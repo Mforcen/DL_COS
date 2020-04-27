@@ -92,7 +92,71 @@ uint32_t _exp(float* rv, float val)
 	return 0;
 }
 
-BuiltinFunc builtinFuncs[16];
+uint32_t _getAdc(uint32_t* rv, int port, int chan)
+{
+	*rv = getADC(port, chan);
+	return 0;
+}
+
+uint32_t _setPin(void* rv, int pin, int level)
+{
+	GPIO_PinState pinlevel;
+	if(level)
+		pinlevel = GPIO_PIN_SET;
+	else
+		pinlevel = GPIO_PIN_RESET;
+    switch(pin)
+    {
+	case 0:
+		HAL_GPIO_WritePin(IO0, pinlevel);
+		break;
+	case 1:
+		HAL_GPIO_WritePin(IO1, pinlevel);
+		break;
+	case 2:
+		HAL_GPIO_WritePin(IO2, pinlevel);
+		break;
+	case 3:
+		HAL_GPIO_WritePin(IO3, pinlevel);
+		break;
+	case 4:
+		HAL_GPIO_WritePin(IO4, pinlevel);
+		break;
+	case 5:
+		HAL_GPIO_WritePin(IO5, pinlevel);
+		break;
+	case 6:
+		HAL_GPIO_WritePin(IO6, pinlevel);
+		break;
+	case 7:
+		HAL_GPIO_WritePin(IO7, pinlevel);
+		break;
+	case 8:
+		HAL_GPIO_WritePin(IO8, pinlevel);
+		break;
+	case 9:
+		HAL_GPIO_WritePin(IO9, pinlevel);
+		break;
+	case 10:
+		HAL_GPIO_WritePin(IO10, pinlevel);
+		break;
+	case 11:
+		HAL_GPIO_WritePin(IO11, pinlevel);
+		break;
+	case 12:
+		HAL_GPIO_WritePin(IO12, pinlevel);
+		break;
+	case 13:
+		HAL_GPIO_WritePin(IO13, pinlevel);
+		break;
+	case 14:
+		HAL_GPIO_WritePin(IO14, pinlevel);
+		break;
+    }
+    return 0;
+}
+
+BuiltinFunc builtinFuncs[17];
 
 void init_builtinFuncs()
 {
@@ -166,10 +230,22 @@ void init_builtinFuncs()
 	builtinFuncs[13].retValue = FLOAT;
 	builtinFuncs[13].func_ptr = (intptr_t)_exp;
 
-	builtinFuncs[15].nArgs = 1;
-	builtinFuncs[15].retValue = VOID;
-	builtinFuncs[15].argTypes[0] = ARR;
-	builtinFuncs[15].func_ptr = (intptr_t)_print;
+	builtinFuncs[14].nArgs = 1;
+	builtinFuncs[14].retValue = VOID;
+	builtinFuncs[14].argTypes[0] = ARR;
+	builtinFuncs[14].func_ptr = (intptr_t)_print;
+
+	builtinFuncs[15].nArgs = 2;
+	builtinFuncs[15].retValue = INT;
+	builtinFuncs[15].argTypes[0] = INT;
+	builtinFuncs[15].argTypes[1] = INT;
+	builtinFuncs[15].func_ptr = (intptr_t)_getAdc;
+
+	builtinFuncs[16].nArgs = 2;
+	builtinFuncs[16].retValue = VOID;
+	builtinFuncs[16].argTypes[0] = INT;
+	builtinFuncs[16].argTypes[1] = INT;
+	builtinFuncs[16].func_ptr = (intptr_t)_setPin;
 }
 
 

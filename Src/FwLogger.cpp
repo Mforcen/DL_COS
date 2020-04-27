@@ -2,6 +2,12 @@
 
 namespace FwLogger
 {
+	OS* OS::ptr = nullptr;
+	OS& OS::get()
+	{
+		return *ptr;
+	}
+
 	OS::OS():_alloc(_alloc_buf, _alloc_idx, 4096), flash(&hspi1, FLASH_CS), etsdb(0, 8192*1024, &hspi1, FLASH_CS, &_alloc), sdi12(SDI12_1),
 	radio(&hspi1, LORA_DIO0, LORA_DIO1, LORA_DIO2, LORA_DIO3, LORA_RXEN, LORA_TXEN, LORA_CS, LORA_RST)
 	{
@@ -11,6 +17,11 @@ namespace FwLogger
 		//ctor
 	}
 
+	void OS::setOS(OS* os)
+	{
+		ptr = os;
+	}
+
 	void OS::init()
 	{
 		radio.init(868000000);
@@ -18,19 +29,40 @@ namespace FwLogger
 
 	void OS::push_rx(uint8_t c)
 	{
-		if(_currTask.op == Operation::Upload)
+		Task* currTask = _ops.at_front();
+		if(currTask == nullptr)
 		{
-			write(_currTask.fd, &c, 1);
+			write(0, &c, 1);
+			if(c == '\b' || c == 127)
+			{
+
+                if(rx_buffer.idx > 0)
+					--rx_buffer.idx;
+
+                rx_buffer.buf[rx_buffer.idx] = 0;
+			}
+			else if(c == '\n')
+			{
+				Task tsk;
+				tsk.op = Operation::Eval;
+				_ops.push_back(tsk);
+			}
+			else
+				rx_buffer.push_back(c);
+		}
+		else if(currTask->op == Operation::Upload)
+		{
+			write(currTask->fd, &c, 1);
 
 			if(--parser_remaining <= 0)
 			{
 				Task tsk;
 				tsk.op = Operation::Close;
-				tsk.fd = _currTask.fd;
+				tsk.fd = currTask->fd;
 
 				_ops.push_back(tsk);
+				_ops.delete_front();
 
-				_currTask.op = Operation::None;
 			}
 		}
 		else
@@ -62,78 +94,80 @@ namespace FwLogger
 		radio.poll();
 		vm.loop();
 
-		if(_currTask.op == Operation::None)
-			_ops.pop_front(&_currTask);
+		Task* currTask = _ops.at_front();
 
-		else if(_currTask.op == Operation::Eval)
+		if(currTask == nullptr)
+			return;
+
+		if(currTask->op == Operation::Eval)
 		{
-			_currTask.op = Operation::None;
 			eval();
+			_ops.delete_front();
 			rx_buffer.clear();
 		}
 
-		else if(_currTask.op == Operation::OpenFile)
+		else if(currTask->op == Operation::OpenFile)
 		{
-			if(etsdb.openFile(_currTask.name_buf, static_cast<eTSDB::PageAccessMode>(_currTask.counter)) == eTSDB::Ok)
-				_currTask.op = Operation::None;
+			if(etsdb.openFile(currTask->name_buf, static_cast<eTSDB::PageAccessMode>(currTask->counter)) == eTSDB::Ok)
+				_ops.delete_front();
 		}
-		else if(_currTask.op == Operation::OpenHeader)
+		else if(currTask->op == Operation::OpenHeader)
 		{
-			ProgramInitializer* pi = reinterpret_cast<ProgramInitializer*>(_currTask.buf);
+			ProgramInitializer* pi = reinterpret_cast<ProgramInitializer*>(currTask->buf);
 			auto retval = etsdb.openHeader(pi->name, eTSDB::PageAccessMode::PageWriteUpdate, pi->hi);
 
             if(retval == eTSDB::Ok)
 			{
-				_alloc.Deallocate(_currTask.buf);
-				_currTask.op = Operation::None;
+				_alloc.Deallocate(currTask->buf);
+				_ops.delete_front();
 			}
 		}
-		else if(_currTask.op == Operation::GetPage)
+		else if(currTask->op == Operation::GetPage)
 		{
 			eTSDB::Page* page = etsdb.getPage();
 			if(page != nullptr)
 			{
 				eTSDB::FilePage* fp = new eTSDB::FilePage();
-				_fds[_currTask.fd-1].ptr = fp;
+				_fds[currTask->fd-1].ptr = fp;
 				fp->copy(reinterpret_cast<eTSDB::FilePage*>(page));
 				if(fp->getAccessMode() == eTSDB::PageAccessMode::PageRead)
-                    _fds[_currTask.fd-1].buf_idx = 0x80; // el buf está lleno, para obtener página
-				_currTask.op = Operation::None;
+                    _fds[currTask->fd-1].buf_idx = 0x80; // el buf está lleno, para obtener página
+				_ops.delete_front();
 			}
 		}
-		else if(_currTask.op == Operation::ReadNext)
+		else if(currTask->op == Operation::ReadNext)
 		{
-			eTSDB::FilePage* fp = reinterpret_cast<eTSDB::FilePage*>(_fds[_currTask.fd-1].ptr);
+			eTSDB::FilePage* fp = reinterpret_cast<eTSDB::FilePage*>(_fds[currTask->fd-1].ptr);
 			eTSDB::RetValue retval = etsdb.readNextBlockFile(*fp);
             if(retval == eTSDB::Ok)
 			{
-				_currTask.op = Operation::None;
+				_ops.delete_front();
 			}
 			else if(retval == eTSDB::FileEnded)
 			{
-				_currTask.op = Operation::None;
+				_ops.delete_front();
 			}
 		}
-		else if(_currTask.op == Operation::Close)
+		else if(currTask->op == Operation::Close)
 		{
 			HAL_Delay(10);
-			if(close(_currTask.fd) == 0)
-				_currTask.op = Operation::None;
+			if(close(currTask->fd) == 0)
+				_ops.delete_front();
 		}
-		else if(_currTask.op == Operation::LoadProgram)
+		else if(currTask->op == Operation::LoadProgram)
 		{
-			if(_currTask.buf == nullptr)
+			if(currTask->buf == nullptr)
 			{
-				_currTask.counter = 0;
-				_currTask.buf = _alloc.Allocate(sizeof(ProgramInitializer));
+				currTask->counter = 0;
+				currTask->buf = _alloc.Allocate(sizeof(ProgramInitializer));
 				for(int i = 0; i < sizeof(ProgramInitializer); ++i)
-					reinterpret_cast<uint8_t*>(_currTask.buf)[i] = 0;
+					reinterpret_cast<uint8_t*>(currTask->buf)[i] = 0;
 			}
 			uint8_t file_buf[128];
-			int bytes = read(_currTask.fd, file_buf, 128); // leo hasta 128 bytes
+			int bytes = read(currTask->fd, file_buf, 128); // leo hasta 128 bytes
 			if(bytes > 0) // tengo datos para incorporar
 			{
-				ProgramInitializer* pi = reinterpret_cast<ProgramInitializer*>(_currTask.buf);
+				ProgramInitializer* pi = reinterpret_cast<ProgramInitializer*>(currTask->buf);
 				for(int i = 0; i < bytes; ++i)
 				{
 					if(pi->status == 0)
@@ -142,7 +176,7 @@ namespace FwLogger
 						++pi->status;
 						pi->table_status = 0;
 						pi->name_counter = 0;
-						_currTask.counter = 0;
+						currTask->counter = 0;
 					}
 					else if(pi->status == 1) // read table
 					{
@@ -176,7 +210,7 @@ namespace FwLogger
 
 								Task open_tsk;
 								open_tsk.fd = _createFD(FDType::TS);
-								open_tsk.buf = _currTask.buf;
+								open_tsk.buf = currTask->buf;
 								open_tsk.op = Operation::OpenHeader;
 								_ops.push_back(open_tsk);
 
@@ -187,13 +221,13 @@ namespace FwLogger
 
 								vm.HeaderFD = open_tsk.fd;
 
-								pi->hi.colLen = _currTask.counter;
+								pi->hi.colLen = currTask->counter;
 
-								_currTask.counter = 0;
+								currTask->counter = 0;
 							}
 							else
 							{
-								pi->hi.formats[_currTask.counter] = static_cast<eTSDB::Format>(file_buf[i]);
+								pi->hi.formats[currTask->counter] = static_cast<eTSDB::Format>(file_buf[i]);
 								pi->table_status++;
 								pi->name_counter = 0;
 							}
@@ -204,24 +238,24 @@ namespace FwLogger
 							if(file_buf[i] == 0)
 							{
 								pi->table_status = 2;
-								_currTask.counter++;
+								currTask->counter++;
 							}
 							else
 							{
-								pi->hi.colNames[_currTask.counter][pi->name_counter++] = file_buf[i];
+								pi->hi.colNames[currTask->counter][pi->name_counter++] = file_buf[i];
 
 								if(pi->name_counter == 16)
 								{
 									pi->table_status = 2;
-									_currTask.counter++;
+									currTask->counter++;
 
-									if(_currTask.counter == 16) //16 columns
+									if(currTask->counter == 16) //16 columns
 									{
 										pi->status = 2;
 
 										Task open_tsk;
 										open_tsk.fd = _createFD(FDType::TS);
-										open_tsk.buf = _currTask.buf;
+										open_tsk.buf = currTask->buf;
 										open_tsk.op = Operation::OpenHeader;
 										_ops.push_back(open_tsk);
 
@@ -232,9 +266,9 @@ namespace FwLogger
 
 										vm.HeaderFD = open_tsk.fd;
 
-										pi->hi.colLen = _currTask.counter;
+										pi->hi.colLen = currTask->counter;
 
-										_currTask.counter = 0;
+										currTask->counter = 0;
 									}
 								}
 							}
@@ -242,32 +276,32 @@ namespace FwLogger
 					}
 					else if(pi->status == 2)
 					{
-						if(_currTask.counter == 0)
+						if(currTask->counter == 0)
 						{
 							pi->stack_size = 0;
 							pi->static_vars = 0;
 						}
-						if(_currTask.counter < 4)
+						if(currTask->counter < 4)
 						{
-							pi->stack_size |= (file_buf[i] << (_currTask.counter*8));
-							++_currTask.counter;
+							pi->stack_size |= (file_buf[i] << (currTask->counter*8));
+							++currTask->counter;
 						}
-						else if(_currTask.counter < 8)
+						else if(currTask->counter < 8)
 						{
-							pi->static_vars |= (file_buf[i] << ((_currTask.counter-4)*8));
-							++_currTask.counter;
+							pi->static_vars |= (file_buf[i] << ((currTask->counter-4)*8));
+							++currTask->counter;
 						}
-						if(_currTask.counter == 8)
+						if(currTask->counter == 8)
 						{
 							pi->status = 3;
 							vm.setStackSize(pi->stack_size);
-							_currTask.counter = 0;
+							currTask->counter = 0;
 						}
 					}
 					else if(pi->status == 3)
 					{
-						vm.setProgram(&file_buf[i], _currTask.counter, bytes-i);
-						_currTask.counter+= bytes-i;
+						vm.setProgram(&file_buf[i], currTask->counter, bytes-i);
+						currTask->counter+= bytes-i;
 						i = bytes;
 					}
 				}
@@ -280,8 +314,9 @@ namespace FwLogger
 				}
 				if(errno == EIO)
 				{
+					_alloc.Deallocate(currTask->buf);
 					vm.enable(true);
-					_currTask.op = Operation::None; // finalizado
+					_ops.delete_front();
 				}
 			}
 		}
@@ -377,21 +412,53 @@ namespace FwLogger
 				}
 			}
 		}
-		else if(strcmp(token, "run") == 0)
+		else if(strcmp(token, "program") == 0)
 		{
 			token = strtok(NULL, " ");
-			char buf[32];
-			strcpy(buf, "/file/");
-			strcpy(buf+6, token);
-			int fd = open(buf, O_RDONLY);
+			if(strcmp(token, "run") == 0)
+			{
+				token = strtok(NULL, " ");
+				char buf[32];
+				strcpy(buf, "/file/");
+				strcpy(buf+6, token);
+				int fd = open(buf, O_RDONLY);
 
-			Task tsk;
-			tsk.op = Operation::LoadProgram;
-			tsk.fd = fd;
-			tsk.buf = nullptr;
-			tsk.counter = 0;
+				Task tsk;
+				tsk.op = Operation::LoadProgram;
+				tsk.fd = fd;
+				tsk.buf = nullptr;
+				tsk.counter = 0;
 
-			_ops.push_back(tsk);
+				_ops.push_back(tsk);
+			}
+			else if(strcmp(token, "stop") == 0)
+			{
+				vm.enable(false);
+			}
+
+		}
+		else if(strcmp(token, "system") == 0)
+		{
+			token = strtok(NULL, " ");
+			if(strcmp(token, "memory") == 0)
+			{
+				token = strtok(NULL, " ");
+				if(strcmp(token, "show") == 0)
+				{
+					int used_blocks = 0;
+					for(int i = 0; i < 32; ++i) used_blocks += _alloc_idx[i];
+					printf_("Total memory: 4096 bytes\tUsedMemory: %d bytes\n", used_blocks*128);
+				}
+			}
+			else if(strcmp(token, "version") == 0)
+			{
+                int mn = Module::getModuleNumber();
+                for(int i = 0; i < mn; ++i)
+				{
+					printf_("%s\n", Module::getNames()[i]);
+				}
+				printf_("\n");
+			}
 
 		}
 		else if(strcmp(token, "power") == 0)
@@ -515,15 +582,18 @@ namespace FwLogger
 						{
 							_fd.buf_idx = 0;
 							for(int i = 0; i < 128; ++i) _fd.buf[i] = dp[i];
+							fp->freeDataPage(); // mark as unread to make sure that data is not read twice
 
 							Task tsk;
 							tsk.fd = fd;
 							tsk.op = Operation::ReadNext;
-							_ops.push_back(tsk);
+							_ops.push_front(tsk);
 						}
 					}
 					ui8b[i] = _fd.buf[_fd.buf_idx++];
 				}
+				uint8_t this_max_bytes_read = fp->getBytesRead()-_fd.bytes_read;
+				if(count > this_max_bytes_read) count = this_max_bytes_read;
 				_fd.bytes_read += count;
 				return count;
 			}
@@ -637,7 +707,29 @@ namespace FwLogger
             _alloc.Deallocate(_fd.ptr);
             _fd.ptr = nullptr;
 		}
+		else if(_fd.type == FDType::TS)
+		{
+			_alloc.Deallocate(_fd.ptr);
+		}
 		return 0;
+	}
+
+	eTSDB::Date OS::time()
+	{
+		eTSDB::Date retDate;
+
+		RTC_DateTypeDef rtc_date;
+		HAL_RTC_GetDate(&hrtc, &rtc_date, RTC_FORMAT_BIN);
+		retDate.year = rtc_date.Year+2000;
+		retDate.month = rtc_date.Month;
+		retDate.day = rtc_date.Date;
+
+		RTC_TimeTypeDef rtc_time;
+        HAL_RTC_GetTime(&hrtc, &rtc_time, RTC_FORMAT_BIN);
+        retDate.hour = rtc_time.Hours;
+        retDate.minute = rtc_time.Minutes;
+        retDate.second = rtc_time.Seconds;
+        return retDate;
 	}
 
 	int16_t OS::get_adc_val(int channel)
