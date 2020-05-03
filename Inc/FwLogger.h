@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <cstring>
 #include <cstdlib>
+#include <new>
 
 #include "mem_structs.hpp"
 #include "printf.h"
@@ -74,6 +75,8 @@ namespace FwLogger
 			void init();
 			void push_rx(uint8_t c);
 
+			void RTC_ISR();
+
 			void loop();
 			void eval();
 			int open(char* path, int oflag);
@@ -110,8 +113,9 @@ namespace FwLogger
 				ReadNext,
 
 				OpenHeader,
-
 				GetPage,
+				SaveRow,
+
 				LoadProgram
 			};
 
@@ -172,6 +176,7 @@ namespace FwLogger
 			Allocator<128> _alloc;
 			uint8_t _alloc_buf[4096];
 			uint8_t _alloc_idx[32];
+			bool m_rtcFlag;
 	};
 }
 #endif // FWLOGGER_H

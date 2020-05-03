@@ -14,6 +14,7 @@ namespace FwLogger
 		errno = 0;
 		parser_remaining = 0;
 		parser_status = 0;
+		m_rtcFlag = false;
 		//ctor
 	}
 
@@ -87,12 +88,71 @@ namespace FwLogger
 		}
 	}
 
+	void OS::RTC_ISR()
+	{
+		m_rtcFlag = true;
+	}
+
 	void OS::loop()
 	{
 		etsdb.poll(); // esto sería interesante pasarlo a estático
 		flash.poll();
 		radio.poll();
 		vm.loop();
+
+		if(m_rtcFlag) // if it has to wake up from sleep
+		{
+			m_rtcFlag = 0;
+			vm.resumeExec(); // this will resume VM execution if WAIT_TABLE is called
+		}
+		else if(vm.getWaitFlag()) // else if has to go to sleep, configure alarm
+		{
+			RTC_TimeTypeDef sTime;
+			HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
+            int secs = sTime.Hours*3600 + sTime.Minutes*60 + sTime.Seconds;
+            secs = vm.getNextAlarm(secs);
+
+			RTC_AlarmTypeDef sAlarm;
+			sAlarm.Alarm = RTC_ALARM_A;
+			sAlarm.AlarmTime.Hours = secs / 3600;
+			secs %= 3600;
+			sAlarm.AlarmTime.Minutes = secs/60;
+			sAlarm.AlarmTime.Seconds = secs%60;
+
+			HAL_RTC_SetAlarm_IT(&hrtc, &sAlarm, RTC_FORMAT_BIN);
+		}
+
+		if(vm.getSaveFlag()) //if it has to save data
+		{
+            eTSDB::HeaderPage* hp = reinterpret_cast<eTSDB::HeaderPage*>(_fds[vm.HeaderFD-1].ptr);
+            if(hp != nullptr)
+			{
+				eTSDB::Row* dataRow = new (_alloc.Allocate(sizeof(eTSDB::Row))) eTSDB::Row();
+				hp->getFormat(*dataRow);
+				dataRow->deserialize(vm.getTableAddress());
+
+				RTC_AlarmTypeDef sAlarm;
+				HAL_RTC_GetAlarm(&hrtc, &sAlarm, RTC_ALARM_A, RTC_FORMAT_BIN);
+
+				RTC_DateTypeDef sDate;
+				HAL_RTC_GetDate(&hrtc, &sDate, RTC_FORMAT_BIN);
+
+				dataRow->rowDate.year = sDate.Year+2000;
+				dataRow->rowDate.month= sDate.Month;
+				dataRow->rowDate.day = sDate.Date;
+				dataRow->rowDate.hour = sAlarm.AlarmTime.Hours;
+				dataRow->rowDate.minute = sAlarm.AlarmTime.Minutes;
+				dataRow->rowDate.second = sAlarm.AlarmTime.Seconds;
+
+				Task op;
+				op.op = Operation::SaveRow;
+				op.fd = vm.HeaderFD;
+				op.buf = dataRow;
+				_ops.push_back(op);
+
+				vm.ackSaveFlag();
+			}
+		}
 
 		Task* currTask = _ops.at_front();
 
@@ -127,11 +187,20 @@ namespace FwLogger
 			eTSDB::Page* page = etsdb.getPage();
 			if(page != nullptr)
 			{
-				eTSDB::FilePage* fp = new eTSDB::FilePage();
-				_fds[currTask->fd-1].ptr = fp;
-				fp->copy(reinterpret_cast<eTSDB::FilePage*>(page));
-				if(fp->getAccessMode() == eTSDB::PageAccessMode::PageRead)
-                    _fds[currTask->fd-1].buf_idx = 0x80; // el buf está lleno, para obtener página
+				if(page->getType() == eTSDB::PageType::FileType)
+				{
+					eTSDB::FilePage* fp = new eTSDB::FilePage();
+					_fds[currTask->fd-1].ptr = fp;
+					fp->copy(reinterpret_cast<eTSDB::FilePage*>(page));
+					if(fp->getAccessMode() == eTSDB::PageAccessMode::PageRead)
+						_fds[currTask->fd-1].buf_idx = 0x80; // el buf está lleno, para obtener página
+				}
+				else if(page->getType() == eTSDB::PageType::HeaderType)
+				{
+					eTSDB::HeaderPage* hp = new eTSDB::HeaderPage();
+					_fds[currTask->fd-1].ptr = hp;
+					hp->copy(reinterpret_cast<eTSDB::HeaderPage*>(page));
+				}
 				_ops.delete_front();
 			}
 		}
@@ -200,6 +269,7 @@ namespace FwLogger
 						{
 							pi->hi.period = file_buf[i];
 							pi->table_status++;
+							vm.tablePeriod = eTSDB::getSecondsFromPeriod(pi->hi.period);
 						}
 
 						else if(pi->table_status == 2)
@@ -314,10 +384,22 @@ namespace FwLogger
 				}
 				if(errno == EIO)
 				{
-					_alloc.Deallocate(currTask->buf);
+					_alloc.Deallocate(currTask->buf); //deallocating program initializer
+					close(currTask->fd); // close file, cleaning buffers (file page and file buffer)
 					vm.enable(true);
 					_ops.delete_front();
 				}
+			}
+		}
+		else if(currTask->op == Operation::SaveRow)
+		{
+			eTSDB::HeaderPage* hp = reinterpret_cast<eTSDB::HeaderPage*>(_fds[currTask->fd-1].ptr);
+			if(hp == nullptr) return;
+			eTSDB::RetValue retval = etsdb.appendValue(*hp, *reinterpret_cast<eTSDB::Row*>(currTask->buf));
+			if(retval == eTSDB::Ok)
+			{
+				_alloc.Deallocate(currTask->buf);
+				_ops.delete_front();
 			}
 		}
 	}
@@ -459,7 +541,50 @@ namespace FwLogger
 				}
 				printf_("\n");
 			}
+			else if(strcmp(token, "clock") == 0) //TODO añadir get set de fecha y alarmas del rtc para dar por concluido este aparato
+			{
+				token = strtok(NULL, " ");
+				if(strcmp(token, "set") == 0)
+				{
+					RTC_DateTypeDef rtc_date;
+					RTC_TimeTypeDef rtc_time;
+					char* datetok = strtok(NULL, " ");
+					char* timetok = strtok(NULL, " ");
 
+					datetok = strtok(datetok, "/");
+					int year = atoi(datetok) ;
+					rtc_date.Year = year - 2000;
+
+					datetok = strtok(NULL, "/");
+					rtc_date.Month = atoi(datetok);
+
+					datetok = strtok(NULL, "/");
+					rtc_date.Date = atoi(datetok);
+
+					HAL_RTC_SetDate(&hrtc, &rtc_date, RTC_FORMAT_BIN);
+
+					timetok = strtok(timetok, ":");
+					rtc_time.Hours = atoi(timetok);
+
+					timetok = strtok(NULL, ":");
+					rtc_time.Minutes = atoi(timetok);
+
+					timetok = strtok(NULL, ":");
+					rtc_time.Seconds = atoi(timetok);
+					HAL_RTC_SetTime(&hrtc, &rtc_time, RTC_FORMAT_BIN);
+
+				}
+				else if(strcmp(token, "get") == 0)
+				{
+					RTC_DateTypeDef rtc_date;
+					RTC_TimeTypeDef rtc_time;
+
+					HAL_RTC_GetDate(&hrtc, &rtc_date, RTC_FORMAT_BIN);
+					HAL_RTC_GetTime(&hrtc, &rtc_time, RTC_FORMAT_BIN);
+
+					printf_("%d/%d/%d %d:%d:%d\n", rtc_date.Year+2000, rtc_date.Month, rtc_date.Date, rtc_time.Hours, rtc_time.Minutes, rtc_time.Seconds);
+				}
+			}
 		}
 		else if(strcmp(token, "power") == 0)
 		{
@@ -700,10 +825,13 @@ namespace FwLogger
 		if(_fd.type == FDType::None) return EBADF;
 		if(_fd.type == FDType::File)
 		{
-            if(etsdb.closeFile(*reinterpret_cast<eTSDB::FilePage*>(_fd.ptr)) != eTSDB::RetValue::Ok)
+			eTSDB::FilePage* fp = reinterpret_cast<eTSDB::FilePage*>(_fd.ptr);
+            if(etsdb.closeFile(*fp) != eTSDB::RetValue::Ok)
 			{
                 return EBUSY;
 			}
+			if(_fd.buf != nullptr) _alloc.Deallocate(_fd.buf);
+			delete fp;
             _alloc.Deallocate(_fd.ptr);
             _fd.ptr = nullptr;
 		}

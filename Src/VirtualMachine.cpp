@@ -13,6 +13,9 @@ VirtualMachine::VirtualMachine() : FwLogger::Module("CuleVM 0.1")
 	m_execBuiltin = false;
 	m_enabled = false;
 	m_delayEnabled = false;
+	m_saveTable = false;
+	m_startTableWait = false;
+	m_waitTable = false;
 	init_builtinFuncs();
 }
 
@@ -20,6 +23,7 @@ void VirtualMachine::setProgram(uint8_t* program, uint32_t addr, uint32_t length
 {
 	for(int i = 0; i < length; ++i)
 		m_ram[m_stackSize+i+addr] = program[i]; // de momento
+	m_tableAddress = &m_ram[m_stackSize+length+addr];
 }
 
 void VirtualMachine::setStackSize(uint32_t stackSize)
@@ -66,7 +70,7 @@ T VirtualMachine::pop()
 
 void VirtualMachine::loop()
 {
-	if(!m_enabled) return;
+	if((!m_enabled) || m_waitTable) return; //si no está activo o si está esperando
 	if(m_delayEnabled)
 	{
 		if(HAL_GetTick() - m_delayStart < m_delayTime) return;
@@ -84,6 +88,41 @@ void VirtualMachine::reset()
 	m_programCounter = m_stackSize;
 	m_stackPointer = 0;
 	m_execBuiltin = false;
+}
+
+void VirtualMachine::resumeExec()
+{
+	m_waitTable = false;
+}
+
+uint8_t* VirtualMachine::getTableAddress()
+{
+	return m_tableAddress;
+}
+
+bool VirtualMachine::getSaveFlag()
+{
+	return m_saveTable;
+}
+
+void VirtualMachine::ackSaveFlag()
+{
+	m_saveTable = false;
+}
+
+bool VirtualMachine::getWaitFlag()
+{
+	if(m_startTableWait)
+	{
+		m_startTableWait = false;
+		return true;
+	}
+	return false;
+}
+
+int VirtualMachine::getNextAlarm(int now_alarm) // now alarm is in seconds
+{
+    return (((now_alarm/tablePeriod)+1)*tablePeriod)%86400;
 }
 
 bool VirtualMachine::cycle()
@@ -487,6 +526,18 @@ bool VirtualMachine::cycle()
 		m_delayStart = HAL_GetTick();
 		m_programCounter++;
 		return false;
+	}
+	else if(op == Opcode::WAIT_TABLE) //wait until the next table call
+	{
+		m_waitTable = true; // this flag will go down when the RTC ISR is called
+		m_startTableWait = true;
+		m_programCounter++;
+		return false;
+	}
+	else if(op == Opcode::SAVE_TABLE)
+	{
+		m_saveTable = true;
+		m_programCounter++;
 	}
 	else // solo se ejecuta en caso de que se esté procesando una instrucción no listada
 	{

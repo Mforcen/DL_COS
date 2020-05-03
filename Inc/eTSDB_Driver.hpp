@@ -47,21 +47,15 @@ namespace FwLogger
 			  * Create, find and delete header pages
 			  */
 			RetValue openHeader(const uint8_t* name, PageAccessMode am, uint8_t period = 0, uint8_t colLen = 0, const Format* formats = nullptr, const uint8_t* colNames[16] = nullptr);
-			RetValue openHeader(const uint8_t* name, PageAccessMode am, HeaderInitializer hi);
+			RetValue openHeader(const uint8_t* name, PageAccessMode am, HeaderInitializer& hi);
 			RetValue deleteHeader(HeaderPage& header);
-
-			/**
-			  * Create, find and delete data pages
-			  */
-			RetValue createDataPage(HeaderPage& header, Date& date);
-			RetValue findDataPage(HeaderPage& header, uint16_t headerIdx);
-			RetValue deleteDataPage(DataPage& dp);
 
 			/**
 			  * Read and write values
 			  */
-			RetValue readValue(DataPage& dp, uint16_t meas_idx);
-			RetValue appendValue(DataPage& dp, Row& row);
+			RetValue readValue(HeaderPage& hp, Date date);
+			RetValue readNextValue(HeaderPage& hp);
+			RetValue appendValue(HeaderPage& gp, Row& row);
 
 			/**
 			  * File functions-> Write function only can write once
@@ -94,6 +88,10 @@ namespace FwLogger
 				DataPageWriteInHeader, //DataPage actions
 				DataPageReadHeader,
 				DataPageFindEmptyBody,
+				DataPageCheckHeaderDate,
+				DataPageAppend,
+				SwapDataPageHeaderPage,
+
 
 				ReadDataBody,
 
@@ -141,9 +139,21 @@ namespace FwLogger
 			void* _opBuf; ///< This variable will hold the buffer of the current operation (read/write or iteration)
 
 			/**
-			  * Private methods
+			  * Create, find and delete data pages
+			  */
+			RetValue createDataPage();
+			RetValue findDataPage(HeaderPage& header, uint16_t headerIdx);
+			RetValue deleteDataPage(DataPage& dp);
+			RetValue flushValue();
+
+			/**
+			  * File methods
 			  */
 			RetValue flushFile(FilePage& file);
+
+			/**
+			  * Private methods
+			  */
 			RetValue findEmptyPage();
 			RetValue findNewObject();
 			void step();

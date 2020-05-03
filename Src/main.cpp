@@ -1419,6 +1419,11 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef* hspi)
 		FwLogger::SPI_Device::CpltCallback();
 }
 
+void HAL_RTC_AlarmAEventCallback(RTC_HandleTypeDef* hrtc)
+{
+    FwLogger::OS::get().RTC_ISR();
+}
+
 void sdi12_Isr()
 {
 	FwLogger::OS::get().sdi12.timer_isr();

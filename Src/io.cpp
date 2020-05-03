@@ -14,7 +14,6 @@ int getADC(int port, int chan)
 	return getRawADC(port, chan) * 3300 / 4096;
 }
 
-
 int open(char* path, int oflag)
 {
 	return OS::get().open(path, oflag);

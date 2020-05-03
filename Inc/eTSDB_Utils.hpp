@@ -26,7 +26,8 @@ namespace FwLogger
 			OutOfTime,
 			Error,
 			FullPage,
-			FileEnded
+			FileEnded,
+			NotMonotonic
 		};
 
 		enum class Format : uint8_t
@@ -51,6 +52,7 @@ namespace FwLogger
 
 		uint8_t getFormatWidth(Format format);
 		uint32_t getSecondsFromPeriod(uint8_t period);
+		uint64_t divRoundClosest(const uint64_t n, const uint64_t d);
 
 		struct Value
 		{
@@ -163,6 +165,16 @@ namespace FwLogger
 				second = seconds % 60;
 			}
 
+			bool snapToPeriod(uint8_t period)
+			{
+				uint32_t period_seconds = getSecondsFromPeriod(period);
+				uint64_t datesecs = seconds();
+				datesecs = divRoundClosest(datesecs, period_seconds);
+				datesecs *= period_seconds;
+				fromSeconds(datesecs);
+				return true;
+			}
+
 			Date operator-(Date const& other)
 			{
 				return Date(seconds()-other.seconds());
@@ -181,6 +193,26 @@ namespace FwLogger
 			bool operator==(Date const& other)
 			{
 				return ((year==other.year) && (month == other.month) && (day == other.day) && (hour == other.hour) && (minute == other.minute) && (second == other.second));
+			}
+
+			bool operator>(Date const& other)
+			{
+				return seconds() > other.seconds();
+			}
+
+			bool operator<(Date const& other)
+			{
+				return seconds() < other.seconds();
+			}
+
+			bool operator>=(Date const& other)
+			{
+				return seconds() >= other.seconds();
+			}
+
+			bool operator<=(Date const& other)
+			{
+				return seconds() <= other.seconds();
 			}
 
 			uint8_t exists;
@@ -237,6 +269,19 @@ namespace FwLogger
 				{
 					int formatWidth = getFormatWidth(vals[val_idx].format);
 					for(int inner_idx = 0; inner_idx < formatWidth; ++inner_idx) buf[buf_idx++] = vals[val_idx].data.bytes[inner_idx];
+				}
+				return buf_idx;
+			}
+
+			int deserialize(uint8_t* buf)
+			{
+				int buf_idx = 0;
+				int val_idx;
+				for(val_idx=0; val_idx < 16; ++ val_idx)
+				{
+					if(vals[val_idx].format == Format::Invalid) break;
+					int formatWidth = getFormatWidth(vals[val_idx].format);
+                    for(int inner_idx = 0; inner_idx < formatWidth; ++inner_idx) vals[val_idx].data.bytes[inner_idx] = buf[buf_idx++];
 				}
 				return buf_idx;
 			}

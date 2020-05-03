@@ -102,7 +102,8 @@ enum class Opcode : char
 	RETURN,
 
 	DELAY,
-	WAIT_TABLE
+	WAIT_TABLE,
+	SAVE_TABLE
 };
 
 #endif

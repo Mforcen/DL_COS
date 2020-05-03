@@ -63,6 +63,7 @@ namespace FwLogger
 
 			int getTypeSize();
 			int serialize(uint8_t* dst);
+			int getNumEntries();
 
 			void copy(DataPage* dp);
 		protected:
@@ -76,7 +77,6 @@ namespace FwLogger
 
 			uint16_t _rowIdx; ///< This helps to find the writing address of the block
 			uint8_t _rowWidth;
-			//uint8_t _numCols;
 			uint8_t _period;
 
 			Date _block_date; ///< This stores the first measure date, used to check the measures
@@ -109,6 +109,9 @@ namespace FwLogger
 
 			uint8_t getPeriod();
 
+			bool checkFormat(Row& row);
+			void getFormat(Row& row);
+
 			int getTypeSize();
 			int serialize(uint8_t* dst);
 			int deserialize(uint8_t* dst);
@@ -123,7 +126,7 @@ namespace FwLogger
 			Format _formats[16];
 
 			uint16_t _header_spacing; ///< This variable indicates how many space uses the header, up to 304 bytes
-			uint8_t _data_index; ///< This variable indicates where the next data index could be stored
+			uint8_t _data_idx; ///< This variable indicates where the next data index could be stored
 			uint8_t _data_stride; ///< This variable holds the space that a row needs to be fully stored. It's only calculated once based on the format array
 			uint8_t _period; ///< This allows to know how many times there will be between samples
 

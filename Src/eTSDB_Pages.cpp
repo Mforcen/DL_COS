@@ -2,8 +2,6 @@
 
 static_assert(sizeof(float) == 4, "Float type should be of 4 bytes");
 
-#define BLOCK_OFFSET 0x1000
-
 namespace FwLogger
 {
 	namespace eTSDB
@@ -36,6 +34,11 @@ namespace FwLogger
 			else if(period < 119) return (period-59)*60;
 			else if(period < 143) return (period-118)*3600;
 			return 0; // error
+		}
+
+		uint64_t divRoundClosest(const uint64_t n, const uint64_t d)
+		{
+			return ((n < 0) ^ (d < 0)) ? ((n - d/2)/d) : ((n + d/2)/d);
 		}
 
 		Allocator<128>* eTSDB::Page::_alloc = nullptr;
@@ -126,7 +129,6 @@ namespace FwLogger
 			_rowIdx = dp->_rowIdx;
 			_rowWidth = dp->_rowWidth;
 			_block_date = dp->_block_date;
-			//_numCols = dp->_numCols;
 			_period = dp->_period;
 			for(int i = 0; i < 16; ++i) _formats[i] = dp->_formats[i];
 		}
@@ -134,6 +136,12 @@ namespace FwLogger
 		Date DataPage::getBlockDate()
 		{
 			return _block_date;
+		}
+
+		int DataPage::getNumEntries()
+		{
+			if(_rowWidth == 0) return 0;
+			return (PageWidth-_header_span)/_rowWidth;
 		}
 
 		/**
@@ -148,12 +156,14 @@ namespace FwLogger
 		HeaderPage::HeaderPage() : Page(0, HeaderType, 0)
 		{
 			_data_stride = 0;
+			_data_idx = 0xffff;
 			_currDP = nullptr;
 		}
 
 		HeaderPage::HeaderPage(uint16_t page_idx, uint16_t object_idx) : Page(page_idx, HeaderType, object_idx)
 		{
 			_data_stride = 0;
+			_data_idx = 0xffff;
 			_currDP = nullptr;
 		}
 
@@ -201,6 +211,25 @@ namespace FwLogger
 		uint8_t HeaderPage::getPeriod()
 		{
 			return _period;
+		}
+
+		bool HeaderPage::checkFormat(Row& row)
+		{
+			for(int i = 0; i < 16 && _formats[i] != Format::Invalid; ++i)
+			{
+				if(_formats[i] != row.vals[i].format)
+					return false;
+			}
+			return true;
+		}
+
+		void HeaderPage::getFormat(Row& row)
+		{
+			for(int i = 0; i < 16; ++i)
+			{
+				if(_formats[i] == Format::Invalid) break;
+				row.vals[i].format = _formats[i];
+			}
 		}
 
 		int HeaderPage::getTypeSize()
@@ -419,7 +448,7 @@ namespace FwLogger
 
 		bool FilePage::getDataReady()
 		{
-            return _read_status >= 2;
+			return _read_status >= 2;
 		}
 
 		void FilePage::copy(FilePage* fp)
@@ -476,7 +505,7 @@ namespace FwLogger
 		}
 		uint16_t FilePage::getBytesRead()
 		{
-            return _read_bytes;
+			return _read_bytes;
 		}
 	}
 }
