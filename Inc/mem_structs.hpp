@@ -246,21 +246,21 @@ int prio_queue<T>::right(int id)
 	return (2*id + 2);
 }
 
-template <std::size_t pageSize>
 class Allocator // 128bytes per object
 {
 	public:
-		Allocator(uint8_t* mem, uint8_t* idx, std::size_t size)
+		Allocator(uint8_t* mem, uint8_t* idx, uintptr_t* ownership, std::size_t size)
 		{
 			_mem = mem;
 			_idx = idx;
+			_ownership = ownership;
 			for(std::size_t i = 0; i < size; ++i) _mem[i] = 0;
 			for(std::size_t i = 0; i < size/pageSize; ++i) _idx[i] = 0;
 
 			_numBlocks = size/pageSize;
 		}
 
-		void* Allocate(std::size_t reqSize)
+		void* Allocate(std::size_t reqSize, uintptr_t owner)
 		{
 			//printf("Allocating %d bytes ", reqSize);
 			uint8_t reqBlocks = int_ceil(reqSize, pageSize);
@@ -283,6 +283,7 @@ class Allocator // 128bytes per object
 				if(freeBlocks == reqBlocks)
 				{
 					_idx[i-reqBlocks] = reqBlocks;
+					_ownership[i-reqBlocks] = owner;
 					return &_mem[(i-reqBlocks)*128];
 				}
 			}
@@ -297,11 +298,14 @@ class Allocator // 128bytes per object
 			uintptr_t mem_ptr = reinterpret_cast<uintptr_t>(_mem);
 			uint8_t numBlock = (dealloc_ptr-mem_ptr)/pageSize;
 			_idx[numBlock] = 0;
+			_ownership[numBlock] = 0;
 		}
 	private:
 		uint8_t* _mem;
 		uint8_t* _idx;
+		uintptr_t* _ownership;
 		std::size_t _numBlocks;
+		std::size_t pageSize = 128;
 
 		int int_ceil(int D, int d)
 		{

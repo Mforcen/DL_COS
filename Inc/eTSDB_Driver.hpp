@@ -3,6 +3,7 @@
 
 #include "SPIFlash.h"
 #include "Module.h"
+#include <new>
 
 #include "eTSDB_Utils.hpp"
 #include "eTSDB_Pages.hpp"
@@ -41,7 +42,7 @@ namespace FwLogger
 		class Driver : public SPIFlash, public Module
 		{
 		public:
-			Driver(uint32_t offsetAddress, uint32_t size, SPI_HandleTypeDef* hspi, GPIO_TypeDef* gpio, uint16_t pin, Allocator<128>* alloc);
+			Driver(uint32_t offsetAddress, uint32_t size, SPI_HandleTypeDef* hspi, GPIO_TypeDef* gpio, uint16_t pin, Allocator* alloc);
 
 			/**
 			  * Create, find and delete header pages
@@ -92,7 +93,6 @@ namespace FwLogger
 				DataPageAppend,
 				SwapDataPageHeaderPage,
 
-
 				ReadDataBody,
 
 				FindNewObject,
@@ -105,6 +105,7 @@ namespace FwLogger
 				Full = 0x80,
 				FreePage,
 				Error,
+				FreeRow,
 				Wait = 0xff
 			};
 
@@ -120,7 +121,7 @@ namespace FwLogger
 		protected:
 
 		private:
-			Allocator<128>* _alloc;
+			Allocator* _alloc;
 
 			State _states[16];
 			int _stateIdx;

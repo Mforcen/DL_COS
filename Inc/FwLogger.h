@@ -115,6 +115,7 @@ namespace FwLogger
 				OpenHeader,
 				GetPage,
 				SaveRow,
+				TestAppend,
 
 				LoadProgram
 			};
@@ -173,9 +174,10 @@ namespace FwLogger
 
 			FileDescriptor _fds[16];
 
-			Allocator<128> _alloc;
+			Allocator _alloc;
 			uint8_t _alloc_buf[4096];
 			uint8_t _alloc_idx[32];
+			uintptr_t _alloc_ownership[32];
 			bool m_rtcFlag;
 	};
 }

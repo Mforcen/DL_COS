@@ -225,6 +225,7 @@
 		</Unit>
 		<Unit filename="Inc/FwLogger.h" />
 		<Unit filename="Inc/LoRa.h" />
+		<Unit filename="Inc/Log.h" />
 		<Unit filename="Inc/Module.h" />
 		<Unit filename="Inc/SDI12_Driver.h" />
 		<Unit filename="Inc/SPIFlash.h" />
@@ -255,6 +256,7 @@
 		</Unit>
 		<Unit filename="Src/FwLogger.cpp" />
 		<Unit filename="Src/LoRa.cpp" />
+		<Unit filename="Src/Log.cpp" />
 		<Unit filename="Src/Module.cpp" />
 		<Unit filename="Src/SDI12_Driver.cpp" />
 		<Unit filename="Src/SPIFlash.cpp" />
@@ -288,8 +290,6 @@
 		</Unit>
 		<Unit filename="startup_stm32f103xe.s" />
 		<Extensions>
-			<code_completion />
-			<envvars />
 			<debugger>
 				<remote_debugging>
 					<options conn_type="0" serial_baud="115200" additional_cmds="set arch arm&#x0A;file build/FLogger.elf&#x0A;load&#x0A;monitor reset halt&#x0A;" />

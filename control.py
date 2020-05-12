@@ -26,12 +26,12 @@ def serial_ports():
 
 
 parser = argparse.ArgumentParser(description='Communicate with FLogger')
-parser.add_argument('-o', '--option', help='Select option:\n\tupload file')
+parser.add_argument('-o', '--option', help='Select option:\n\tupload file\n\tdownload flash')
 parser.add_argument('-f', '--file', help='File path')
 parser.add_argument('-p', '--port', help='Serial port')
 parser.add_argument('-rp', '--remote-path', help='The remote')
-parser.add_argument('-d', '--debug', help='Redirects flow to stdout')
-parser.add_argument('-w', '--wait', help='Waits between two chunks')
+parser.add_argument('-d', '--debug', help='Redirects flow to stdout', action='store_true')
+parser.add_argument('-w', '--wait', help='Waits between two chunks', action='store_true')
 parser.add_argument('-a', '--address', help='Indicates the flash address to read')
 parser.add_argument('-l', '--length', help='Indicates how many bytes to read')
 
@@ -48,10 +48,10 @@ except Exception:
 	exit()
 
 
-if args.debug is None:
-	out = port.write
-else:
+if args.debug:
 	out = print
+else:
+	out = port.write
 
 if args.option == 'upload':
 	if args.file is None or args.remote_path is None:
@@ -67,7 +67,7 @@ if args.option == 'upload':
 	preamble = 'file upload ' + args.remote_path + ' ' + str(len(file_content))+'\n'
 	out(preamble.encode('ascii'))
 	time.sleep(0.1)
-	if args.wait is not None:
+	if args.wait:
 		for i in range(len(file_content)//64 + 1):
 			start = i*64
 			end = (i+1)*64

@@ -1,9 +1,10 @@
 #include <eTSDB_Driver.hpp>
+#include <printf.h>
 namespace FwLogger
 {
 	namespace eTSDB
 	{
-		Driver::Driver(uint32_t offsetAddress, uint32_t size, SPI_HandleTypeDef* hspi, GPIO_TypeDef* gpio, uint16_t pin, Allocator<128>* alloc):
+		Driver::Driver(uint32_t offsetAddress, uint32_t size, SPI_HandleTypeDef* hspi, GPIO_TypeDef* gpio, uint16_t pin, Allocator* alloc):
 			SPIFlash(hspi, gpio, pin), Module("eTSDB 0.2")
 		{
 			_offset = offsetAddress;
@@ -119,9 +120,10 @@ namespace FwLogger
 
 			RetValue prep_ret = prepareCom();
 			if(prep_ret != Ok) return prep_ret;
+			printf_("Append to pag %d, pos %d\n", hp._currDP->_page_idx, hp._currDP->_rowIdx);
 
 			_page = &hp;
-			_row = &row;
+			_row = new(_alloc->Allocate(sizeof(Row), reinterpret_cast<uintptr_t>(this)))Row(row);
 
 			uint32_t period_seconds = getSecondsFromPeriod(hp.getPeriod());
 			if(row.rowDate.seconds() % period_seconds > period_seconds/10) return OutOfTime; // it does not fit
@@ -194,7 +196,7 @@ namespace FwLogger
 
 			if(file._databuf == nullptr)
 			{
-				file._databuf = static_cast<uint8_t*>(_alloc->Allocate(128));
+				file._databuf = static_cast<uint8_t*>(_alloc->Allocate(128, 3));
 				file._data_status = 0;
 				file._data_idx = 0;
 			}
@@ -236,7 +238,7 @@ namespace FwLogger
 			file._read_bytes += _opLen;
 
 			if(file._databuf == nullptr)
-				file._databuf = static_cast<uint8_t*>(_alloc->Allocate(_opLen));
+				file._databuf = static_cast<uint8_t*>(_alloc->Allocate(_opLen, reinterpret_cast<uintptr_t>(&file)));
 
 			readPage(_opLen, _opAddr, file._databuf);
 
@@ -305,10 +307,14 @@ namespace FwLogger
 			HeaderPage* hp = reinterpret_cast<HeaderPage*>(_page);
 			DataPage* dp = hp->_currDP;
 
+			printf_("Creating new dp after idx %d\n", dp->_page_idx);
+
 			dp->_header = hp;
 			dp->_block_date = _row->rowDate;
 			dp->_object_idx = hp->getObjectIdx();
 			dp->_period = hp->getPeriod();
+			dp->_rowIdx = 0; // reset the row idx, since it is a new data page
+
 			_opLen = dp->getSize();
 
 			for(int i = 0; i < 16; ++i) dp->_formats[i] = hp->_formats[i];
@@ -358,7 +364,8 @@ namespace FwLogger
 
 			_stateIdx = 0;
 			_states[0] = State::Write;
-			_states[1] = State::Wait;
+			_states[1] = State::FreeRow;
+			_states[2] = State::Wait;
 
 			uint16_t num_entry = (_row->rowDate.seconds()-dp->_block_date.seconds())/getSecondsFromPeriod(dp->_period);
 			if(num_entry >= dp->getNumEntries()) return createDataPage(); // if full then create another page
@@ -367,7 +374,7 @@ namespace FwLogger
 
 			_opAddr = num_entry*dp->_rowWidth + dp->_header_span + dp->getPageIdx()*PageWidth;
 			_opLen = 0;
-			_opBuf = _alloc->Allocate(dp->_rowWidth);
+			_opBuf = _alloc->Allocate(dp->_rowWidth, reinterpret_cast<uintptr_t>(this));
 
 			uint8_t* opBuf = static_cast<uint8_t*>(_opBuf);
 
@@ -550,8 +557,6 @@ namespace FwLogger
 			}
 		}
 
-
-
 		void Driver::step()
 		{
 			++_stateIdx;
@@ -572,7 +577,7 @@ namespace FwLogger
 			{
 				_opLen = _page->getSize();
 				_opAddr = _page->getPageIdx()*PageWidth;
-				_opBuf = _alloc->Allocate(_opLen);
+				_opBuf = _alloc->Allocate(_opLen, reinterpret_cast<uintptr_t>(this));
 				_page->serialize(static_cast<uint8_t*>(_opBuf));
 
 				if(_page->getType() == FileType)
@@ -815,7 +820,7 @@ namespace FwLogger
 					fp->_read_bytes = read_len;
 					if(fp->_databuf == nullptr)
 					{
-						fp->_databuf = reinterpret_cast<uint8_t*>(_alloc->Allocate(128));
+						fp->_databuf = reinterpret_cast<uint8_t*>(_alloc->Allocate(128, reinterpret_cast<uintptr_t>(this)));
 					}
 					uint32_t addr = fp->getPageIdx()*PageWidth+fp->getSize();
 					readPage(read_len, addr, fp->_databuf);
@@ -849,6 +854,12 @@ namespace FwLogger
                 fp->_read_bytes = read_len;
                 readPage(read_len, addr, fp->_databuf);
  			}
+ 			else if(_states[_stateIdx] == State::FreeRow)
+			{
+				if(_row != nullptr) _alloc->Deallocate(_row);
+				_row = nullptr;
+				step();
+			}
 			else if(_states[_stateIdx] == State::Full || _states[_stateIdx] == State::FreePage || _states[_stateIdx] == State::Error || _states[_stateIdx] == State::Wait || _states[_stateIdx] == State::Nop)
 			{
 				unlock();

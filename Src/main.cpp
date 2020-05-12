@@ -965,7 +965,6 @@ static void MX_TIM2_Init(void)
 
 	/* USER CODE END TIM2_Init 2 */
 	HAL_TIM_MspPostInit(&htim2);
-
 }
 
 /**

@@ -31,6 +31,7 @@ class VirtualMachine : public FwLogger::Module
 		void setProgram(uint8_t* program, uint32_t addr, uint32_t length); // el program tiene una cabecera y de momento es lo que va a hacer
         void setStackSize(uint32_t stackSize);
         void enable(bool enable = true);
+        bool getEnabled();
 
         int HeaderFD;
         int tablePeriod;

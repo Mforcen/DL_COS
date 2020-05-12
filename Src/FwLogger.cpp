@@ -8,7 +8,7 @@ namespace FwLogger
 		return *ptr;
 	}
 
-	OS::OS():_alloc(_alloc_buf, _alloc_idx, 4096), flash(&hspi1, FLASH_CS), etsdb(0, 8192*1024, &hspi1, FLASH_CS, &_alloc), sdi12(SDI12_1),
+	OS::OS():_alloc(_alloc_buf, _alloc_idx, _alloc_ownership, 4096), flash(&hspi1, FLASH_CS), etsdb(0, 8192*1024, &hspi1, FLASH_CS, &_alloc), sdi12(SDI12_1),
 	radio(&hspi1, LORA_DIO0, LORA_DIO1, LORA_DIO2, LORA_DIO3, LORA_RXEN, LORA_TXEN, LORA_CS, LORA_RST)
 	{
 		errno = 0;
@@ -81,7 +81,7 @@ namespace FwLogger
 			{
 				Task tsk;
 				tsk.op = Operation::Eval;
-				_ops.push_back(tsk);
+				_ops.push_front(tsk);
 			}
 			else
 				rx_buffer.push_back(c);
@@ -127,7 +127,7 @@ namespace FwLogger
             eTSDB::HeaderPage* hp = reinterpret_cast<eTSDB::HeaderPage*>(_fds[vm.HeaderFD-1].ptr);
             if(hp != nullptr)
 			{
-				eTSDB::Row* dataRow = new (_alloc.Allocate(sizeof(eTSDB::Row))) eTSDB::Row();
+				eTSDB::Row* dataRow = new (_alloc.Allocate(sizeof(eTSDB::Row), reinterpret_cast<uintptr_t>(this))) eTSDB::Row();
 				hp->getFormat(*dataRow);
 				dataRow->deserialize(vm.getTableAddress());
 
@@ -137,6 +137,7 @@ namespace FwLogger
 				RTC_DateTypeDef sDate;
 				HAL_RTC_GetDate(&hrtc, &sDate, RTC_FORMAT_BIN);
 
+				dataRow->rowDate.exists = 0;
 				dataRow->rowDate.year = sDate.Year+2000;
 				dataRow->rowDate.month= sDate.Month;
 				dataRow->rowDate.day = sDate.Date;
@@ -179,6 +180,7 @@ namespace FwLogger
             if(retval == eTSDB::Ok)
 			{
 				_alloc.Deallocate(currTask->buf);
+				currTask->buf = 0;
 				_ops.delete_front();
 			}
 		}
@@ -228,7 +230,7 @@ namespace FwLogger
 			if(currTask->buf == nullptr)
 			{
 				currTask->counter = 0;
-				currTask->buf = _alloc.Allocate(sizeof(ProgramInitializer));
+				currTask->buf = _alloc.Allocate(sizeof(ProgramInitializer), reinterpret_cast<uintptr_t>(this));
 				for(int i = 0; i < sizeof(ProgramInitializer); ++i)
 					reinterpret_cast<uint8_t*>(currTask->buf)[i] = 0;
 			}
@@ -262,7 +264,6 @@ namespace FwLogger
 
 								if(pi->name_counter == 16) pi->table_status++;
 							}
-
 						}
 
 						else if(pi->table_status == 1) // period
@@ -356,12 +357,7 @@ namespace FwLogger
 							pi->stack_size |= (file_buf[i] << (currTask->counter*8));
 							++currTask->counter;
 						}
-						else if(currTask->counter < 8)
-						{
-							pi->static_vars |= (file_buf[i] << ((currTask->counter-4)*8));
-							++currTask->counter;
-						}
-						if(currTask->counter == 8)
+						if(currTask->counter == 4 )
 						{
 							pi->status = 3;
 							vm.setStackSize(pi->stack_size);
@@ -401,6 +397,46 @@ namespace FwLogger
 				_alloc.Deallocate(currTask->buf);
 				_ops.delete_front();
 			}
+		}
+		else if(currTask->op == Operation::TestAppend)
+		{
+			eTSDB::HeaderPage* hp = reinterpret_cast<eTSDB::HeaderPage*>(_fds[currTask->fd-1].ptr);
+			if(hp == nullptr) return;
+			eTSDB::Row* row;
+			if(currTask->buf == nullptr)
+			{
+				currTask->buf = new(_alloc.Allocate(sizeof(eTSDB::Row), 101)) eTSDB::Row();
+				row = reinterpret_cast<eTSDB::Row*>(currTask->buf);
+				row->rowDate.year = 2020;
+				row->rowDate.month = 05;
+				row->rowDate.day = 10;
+				row->rowDate.hour = 1;
+				row->rowDate.minute = 20;
+				row->rowDate.second = 0;
+				row->rowDate.exists = 0;
+
+				row->vals[0].format = eTSDB::Format::Int32;
+				row->vals[1].format = eTSDB::Format::Invalid;
+
+				row->vals[0].data._int32 = 0;
+			}
+			else
+			{
+				row = reinterpret_cast<eTSDB::Row*>(currTask->buf);
+				if(currTask->counter)
+				{
+					row->rowDate = row->rowDate+10;
+					row->vals[0].data._int32++;
+					currTask->counter = 0;
+				}
+			}
+			eTSDB::RetValue retval = etsdb.appendValue(*hp, *row);
+			if(retval == eTSDB::Ok) currTask->counter = 1;
+		}
+		else if(currTask->op != Operation::Upload)
+		{
+			printf_("Invalid task with opcode: %d\n", currTask->op);
+			_ops.delete_front();
 		}
 	}
 
@@ -460,7 +496,7 @@ namespace FwLogger
                 else
 				{
 					flash.readPage(len, addr);
-					HAL_Delay(1);
+					HAL_Delay(10);
 					flash.poll();
 					for(int i = 0; i < len; ++i)
 					{
@@ -512,6 +548,17 @@ namespace FwLogger
 				tsk.counter = 0;
 
 				_ops.push_back(tsk);
+			}
+			else if(strcmp(token, "status") == 0)
+			{
+				if(vm.getEnabled())
+				{
+					printf_("VM enabled\n");
+				}
+				else
+				{
+					printf_("VM disabled\n");
+				}
 			}
 			else if(strcmp(token, "stop") == 0)
 			{
@@ -591,6 +638,34 @@ namespace FwLogger
             token = strtok(NULL, " ");
             int power_enable = std::atoi(token);
             enablePower(power_enable);
+		}
+		else if(strcmp(token, "eTestSDB") == 0)
+		{
+			ProgramInitializer* pi = reinterpret_cast<ProgramInitializer*>(_alloc.Allocate(sizeof(ProgramInitializer), 101));
+			strcpy(reinterpret_cast<char*>(pi->name), "test");
+			pi->hi.period = 10;
+			pi->hi.colLen = 1;
+			pi->hi.formats[0] = eTSDB::Format::Int32;
+			pi->hi.formats[1] = eTSDB::Format::Invalid;
+			strcpy(reinterpret_cast<char*>(pi->hi.colNames[0]), "col1");
+
+			Task open_tsk;
+			open_tsk.fd = _createFD(FDType::TS);
+			open_tsk.buf = pi;
+			open_tsk.op = Operation::OpenHeader;
+			_ops.push_back(open_tsk);
+
+			Task get_tsk;
+			get_tsk.fd = open_tsk.fd;
+			get_tsk.op = Operation::GetPage;
+			_ops.push_back(get_tsk);
+
+			Task test_tsk;
+			test_tsk.fd = open_tsk.fd;
+			test_tsk.op = Operation::TestAppend;
+			test_tsk.buf = nullptr;
+			_ops.push_back(test_tsk);
+
 		}
 	}
 
@@ -684,7 +759,7 @@ namespace FwLogger
 			FileDescriptor& _fd = _fds[fd-1];
 			if(_fd.type == FDType::File)
 			{
-				if(_fd.buf == nullptr) _fd.buf = reinterpret_cast<uint8_t*>(_alloc.Allocate(128));
+				if(_fd.buf == nullptr) _fd.buf = reinterpret_cast<uint8_t*>(_alloc.Allocate(128, reinterpret_cast<uintptr_t>(this)));
 				eTSDB::FilePage* fp = reinterpret_cast<eTSDB::FilePage*>(_fd.ptr);
 				if(fp->getFileSize() <= _fd.bytes_read)
 				{
@@ -787,7 +862,7 @@ namespace FwLogger
 				if(_fd.ptr == nullptr) // there is no page yet
 				{
 					if(_fd.buf == nullptr)
-						_fd.buf = reinterpret_cast<uint8_t*>(_alloc.Allocate(128));
+						_fd.buf = reinterpret_cast<uint8_t*>(_alloc.Allocate(128, reinterpret_cast<uintptr_t>(this)));
                     for(int i = 0; i < count; ++i)
 						_fd.buf[_fd.buf_idx++] = reinterpret_cast<const uint8_t*>(buf)[i];
 				}

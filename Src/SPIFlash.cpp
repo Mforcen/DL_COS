@@ -22,6 +22,7 @@ namespace FwLogger
 		_action = None;
 		_max_delay_time = 0;
 		_last_write_ms = HAL_GetTick();
+		_action = None;
 	}
 
 	int SPIFlash::writeEnable() // solo se llama después de un try_lock

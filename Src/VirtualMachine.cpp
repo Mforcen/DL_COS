@@ -37,6 +37,11 @@ void VirtualMachine::enable(bool enable)
 	m_enabled = enable;
 }
 
+bool VirtualMachine::getEnabled()
+{
+	return m_enabled;
+}
+
 template<typename T>
 void VirtualMachine::pack(uint32_t addr, T val)
 {

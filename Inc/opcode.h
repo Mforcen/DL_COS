@@ -94,7 +94,7 @@ enum class Opcode : char
 	BIT_RS,
 
 	//Flow Control
-	JMP ,
+	JMP,
 	JMP_IF,
 	JMP_SZ,
 

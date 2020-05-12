@@ -5,6 +5,8 @@ namespace FwLogger
 	SPI_Device::SPI_Device(SPI_HandleTypeDef* hspi)
 	{
 		_hspi = hspi;
+		_locker = nullptr;
+		_status = Idle;
 	}
 
 	void SPI_Device::CpltCallback()

@@ -2,21 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="3bc4e357-b137-4564-a874-0b3f8cca09f1" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/FLogger.layout" beforeDir="false" afterPath="$PROJECT_DIR$/FLogger.layout" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Inc/FwLogger.h" beforeDir="false" afterPath="$PROJECT_DIR$/Inc/FwLogger.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Inc/VirtualMachine.h" beforeDir="false" afterPath="$PROJECT_DIR$/Inc/VirtualMachine.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Inc/eTSDB_Driver.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Inc/eTSDB_Driver.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Inc/eTSDB_Pages.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Inc/eTSDB_Pages.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Inc/eTSDB_Utils.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Inc/eTSDB_Utils.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Inc/opcode.h" beforeDir="false" afterPath="$PROJECT_DIR$/Inc/opcode.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Src/FwLogger.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Src/FwLogger.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Src/VirtualMachine.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Src/VirtualMachine.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Src/eTSDB_Driver.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Src/eTSDB_Driver.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Src/eTSDB_Pages.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Src/eTSDB_Pages.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Src/io.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Src/io.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Src/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Src/main.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Src/stm32f1xx_hal_msp.c" beforeDir="false" afterPath="$PROJECT_DIR$/Src/stm32f1xx_hal_msp.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Src/stm32f1xx_it.c" beforeDir="false" afterPath="$PROJECT_DIR$/Src/stm32f1xx_it.c" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -109,10 +97,10 @@
       <screen x="0" y="27" width="3840" height="2133" />
     </state>
     <state x="408" y="751" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.27.3840.2133@0.27.3840.2133" timestamp="1587396159124" />
-    <state x="733" y="851" width="424" height="491" key="FileChooserDialogImpl" timestamp="1587574225756">
+    <state x="733" y="851" width="424" height="491" key="FileChooserDialogImpl" timestamp="1588522384154">
       <screen x="0" y="27" width="3840" height="2133" />
     </state>
-    <state x="733" y="851" width="424" height="491" key="FileChooserDialogImpl/0.27.3840.2133@0.27.3840.2133" timestamp="1587574225756" />
+    <state x="733" y="851" width="424" height="491" key="FileChooserDialogImpl/0.27.3840.2133@0.27.3840.2133" timestamp="1588522384154" />
     <state width="1897" height="772" key="GridCell.Tab.0.bottom" timestamp="1587410709581">
       <screen x="0" y="27" width="3840" height="2133" />
     </state>

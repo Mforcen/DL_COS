@@ -41,7 +41,7 @@ namespace FwLogger
 			return ((n < 0) ^ (d < 0)) ? ((n - d/2)/d) : ((n + d/2)/d);
 		}
 
-		Allocator<128>* eTSDB::Page::_alloc = nullptr;
+		Allocator* eTSDB::Page::_alloc = nullptr;
 
 		int Page::getSize()
 		{
@@ -469,7 +469,7 @@ namespace FwLogger
 			_read_bytes = fp->_read_bytes;
 			if(fp->_databuf != nullptr)
 			{
-				_databuf = reinterpret_cast<uint8_t*>(_alloc->Allocate(128));
+				_databuf = reinterpret_cast<uint8_t*>(_alloc->Allocate(128, 2));
 				for(int i = 0; i<128; ++i) _databuf[i] = fp->_databuf[i];
 			}
 			else
