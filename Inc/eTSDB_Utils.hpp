@@ -236,23 +236,25 @@ namespace FwLogger
 				clone(row);
 			}
 
+			Date rowDate;
+			Value vals[16];
+
 			void clone(Row* row)
 			{
+				rowDate = row->rowDate;
 				for(int i = 0; i < 16; ++i)
 				{
 					vals[i].format = row->vals[i].format;
-					vals[i].data._uint32 = vals[i].data._uint32;
+					vals[i].data._uint32 = row->vals[i].data._uint32;
 				}
 			}
 
 			void clear()
 			{
+				rowDate.exists = 0xff;
 				for(int i = 0; i < 16; ++i)
 					vals[i].format = Format::Invalid;
 			}
-
-			Date rowDate;
-			Value vals[16];
 
 			int getBufSize()
 			{
@@ -284,6 +286,10 @@ namespace FwLogger
                     for(int inner_idx = 0; inner_idx < formatWidth; ++inner_idx) vals[val_idx].data.bytes[inner_idx] = buf[buf_idx++];
 				}
 				return buf_idx;
+			}
+			int stringify(uint8_t* buf)
+			{
+				return 0;
 			}
 		};
 	}

@@ -172,18 +172,76 @@ namespace FwLogger
 			if(etsdb.openFile(currTask->name_buf, static_cast<eTSDB::PageAccessMode>(currTask->counter)) == eTSDB::Ok)
 				_ops.delete_front();
 		}
+
 		else if(currTask->op == Operation::OpenHeader)
 		{
-			ProgramInitializer* pi = reinterpret_cast<ProgramInitializer*>(currTask->buf);
-			auto retval = etsdb.openHeader(pi->name, eTSDB::PageAccessMode::PageWriteUpdate, pi->hi);
-
+			eTSDB::RetValue retval;
+			if(currTask->buf == nullptr)
+			{
+				retval = etsdb.openHeader(currTask->name_buf, eTSDB::PageAccessMode::PageRead);
+			}
+			else
+			{
+				ProgramInitializer* pi = reinterpret_cast<ProgramInitializer*>(currTask->buf);
+				retval = etsdb.openHeader(pi->name, eTSDB::PageAccessMode::PageWriteUpdate, pi->hi);
+			}
             if(retval == eTSDB::Ok)
 			{
-				_alloc.Deallocate(currTask->buf);
-				currTask->buf = 0;
+				if(currTask->buf != nullptr)
+				{
+					_alloc.Deallocate(currTask->buf);
+					currTask->buf = nullptr;
+				}
 				_ops.delete_front();
 			}
 		}
+
+		else if(currTask->op == Operation::ListTables)
+		{
+			eTSDB::RetValue retval = etsdb.checkGetNextHeader();
+			if(retval == eTSDB::Ok)
+			{
+				eTSDB::HeaderPage* hp = reinterpret_cast<eTSDB::HeaderPage*>(currTask->buf);
+				printf("%s\tColumns: %d\n", hp->getName(), hp->getNumColumn());
+				etsdb.startGetNextHeader(*hp);
+			}
+			else if(retval == eTSDB::NotFound)
+			{
+				close(currTask->fd);
+				_ops.delete_front();
+			}
+		}
+
+		else if(currTask->op == Operation::ReadTable)
+		{
+			eTSDB::HeaderPage* hp = reinterpret_cast<eTSDB::HeaderPage*>(_fds[currTask->fd-1].ptr);
+			if(currTask->counter == 0)
+			{
+				if(etsdb.readNextValue(*hp) == eTSDB::Ok) currTask->counter = 1;
+			}
+			else
+			{
+				eTSDB::Row* rowPtr = etsdb.getDataRow();
+				if(rowPtr != nullptr)
+				{
+					if(rowPtr->rowDate.exists == 0xff)
+					{
+						close(currTask->fd);
+						currTask->fd = 0;
+						_ops.delete_front();
+					}
+					else
+					{
+						printf("%d/%d/%d %d:%d:%d,%d\n", rowPtr->rowDate.year, rowPtr->rowDate.month, rowPtr->rowDate.day
+													   , rowPtr->rowDate.hour, rowPtr->rowDate.minute, rowPtr->rowDate.second
+													   , rowPtr->vals[0].data._int32);
+						HAL_Delay(5);
+						etsdb.readNextValue(*hp);
+					}
+				}
+			}
+		}
+
 		else if(currTask->op == Operation::GetPage)
 		{
 			eTSDB::Page* page = etsdb.getPage();
@@ -206,6 +264,7 @@ namespace FwLogger
 				_ops.delete_front();
 			}
 		}
+
 		else if(currTask->op == Operation::ReadNext)
 		{
 			eTSDB::FilePage* fp = reinterpret_cast<eTSDB::FilePage*>(_fds[currTask->fd-1].ptr);
@@ -219,6 +278,24 @@ namespace FwLogger
 				_ops.delete_front();
 			}
 		}
+
+		else if(currTask->op == Operation::ListFiles)
+		{
+			eTSDB::RetValue retval = etsdb.checkGetNextFile();
+			if(retval == eTSDB::Ok)
+			{
+				eTSDB::FilePage* fp = reinterpret_cast<eTSDB::FilePage*>(currTask->buf);
+				printf("File name: %s\tFile size: %d\n", fp->getName(), fp->getFileSize());
+				etsdb.startGetNextFile(*fp);
+			}
+			else if(retval == eTSDB::NotFound)
+			{
+				eTSDB::FilePage* fp = reinterpret_cast<eTSDB::FilePage*>(currTask->buf);
+				delete fp;
+				_ops.delete_front();
+			}
+		}
+
 		else if(currTask->op == Operation::Close)
 		{
 			HAL_Delay(10);
@@ -398,7 +475,7 @@ namespace FwLogger
 				_ops.delete_front();
 			}
 		}
-		else if(currTask->op == Operation::TestAppend)
+		/*else if(currTask->op == Operation::TestAppend)
 		{
 			eTSDB::HeaderPage* hp = reinterpret_cast<eTSDB::HeaderPage*>(_fds[currTask->fd-1].ptr);
 			if(hp == nullptr) return;
@@ -432,7 +509,7 @@ namespace FwLogger
 			}
 			eTSDB::RetValue retval = etsdb.appendValue(*hp, *row);
 			if(retval == eTSDB::Ok) currTask->counter = 1;
-		}
+		}*/
 		else if(currTask->op != Operation::Upload)
 		{
 			printf_("Invalid task with opcode: %d\n", currTask->op);
@@ -472,7 +549,58 @@ namespace FwLogger
 
 				_ops.push_back(tsk);
 			}
+			else if(strcmp(token, "list") == 0)
+			{
+				Task tsk;
+				tsk.op = Operation::ListFiles;
+				tsk.buf = new eTSDB::FilePage();
+
+				etsdb.startGetNextFile(*reinterpret_cast<eTSDB::FilePage*>(tsk.buf));
+
+				_ops.push_back(tsk);
+			}
 		}
+
+		if(strcmp(token, "table") == 0)
+		{
+			token = strtok(NULL, " ");
+			if(strcmp(token, "list") == 0)
+			{
+				Task tsk;
+				tsk.op = Operation::ListTables;
+				tsk.buf = new eTSDB::HeaderPage();
+
+				etsdb.startGetNextHeader(*reinterpret_cast<eTSDB::HeaderPage*>(tsk.buf));
+
+				_ops.push_back(tsk);
+			}
+
+			else if(strcmp(token, "get") == 0)
+			{
+				token = strtok(NULL, " ");
+
+				Task open_tsk;
+				open_tsk.op = Operation::OpenHeader;
+				open_tsk.fd = _createFD(FDType::TS);
+				open_tsk.buf = nullptr;
+				for(int i = 0; i < 16; ++i) open_tsk.name_buf[i] = 0;
+				for(int i = 0; i < 16 && token[i] != 0; ++i) open_tsk.name_buf[i] = token[i];
+				_ops.push_back(open_tsk);
+
+				Task get_tsk;
+				get_tsk.fd = open_tsk.fd;
+				get_tsk.op = Operation::GetPage;
+				_ops.push_back(get_tsk);
+
+				Task readTable_tsk;
+				readTable_tsk.op = Operation::ReadTable;
+				readTable_tsk.fd = open_tsk.fd;
+				readTable_tsk.counter = 0;
+				_ops.push_back(readTable_tsk);
+
+			}
+		}
+
 		else if(strcmp(token, "flash") == 0)
 		{
 			token = strtok(NULL, " ");
@@ -588,7 +716,7 @@ namespace FwLogger
 				}
 				printf_("\n");
 			}
-			else if(strcmp(token, "clock") == 0) //TODO añadir get set de fecha y alarmas del rtc para dar por concluido este aparato
+			else if(strcmp(token, "clock") == 0)
 			{
 				token = strtok(NULL, " ");
 				if(strcmp(token, "set") == 0)
@@ -632,6 +760,48 @@ namespace FwLogger
 					printf_("%d/%d/%d %d:%d:%d\n", rtc_date.Year+2000, rtc_date.Month, rtc_date.Date, rtc_time.Hours, rtc_time.Minutes, rtc_time.Seconds);
 				}
 			}
+			else if(strcmp(token, "log") == 0)
+			{
+				token = strtok(NULL, " ");
+				if(strcmp(token, "level") == 0)
+				{
+					token = strtok(NULL, " ");
+					if(strcmp(token, "verbose") == 0)
+					{
+						Log::setLogLevel(Log::LevelVerbose);
+					}
+					else if(strcmp(token, "info") == 0)
+					{
+						Log::setLogLevel(Log::LevelInfo);
+					}
+					else if(strcmp(token, "warning") == 0)
+					{
+						Log::setLogLevel(Log::LevelWarning);
+					}
+					else if(strcmp(token, "error") == 0)
+					{
+						Log::setLogLevel(Log::LevelError);
+					}
+				}
+				else if(strcmp(token, "file") == 0)
+				{
+					token = strtok(NULL, " ");
+
+					char path[26] = {0};
+					strcpy(path, "/file/");
+					strcpy(path+6, token);
+
+					int fd = open(path, O_WRONLY);
+
+					if(fd < 0)
+					{
+						Log::Error("Open file error\n");
+						return;
+					}
+					if(Log::_fd_sink > 0 && Log::_fd_sink < 16) close(Log::_fd_sink); // close last fd if needed
+					Log::_fd_sink = fd; // set new fd
+				}
+			}
 		}
 		else if(strcmp(token, "power") == 0)
 		{
@@ -639,7 +809,7 @@ namespace FwLogger
             int power_enable = std::atoi(token);
             enablePower(power_enable);
 		}
-		else if(strcmp(token, "eTestSDB") == 0)
+		/*else if(strcmp(token, "eTestSDB") == 0)
 		{
 			ProgramInitializer* pi = reinterpret_cast<ProgramInitializer*>(_alloc.Allocate(sizeof(ProgramInitializer), 101));
 			strcpy(reinterpret_cast<char*>(pi->name), "test");
@@ -665,10 +835,13 @@ namespace FwLogger
 			test_tsk.op = Operation::TestAppend;
 			test_tsk.buf = nullptr;
 			_ops.push_back(test_tsk);
-
-		}
+		}*/
 	}
 
+	void OS::rf_eval()
+	{
+
+	}
 
 	int OS::open(char* path, int oflag)
 	{

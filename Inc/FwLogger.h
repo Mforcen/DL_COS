@@ -19,6 +19,7 @@
 #include "SDI12_Driver.h"
 
 #include "errno.h"
+#include "Log.h"
 
 #define O_RDONLY 1
 #define O_WRONLY 2
@@ -79,6 +80,7 @@ namespace FwLogger
 
 			void loop();
 			void eval();
+			void rf_eval();// TODO (forcen#1#): Eval data from radio
 			int open(char* path, int oflag);
 			int read(int fd, void* buf, size_t count);
 			int poll(int fd);
@@ -111,11 +113,15 @@ namespace FwLogger
 				Upload,
 				Close,
 				ReadNext,
+				ListFiles,
 
 				OpenHeader,
+				ListTables,
+				ReadTable,
+
 				GetPage,
 				SaveRow,
-				TestAppend,
+				//TestAppend,
 
 				LoadProgram
 			};

@@ -7,6 +7,7 @@
 
 #include "eTSDB_Utils.hpp"
 #include "eTSDB_Pages.hpp"
+#include "Log.h"
 
 /**
   * Embedded TimeSeries Database
@@ -49,12 +50,14 @@ namespace FwLogger
 			  */
 			RetValue openHeader(const uint8_t* name, PageAccessMode am, uint8_t period = 0, uint8_t colLen = 0, const Format* formats = nullptr, const uint8_t* colNames[16] = nullptr);
 			RetValue openHeader(const uint8_t* name, PageAccessMode am, HeaderInitializer& hi);
+			RetValue startGetNextHeader(HeaderPage& hp);
+			RetValue checkGetNextHeader();
+			// TODO (forcen#1#): Add RemoveHalf function
 			RetValue deleteHeader(HeaderPage& header);
 
 			/**
 			  * Read and write values
 			  */
-			RetValue readValue(HeaderPage& hp, Date date);
 			RetValue readNextValue(HeaderPage& hp);
 			RetValue appendValue(HeaderPage& gp, Row& row);
 
@@ -63,6 +66,8 @@ namespace FwLogger
 			  */
 			RetValue openFile(const uint8_t* name, PageAccessMode mode);
 			RetValue writeFile(FilePage& file, const uint8_t* data, uint16_t data_length);
+			RetValue startGetNextFile(FilePage& file);
+			RetValue checkGetNextFile();
 			RetValue readNextBlockFile(FilePage& file);
 			RetValue closeFile(FilePage& file);
 			RetValue deleteFile(FilePage& file);
@@ -88,15 +93,17 @@ namespace FwLogger
 				DataPageFindEmptyInHeader,
 				DataPageWriteInHeader, //DataPage actions
 				DataPageReadHeader,
-				DataPageFindEmptyBody,
 				DataPageCheckHeaderDate,
 				DataPageAppend,
+				DataPageReadVal,
 				SwapDataPageHeaderPage,
 
 				ReadDataBody,
 
 				FindNewObject,
 				FindObjectName,
+				FindNonEmpty,
+				FindObjectType,
 				WriteFileHeader,
 				LoadPage,
 				ReadFile,
@@ -106,6 +113,8 @@ namespace FwLogger
 				FreePage,
 				Error,
 				FreeRow,
+				Found,
+				NotFound,
 				Wait = 0xff
 			};
 
@@ -137,13 +146,14 @@ namespace FwLogger
 			uint32_t _opLen; ///< This variable will indicate the length of the current operation (read/write or max iteration)
 			uint16_t _opFind; ///< This variable will hold the value that the driver is looking for in search operations
 			uint16_t _opFindMax; ///< This variable will hold the maximum value that appeared during the search operation (used in table creation)
+			bool _opFindEnd;
 			void* _opBuf; ///< This variable will hold the buffer of the current operation (read/write or iteration)
 
 			/**
 			  * Create, find and delete data pages
 			  */
 			RetValue createDataPage();
-			RetValue findDataPage(HeaderPage& header, uint16_t headerIdx);
+			RetValue findDataPage(uint16_t headerIdx);
 			RetValue deleteDataPage(DataPage& dp);
 			RetValue flushValue();
 

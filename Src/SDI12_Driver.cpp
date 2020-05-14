@@ -71,7 +71,7 @@ namespace FwLogger
 			}
 			break;
 
-		case Transmitting: //TODO revisar porque esto no está bien, hay que cumplir los 10 bits
+		case Transmitting: //revisar porque esto no está bien, hay que cumplir los 10 bits
 			{
 				int bit_idx, byte_idx;
 				bit_idx = (_counter) % 10; //obtener qué hay que poner (start, 7 bits, paridad, stop)

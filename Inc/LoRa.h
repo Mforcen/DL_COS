@@ -6,6 +6,7 @@
 
 namespace FwLogger
 {
+	// TODO (forcen#1#): Make the driver available to receive data
 	class LoRa : public SPI_Device, public Module
 	{
 		public:
@@ -68,7 +69,6 @@ namespace FwLogger
 			void poll();
 			void ISR();
 
-			// TODO se empezará dejando la cola fifo en 128 bytes para cada cosa, pero en el futuro se puede cambiar
 		protected:
 
 		private:

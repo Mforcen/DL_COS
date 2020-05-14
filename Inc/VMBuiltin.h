@@ -40,6 +40,8 @@ struct BuiltinFunc
     intptr_t func_ptr;
 };
 
+// TODO (forcen#1#): Define the remaining builtin functions for accessing all the hardware interfaces
+
 uint32_t _sin(float* rv, float rad);
 uint32_t _cos(float* rv, float rad);
 uint32_t _tan(float* rv, float rad);

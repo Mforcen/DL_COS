@@ -1,11 +1,18 @@
 #include <eTSDB_Driver.hpp>
-#include <printf.h>
 namespace FwLogger
 {
 	namespace eTSDB
 	{
+		int clampAddrToPage(int addr, int len)
+		{
+			int endAddr = addr+len;
+			if(endAddr & 0xfffff000 != addr &0xfffff000)
+				endAddr = endAddr & 0xfffff000;
+			return endAddr;
+		}
+
 		Driver::Driver(uint32_t offsetAddress, uint32_t size, SPI_HandleTypeDef* hspi, GPIO_TypeDef* gpio, uint16_t pin, Allocator* alloc):
-			SPIFlash(hspi, gpio, pin), Module("eTSDB 0.2")
+			SPIFlash(hspi, gpio, pin), Module("eTSDB 0.3")
 		{
 			_offset = offsetAddress;
 			_size = size;
@@ -26,6 +33,8 @@ namespace FwLogger
 			if(prep_ret != Ok) return prep_ret;
 
 			HeaderPage* hp = new HeaderPage(); // this will be allocated using the mempool
+
+			for(int i = 0; i < 16; ++i) hp->_name[i] = 0;
 
 			_page = hp;
 			_page->_page_mode = am;
@@ -70,6 +79,7 @@ namespace FwLogger
 			}
 			else
 			{
+				for(int i = 0; i < 16 && name[i] != 0; ++i) hp->_name[i] = name[i];
 				_states[1] = State::LoadPage;
 				_states[2] = State::Full;
 			}
@@ -87,24 +97,79 @@ namespace FwLogger
 			return openHeader(name, am, hi.period, hi.colLen, hi.formats, colnames);
 		}
 
-		RetValue Driver::deleteHeader(HeaderPage& header)
+		RetValue Driver::startGetNextHeader(HeaderPage& hp)
+		{
+			RetValue prep_ret = prepareCom();
+			if(prep_ret != Ok) return prep_ret;
+
+			_page = &hp;
+
+			_states[0] = State::FindNonEmpty;
+			_states[1] = State::LoadPage;
+			_states[2] = State::Found;
+
+			_opIdx = _page->_object_idx;
+			_page->_page_idx++;
+			_opAddr = (_page->_page_idx-1)*2;
+			int endAddr = clampAddrToPage(_opAddr, 256);
+			_opLen = endAddr-_opAddr;
+			readPage(_opLen, _opAddr);
+
+			return Ok;
+		}
+
+		RetValue Driver::checkGetNextHeader()
+		{
+			if(_states[_stateIdx] == State::Found)
+			{
+				_states[_stateIdx] = State::Nop;
+				return Ok;
+			}
+			else if(_states[_stateIdx] == State::NotFound)
+			{
+				_states[_stateIdx] = State::Nop;
+				return NotFound;
+			}
+			return Busy;
+		}
+
+		RetValue Driver::deleteHeader(HeaderPage& header) // TODO (forcen#1#): Implement DeleteHeader
 		{
 			if(_error != 0) return Error;
 
 			return Ok;
 		}
 
-
 		/**
 		  * Read and write values
 		  */
-		RetValue Driver::readValue(HeaderPage& hp, Date date)
-		{
-			return Ok;
-		}
-
 		RetValue Driver::readNextValue(HeaderPage& hp)
 		{
+			RetValue prep_ret = prepareCom();
+			if(prep_ret != Ok) return prep_ret;
+
+			_page = &hp;
+			// Assume that datapage is loaded because of yes
+			if(hp._currDP->_rowIdx < hp._currDP->getNumEntries()) // read from here
+			{
+				_opAddr = hp._currDP->getPageIdx()*PageWidth + DataPage::_header_span + hp._currDP->_rowWidth*hp._currDP->_rowIdx;
+				hp._currDP->_rowIdx++; // por lo menos
+				_row = static_cast<Row*>(_alloc->Allocate(sizeof(Row), reinterpret_cast<uintptr_t>(this)));
+				_row->clear();
+
+				for(int i = 0; i < 16; ++i)  _row->vals[i].format = hp._formats[i];
+
+				_states[0] = State::ReadValue;
+				_states[1] = State::Full;
+
+				readPage(hp._currDP->_rowWidth, _opAddr);
+				return Ok;
+			}
+			else
+			{
+				_states[3] = State::DataPageReadVal;
+				findDataPage(++hp._data_idx);
+			}
 			return Ok;
 		}
 
@@ -120,7 +185,10 @@ namespace FwLogger
 
 			RetValue prep_ret = prepareCom();
 			if(prep_ret != Ok) return prep_ret;
-			printf_("Append to pag %d, pos %d\n", hp._currDP->_page_idx, hp._currDP->_rowIdx);
+			if(hp._currDP != nullptr)
+				Log::Verbose("Append to pag %d, pos %d\n", hp._currDP->_page_idx, hp._currDP->_rowIdx);
+			else
+				Log::Verbose("Creating datapage to hp %d\n", hp._object_idx);
 
 			_page = &hp;
 			_row = new(_alloc->Allocate(sizeof(Row), reinterpret_cast<uintptr_t>(this)))Row(row);
@@ -154,7 +222,7 @@ namespace FwLogger
 		  * File functions
 		  */
 
-		RetValue Driver::openFile(const uint8_t* name, PageAccessMode mode) // debería añadir un comprobador de colisiones, cambiar por open
+		RetValue Driver::openFile(const uint8_t* name, PageAccessMode mode)
 		{
 			RetValue prep_ret = prepareCom();
 			if(prep_ret != Ok) return prep_ret;
@@ -166,6 +234,7 @@ namespace FwLogger
 			fp->_page_mode = mode;
 			fp->_file_size = 0xffff;
 
+			for(int i = 0; i < 16; ++i) fp->_name[i] = 0;
 			for(int i = 0; i < 16; ++i) fp->_name[i] = name[i];
 
 			_states[0] = State::FindNewObject;
@@ -215,6 +284,42 @@ namespace FwLogger
 			}
 
 			return Ok;
+		}
+
+		RetValue Driver::startGetNextFile(FilePage& file)
+		{
+			RetValue prep_ret = prepareCom();
+			if(prep_ret != Ok) return prep_ret;
+
+			_page = &file;
+
+			_states[0] = State::FindNonEmpty;
+			_states[1] = State::LoadPage;
+			_states[2] = State::Found;
+
+			_opIdx = _page->_object_idx;
+			_page->_page_idx++;
+			_opAddr = (_page->_page_idx-1)*2;
+			int endAddr = clampAddrToPage(_opAddr, 256);
+			_opLen = endAddr-_opAddr;
+			readPage(_opLen, _opAddr);
+
+			return Ok;
+		}
+
+		RetValue Driver::checkGetNextFile()
+		{
+			if(_states[_stateIdx] == State::Found)
+			{
+				_states[_stateIdx] = State::Nop;
+				return Ok;
+			}
+			else if(_states[_stateIdx] == State::NotFound)
+			{
+				_states[_stateIdx] = State::Nop;
+				return NotFound;
+			}
+			return Busy;
 		}
 
 		RetValue Driver::readNextBlockFile(FilePage& file)
@@ -281,7 +386,7 @@ namespace FwLogger
 			return Ok;
 		}
 
-		RetValue Driver::deleteFile(FilePage& file)
+		RetValue Driver::deleteFile(FilePage& file) // TODO (forcen#1#): Implement deleteFile
 		{
 			RetValue prep_ret = prepareCom();
 			if(prep_ret != Ok) return prep_ret;
@@ -307,7 +412,7 @@ namespace FwLogger
 			HeaderPage* hp = reinterpret_cast<HeaderPage*>(_page);
 			DataPage* dp = hp->_currDP;
 
-			printf_("Creating new dp after idx %d\n", dp->_page_idx);
+			Log::Verbose("Creating new dp after idx %d\n", dp->_page_idx);
 
 			dp->_header = hp;
 			dp->_block_date = _row->rowDate;
@@ -326,26 +431,27 @@ namespace FwLogger
 			return findEmptyPage();
 		}
 
-		RetValue Driver::findDataPage(HeaderPage& header, uint16_t headerIdx)
+		RetValue Driver::findDataPage(uint16_t headerIdx)
 		{
-			RetValue prep_ret = prepareCom();
-			if(prep_ret != Ok) return prep_ret;
-
 			_states[0] = State::Read;
 			_states[1] = State::HeaderPageReadDataIndex;
 			_states[2] = State::DataPageReadHeader;
-			_states[3] = State::DataPageFindEmptyBody;
-			_states[4] = State::Full;
+			//TODO se pone el resto de cosas después
 
-			DataPage* dp = new DataPage();
-			_page = dp;
+			HeaderPage* hp = reinterpret_cast<HeaderPage*>(_page);
 
-			dp->_header = &header;
-			dp->_period = header.getPeriod();
-			dp->_rowWidth = header.getColumnStride();
-			dp->_object_idx = header.getObjectIdx();
+			if(hp->_currDP == nullptr)
+			{
+				hp->_currDP = new DataPage();
+				hp->_currDP->_header = hp;
+				hp->_currDP->_period = hp->getPeriod();
+				hp->_currDP->_rowWidth = hp->getColumnStride();
+				hp->_currDP->_object_idx = hp->getObjectIdx();
+			}
 
-			readPage(2, header.getPageIdx()*0x1000+header.getSize()+headerIdx*2);
+			hp->_currDP->_rowIdx = 0;
+
+			readPage(2, hp->getPageIdx()*0x1000+hp->getSize()+headerIdx*2);
 
 			return Ok;
 		}
@@ -420,15 +526,25 @@ namespace FwLogger
 				}
 				if(i == 128) // si llega al final y no encuentra lo que busca, pues sigue buscando
 				{
-					if( ((_opAddr+256)/0x1000) != (_opAddr/0x1000))
+					if(_opLen < 256 || _opFindEnd) //ending block
+					{
+						_opAddr = 0xffffffff;
+						step();
+					}
+					_opAddr += 256; // next iteration starting addr
+					int _endOpaddr = (_opAddr & 0xfffff000)+0x1000;
+					if((_opAddr + 256) < _endOpaddr) _endOpaddr = _opAddr + 256;
+					if(_opAddr & 0xfffff000 == _endOpaddr & 0xfffff000) //they are in the same block
 					{
 						_opAddr += 256;
-						readPage(256, _opAddr);
+						_opLen= 256;
+						readPage(_opLen, _opAddr);
 					}
 					else
 					{
-						_opAddr = 0;
-						step();
+						_opLen = _endOpaddr-_opAddr;
+						readPage(_opLen, _opAddr);
+						_opFindEnd = true;
 					}
 				}
 			}
@@ -469,20 +585,34 @@ namespace FwLogger
 			else if(_states [_stateIdx] == State::ReadValue)
 			{
 				uint16_t magic =  ((pop() << 8) & 0xff00) | (pop() & 0xff);
+				HeaderPage* hp = reinterpret_cast<HeaderPage*>(_page);
 				if(magic != 0xdead)
 				{
-					_error = 1;
-					_states[_stateIdx] = State::Nop;
-					return;
-				}
-				for(int i = 0; i < 16; ++i)
-				{
-					for(int j = 0; j < getFormatWidth(_row->vals[i].format); ++j)
+					if(hp->_currDP->_rowIdx < hp->_currDP->getNumEntries())
 					{
-						_row->vals[i].data.bytes[j] = pop() & 0xff;
+						_opAddr = hp->_currDP->getPageIdx()*PageWidth + DataPage::_header_span + hp->_currDP->_rowWidth*hp->_currDP->_rowIdx;
+						hp->_currDP->_rowIdx++;
+						readPage(hp->_currDP->_rowWidth, _opAddr);
+					}
+					else
+					{
+						_states[3] = State::DataPageReadVal;
+						findDataPage(++hp->_data_idx);
 					}
 				}
-				_states[_stateIdx] = State::Full;
+				else
+				{
+					for(int i = 0; i < 16; ++i)
+					{
+						for(int j = 0; j < getFormatWidth(_row->vals[i].format); ++j)
+						{
+							_row->vals[i].data.bytes[j] = pop() & 0xff;
+						}
+					}
+					_row->rowDate = hp->_currDP->_block_date + getSecondsFromPeriod(hp->_period)*hp->_currDP->_rowIdx;
+					_row->rowDate.exists = 0;
+					_states[_stateIdx] = State::Full;
+				}
 			}
 
 			else if(_states[_stateIdx] == State::FindNewObject) // recibir 128 bytes de la cabecera
@@ -554,6 +684,81 @@ namespace FwLogger
 				_page->_object_idx = _opFind;
 				_page->_page_idx = _opAddr/PageWidth;
 				step(); // recover page from stack
+			}
+
+			else if(_states[_stateIdx] == State::FindNonEmpty)
+			{
+				uint16_t readVal;
+				int i;
+
+				for(i = 0; i < _opLen/2; ++i) // arreglar esto por si es la segunda lectura
+				{
+					readVal = (pop() & 0xff);
+					readVal |= ((pop() << 8) & 0xff00);
+					if(readVal != _opFind && readVal != 0xffff) // Lo compara con el valor que tiene que buscar
+					{
+						_opFind = readVal; // avoid consecutive idx to be read
+						_opAddr = 2*i+_opAddr; // ha encontrado el valor
+						_page->_page_idx = (_opAddr/2)+1;
+						_states[_stateIdx] = State::FindObjectType;
+						readPage(64, _page->_page_idx*PageWidth); //from root address to page address
+						break;
+					}
+				}
+				if(i == 128) // si llega al final y no encuentra lo que busca, pues sigue buscando
+				{
+					if(_opLen < 256 || _opFindEnd) //ending block
+					{
+						_opAddr = 0xffffffff;
+						_states[_stateIdx] = State::NotFound;
+					}
+					_opAddr += 256; // next iteration starting addr
+					int _endOpaddr = (_opAddr & 0xfffff000)+0x1000;
+					if((_opAddr + 256) < _endOpaddr) _endOpaddr = _opAddr + 256;
+					if(_opAddr & 0xfffff000 == _endOpaddr & 0xfffff000) //they are in the same block
+					{
+						_opLen= 256;
+						readPage(_opLen, _opAddr);
+					}
+					else
+					{
+						_opLen = _endOpaddr-_opAddr;
+						readPage(_opLen, _opAddr);
+						_opFindEnd = true;
+					}
+				}
+			}
+
+			else if(_states[_stateIdx] == State::FindObjectType)
+			{
+				uint8_t pageType = pop();
+				if(pageType == _page->getType())
+				{
+					_page->_object_idx = (pop() & 0xff) | ((pop() << 8) & 0xff00);
+					for(int i = 0; i < 16; ++i) _page->_name[i] = 0;
+					for(int i = 0; i < 16; ++i)
+					{
+						char c = pop();
+						if(c!=0) _page->_name[i] = c;
+						else break;
+					}
+
+					_states[_stateIdx] = State::Read;
+					step();
+				}
+				else
+				{
+					_states[_stateIdx] = State::FindNonEmpty;
+
+					_opAddr += 2;
+					int endAddr = _opAddr+256;
+					if(endAddr & 0xfffff000 != _opAddr & 0xfffff000)
+						endAddr = endAddr & 0xfffff000;
+
+					_opLen = endAddr-_opAddr;
+
+					readPage(_opLen, _opAddr);
+				}
 			}
 		}
 
@@ -639,13 +844,19 @@ namespace FwLogger
 			else if(_states[_stateIdx] == State::HeaderPageReadDataIndex)
 			{
 				uint16_t dataPageIdx = pop() | ((pop() << 8) & 0xff00);
-				if(dataPageIdx == 0xffff) // there is no datapage and another one should be created
+				HeaderPage* hp = reinterpret_cast<HeaderPage*>(_page);
+				if(dataPageIdx >= 2048) // there is no datapage and another one should be created
 				{
-					//TODO check access mode
-					createDataPage(); // create and read
+					if(hp->getAccessMode() == PageAccessMode::PageRead || hp->getAccessMode() == PageAccessMode::PageEmpty)
+					{
+						_states[_stateIdx] = State::NotFound;
+					}
+					else
+						createDataPage(); // create and read
 				}
 				else // load datapage and check date
 				{
+					hp->_currDP->_page_idx = dataPageIdx;
 					_states[_stateIdx] = State::Read;
 					readPage(11, dataPageIdx*PageWidth);
 				}
@@ -660,33 +871,7 @@ namespace FwLogger
 
 				DataPage* dp = static_cast<HeaderPage*>(_page)->_currDP;
 				dp->_block_date.deserialize(dbuf);
-
-				_opFind = 0xffff;
-				_states[_stateIdx] = State::Find;
-				readPage(256, dp->_page_idx*PageWidth+DataPage::_header_span);
-			}
-
-			else if(_states[_stateIdx] == State::DataPageFindEmptyBody)
-			{
-				if(_opAddr == 0)
-				{
-					static_cast<DataPage*>(_page)->_rowIdx = 0xffff;
-				}
-				else
-				{
-					DataPage* dp = static_cast<DataPage*>(_page);
-					uint32_t innerAddr = _opAddr-dp->getPageIdx()*PageWidth-DataPage::_header_span;
-					if(innerAddr % dp->_rowWidth != 0)
-					{
-						//unformatted block
-						dp->_rowIdx = 0xffff;
-					}
-					else
-					{
-						dp->_rowIdx = innerAddr/dp->_rowWidth;
-					}
-				}
-				step(); // estará llena y listo
+				step();
 			}
 
 			else if(_states[_stateIdx] == State::DataPageCheckHeaderDate)
@@ -736,6 +921,22 @@ namespace FwLogger
 				flushValue();
 			}
 
+			else if(_states[_stateIdx] == State::DataPageReadVal)
+			{
+				HeaderPage* hp = reinterpret_cast<HeaderPage*>(_page);
+				_opAddr = hp->_currDP->getPageIdx()*PageWidth + DataPage::_header_span + hp->_currDP->_rowWidth*hp->_currDP->_rowIdx;
+				_states[_stateIdx] = State::ReadValue;
+				_states[_stateIdx+1] = State::Full;
+
+				if(_row == nullptr)
+				{
+					_row = static_cast<Row*>(_alloc->Allocate(sizeof(Row), reinterpret_cast<uintptr_t>(this)));
+					_row->clear();
+				}
+
+				readPage(hp->_currDP->_rowWidth, _opAddr);
+			}
+
 			else if(_states[_stateIdx] == State::SwapDataPageHeaderPage)
 			{
 				if(_page->getType() == PageType::DataType)
@@ -780,11 +981,41 @@ namespace FwLogger
 						else break; // después de esto ya se corta la vida
 					}
 					hp->_header_spacing = hp->getSize();
-					_states[_stateIdx] = State::Full;
+
+					uint16_t firstDP = pop() | ((pop() << 8) & 0xff00);
+					if(firstDP != 0xffff)
+					{
+						hp->_currDP = new DataPage();
+						hp->_currDP->_page_idx = firstDP;
+						hp->_currDP->_object_idx = hp->_object_idx;
+						hp->_currDP->_header = hp;
+						hp->_currDP->_rowWidth = hp->getColumnStride();
+						hp->_currDP->_period = hp->_period;
+						hp->_data_idx = 0;
+						for(int i = 0; i < 16; ++i) hp->_currDP->_formats[i] = hp->_formats[i];
+						_states[_stateIdx+3] = _states[_stateIdx+1]; // full o found o lo que sea
+						_states[_stateIdx] = State::Read;
+						_states[_stateIdx+1] = State::LoadPage;
+						_states[_stateIdx+2] = State::SwapDataPageHeaderPage;
+
+						_page = hp->_currDP;
+
+						readPage(5, _page->_page_idx*PageWidth+5);
+					}
+					else
+					{
+						step();
+					}
 				}
 				else if(_page->getType() == DataType)
 				{
+					DataPage* dp = reinterpret_cast<DataPage*>(_page);
 
+					uint8_t datebuf[5];
+					for(int i = 0; i < 5;++i) datebuf[i] = pop();
+					dp->_block_date.deserialize(datebuf);
+					dp->_rowIdx = 0;
+					step();
 				}
 				else if(_page->getType() == FileType)
 				{
@@ -845,14 +1076,14 @@ namespace FwLogger
 			}
 			else if(_states[_stateIdx] == State::ReadFile)
 			{
-                FilePage* fp = reinterpret_cast<FilePage*>(_page);
-                _states[_stateIdx] = State::Read;
-                uint32_t addr = fp->getPageIdx()*PageWidth + fp->getSize();
+				FilePage* fp = reinterpret_cast<FilePage*>(_page);
+				_states[_stateIdx] = State::Read;
+				uint32_t addr = fp->getPageIdx()*PageWidth + fp->getSize();
 
-                uint8_t read_len = 128;
-                if(read_len > fp->_file_size) read_len = fp->_file_size;
-                fp->_read_bytes = read_len;
-                readPage(read_len, addr, fp->_databuf);
+				uint8_t read_len = 128;
+				if(read_len > fp->_file_size) read_len = fp->_file_size;
+				fp->_read_bytes = read_len;
+				readPage(read_len, addr, fp->_databuf);
  			}
  			else if(_states[_stateIdx] == State::FreeRow)
 			{
@@ -881,8 +1112,13 @@ namespace FwLogger
 
 		Row* Driver::getDataRow()
 		{
-			if(_states[_stateIdx] != State::Full && _states[_stateIdx] != State::FreePage) return nullptr;
-			_states[_stateIdx] = State::FreePage;
+			if(_states[_stateIdx] != State::Full && _states[_stateIdx] != State::FreeRow && _states[_stateIdx] != State::NotFound) return nullptr;
+			if(_states[_stateIdx] == State::NotFound)
+			{
+				if(_row == nullptr) _row = reinterpret_cast<Row*>(_alloc->Allocate(sizeof(Row), reinterpret_cast<uintptr_t>(this)));
+				_row->clear();
+			}
+			_states[_stateIdx] = State::FreeRow;
 			return _row;
 		}
 
@@ -915,9 +1151,27 @@ namespace FwLogger
 			{
 				if(_page != nullptr)
 				{
-					delete _page;
+					if(_page->getType() == PageType::DataType)
+					{
+						delete reinterpret_cast<DataPage*>(_page);
+					}
+					else if(_page->getType() == PageType::HeaderType)
+					{
+						delete reinterpret_cast<HeaderPage*>(_page);
+					}
+					else if(_page->getType() == PageType::FileType)
+					{
+						delete reinterpret_cast<FilePage*>(_page);
+					}
+					else
+					{
+						delete _page;
+					}
 					_page = nullptr;
 				}
+			}
+			if(_states[_stateIdx] == State::FreeRow)
+			{
 				if(_row != nullptr)
 				{
 					_alloc->Deallocate(static_cast<void*>(_row));
@@ -934,7 +1188,7 @@ namespace FwLogger
 		{
 			if(_error != 0) return Error;
 			if(_states[_stateIdx] == State::Full) return FullBuffer;
-			if(_states[_stateIdx] != State::Nop && _states[_stateIdx] != State::Wait && _states[_stateIdx] != State::FreePage) return Busy;
+			if(_states[_stateIdx] != State::Nop && _states[_stateIdx] != State::Wait && _states[_stateIdx] != State::FreePage && _states[_stateIdx] != State::FreeRow) return Busy;
 			if(try_lock() == -1 ) return Busy;
 
 			reset();

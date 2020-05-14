@@ -79,7 +79,8 @@ Src/LoRa.cpp \
 Src/Module.cpp \
 Src/VirtualMachine.cpp \
 Src/VMBuiltin.cpp \
-Src/io.cpp
+Src/io.cpp \
+Src/Log.cpp
 
 # ASM sources
 ASM_SOURCES =  \

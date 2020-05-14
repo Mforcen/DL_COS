@@ -51,6 +51,11 @@ namespace FwLogger
 			return size;
 		}
 
+		uint8_t* Page::getName()
+		{
+			return _name;
+		}
+
 		int Page::getTypeSize()
 		{
 			return 0;
@@ -371,6 +376,19 @@ namespace FwLogger
 
 			_object_idx = hp->getObjectIdx();
 			_page_idx = hp->getPageIdx();
+			_page_mode = hp->_page_mode;
+
+			if(_currDP != nullptr)
+			{
+				_alloc->Deallocate(_currDP);
+				_currDP = nullptr;
+			}
+
+			if(hp->_currDP != nullptr)
+			{
+				_currDP = new DataPage();
+				_currDP->copy(hp->_currDP);
+			}
 		}
 
 		FilePage::FilePage() : Page(0, FileType, 0)

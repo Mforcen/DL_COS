@@ -2,6 +2,7 @@ import serial
 import argparse
 import sys
 import time
+import glob
 
 def serial_ports():
 	if sys.platform.startswith('win'):
@@ -39,9 +40,9 @@ args = parser.parse_args()
 
 try:
 	if args.port:
-		port = serial.Serial(args.port, 115200, timeout=2)
+		port = serial.Serial(args.port, 230400, timeout=2)
 	else:
-		port = serial.Serial('/dev/ttyUSB0', 115200, timeout=2)
+		port = serial.Serial('/dev/ttyUSB0', 230400, timeout=2)
 except Exception:
 	print('No serial port found, use:')
 	print('[' + ', '.join(serial_ports()) + ']')
@@ -103,5 +104,21 @@ elif args.option == 'download':
 		recv += port.read(local_len)
 		time.sleep(0.1)
 	print(recv)
+
+elif args.option == 'table':
+	if args.remote_path is None:
+		print('Error, table name should not be null')
+	port.write(('table get ' + args.remote_path + '\n').encode('ascii'))
+	emptyLine = False
+	file = b''
+	i = 0
+	while not emptyLine:
+		i += 1
+		if i % 100 == 0:
+			print('Lines recv: ' + str(i))
+		line = port.readline()
+		emptyLine = (len(line) == 0)
+		file += line
+	open('out.csv', 'wb').write(file)
 
 port.close()
