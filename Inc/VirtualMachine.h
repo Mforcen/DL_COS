@@ -36,9 +36,11 @@ class VirtualMachine : public FwLogger::Module
         int HeaderFD;
         int tablePeriod;
 
-        void loop();
+        bool loop();
         void reset();
         void resumeExec(); //wakes the machine up when the RTC alarm fires up
+
+        uint8_t* getPrgName();
 
         int getNextAlarm(int now_alarm);
 
@@ -54,6 +56,8 @@ class VirtualMachine : public FwLogger::Module
 		uint8_t m_ram[4096]; // de momento
 		uint32_t m_stackPointer = 0, m_stackSize; // van dentro de ram, al inicio, después del stacksize va el programa
 		uint32_t m_returnAddr, m_localVarAddr, m_argAddr; // esto sería el stackFrame
+
+		uint8_t m_prgName[16];
 
 		bool m_saveTable, m_startTableWait;
 		uint8_t* m_tableAddress;

@@ -73,18 +73,18 @@ T VirtualMachine::pop()
 	return retval;
 }
 
-void VirtualMachine::loop()
+bool VirtualMachine::loop()
 {
-	if((!m_enabled) || m_waitTable) return; //si no está activo o si está esperando
+	if((!m_enabled) || m_waitTable) return false; //si no está activo o si está esperando
 	if(m_delayEnabled)
 	{
-		if(HAL_GetTick() - m_delayStart < m_delayTime) return;
+		if(HAL_GetTick() - m_delayStart < m_delayTime) return true;
 		m_delayEnabled = false;
 	}
     uint16_t startUS = getUS();
-    while(getUS()-startUS < 50000)
+    while(static_cast<uint16_t>(getUS()-startUS) < 50000)
 	{
-		if(!cycle()) return; //false cycle means exit from loop
+		if(!cycle()) return true; //false cycle means exit from loop
 	}
 }
 
@@ -98,6 +98,11 @@ void VirtualMachine::reset()
 void VirtualMachine::resumeExec()
 {
 	m_waitTable = false;
+}
+
+uint8_t* VirtualMachine::getPrgName()
+{
+	return m_prgName;
 }
 
 uint8_t* VirtualMachine::getTableAddress()

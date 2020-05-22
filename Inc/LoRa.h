@@ -3,10 +3,10 @@
 
 #include "Module.h"
 #include "SPI_Device.h"
+#include "Log.h"
 
 namespace FwLogger
 {
-	// TODO (forcen#1#): Make the driver available to receive data
 	class LoRa : public SPI_Device, public Module
 	{
 		public:
@@ -59,6 +59,24 @@ namespace FwLogger
 			int setOpMode(OpMode opMode);
 			//OpMode getOpMode();
 
+			int getPacketRSSI();
+			int getPacketIRQFlags();
+			int getPayloadLength();
+
+			int getModemStatus();
+			int getIRQFlags();
+			int getIRQFlagMasks();
+			int readStatus();
+
+			int getRSSI();
+			int getRxNbBytes();
+			int getRxHeaderCnt();
+			int getRxPacketCnt();
+			int getFifo(int addr, int len, uint8_t* buf);
+			int getRegHopChannel();
+
+			int setModeDebug(int value);
+
 			int send(uint16_t len, const uint8_t* data); // carga datos y configura el modo de transmisión
 
 			int receive(uint8_t continuous);
@@ -66,7 +84,7 @@ namespace FwLogger
 			int pop(); // o de otra forma
 
 			void isrDIO(uint32_t nPin);
-			void poll();
+			bool loop();
 			void ISR();
 
 		protected:
@@ -78,13 +96,11 @@ namespace FwLogger
 			GPIO_TypeDef* _gpio0, *_gpio1, *_gpio2, *_gpio3, *_gpiorx, *_gpiotx, *_gpiocs, *_gpiorst;
 			uint16_t _dio0, _dio1, _dio2, _dio3, _rxenpin, _txenpin, _cspin, _rstpin;
 
-			//uint8_t _isrFlags;
-
 			int _workingFreq;
 			uint16_t _preambLength, _regSymbTimeout, _lastUs;
 			uint8_t _spreadingFactor, _syncWord, _bandwidth, _codingRate, _rxPayloadCrc, _payloadLength, _payloadMaxLength;
-			uint8_t _freqHoppingPeriod, _txPowerReg, _ocp, _chipVersion;
-			bool _implicitHeader, _isrFlag;
+			uint8_t _freqHoppingPeriod, _txPowerReg, _ocp, _chipVersion, _recv_flags, _PcktRSSI, _recvAddr;
+			bool _implicitHeader, _isrFlag, m_waiting, m_pendingMsg, _dio0Ack;
 
 			int _queueAvailable();
 			void _queueCommand(uint8_t addr, uint8_t data);

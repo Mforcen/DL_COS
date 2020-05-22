@@ -12,6 +12,7 @@ uint16_t getUS();
 namespace FwLogger
 {
 	// TODO (forcen#1#): Create better interfaces for other parts of the program
+	// TODO (forcen#1#): Add logging capabilities
 	class SDI12_Driver : public Module
 	{
 		public:
@@ -30,6 +31,8 @@ namespace FwLogger
 
 			int startMeasurement(uint8_t addr, uint8_t type = 0, uint8_t additional = 0, bool crc = false);
 			int getData();
+
+			bool loop();
 
 		protected:
 

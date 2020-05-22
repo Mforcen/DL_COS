@@ -41,7 +41,19 @@ namespace FwLogger
 			return ((n < 0) ^ (d < 0)) ? ((n - d/2)/d) : ((n + d/2)/d);
 		}
 
-		Allocator* eTSDB::Page::_alloc = nullptr;
+		void getFormatString(Format format, char* buf)
+		{
+			if(format == Format::Invalid) strcpy(buf, "Invalid");
+			else if(format == Format::Uint8) strcpy(buf, "Uint8");
+			else if(format == Format::Int8) strcpy(buf, "Int8");
+			else if(format == Format::Uint16) strcpy(buf, "Uint16");
+			else if(format == Format::Int16) strcpy(buf, "Int16");
+			else if(format == Format::Uint32) strcpy(buf, "Uint32");
+			else if(format == Format::Int32) strcpy(buf, "Int32");
+			else if(format == Format::Float) strcpy(buf, "Float");
+		}
+
+		Allocator<128>* eTSDB::Page::_alloc = nullptr;
 
 		int Page::getSize()
 		{
@@ -163,6 +175,18 @@ namespace FwLogger
 			_data_stride = 0;
 			_data_idx = 0xffff;
 			_currDP = nullptr;
+
+			for(int i = 0; i < 16; ++i)
+			{
+				_name[i] = 0;
+				_formats[i] = Format::Invalid;
+				for(int j = 0; j < 16; ++j)
+				{
+					_colNames[i][j] = 0;
+				}
+			}
+			_period = 0;
+
 		}
 
 		HeaderPage::HeaderPage(uint16_t page_idx, uint16_t object_idx) : Page(page_idx, HeaderType, object_idx)
@@ -172,11 +196,20 @@ namespace FwLogger
 			_currDP = nullptr;
 		}
 
+		HeaderPage::~HeaderPage()
+		{
+			if(_currDP != nullptr)
+				delete _currDP;
+		}
+
 		uint8_t HeaderPage::getNumColumn()
 		{
 			uint8_t cols = 0;
 			for(int i = 0; i < 16; ++i)
-				if(_formats[i] != Format::Invalid) ++cols;
+			{
+				if(_formats[i] == Format::Invalid) break;
+					++cols;
+			}
 			return cols;
 		}
 

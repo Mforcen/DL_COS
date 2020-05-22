@@ -2,23 +2,14 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="3bc4e357-b137-4564-a874-0b3f8cca09f1" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/FLogger.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/FLogger.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/FLogger.layout" beforeDir="false" afterPath="$PROJECT_DIR$/FLogger.layout" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Inc/FwLogger.h" beforeDir="false" afterPath="$PROJECT_DIR$/Inc/FwLogger.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Inc/LoRa.h" beforeDir="false" afterPath="$PROJECT_DIR$/Inc/LoRa.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Inc/SDI12_Driver.h" beforeDir="false" afterPath="$PROJECT_DIR$/Inc/SDI12_Driver.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Inc/VMBuiltin.h" beforeDir="false" afterPath="$PROJECT_DIR$/Inc/VMBuiltin.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Inc/eTSDB_Driver.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Inc/eTSDB_Driver.hpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Inc/eTSDB_Utils.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/Inc/eTSDB_Utils.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/Makefile" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Src/FwLogger.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Src/FwLogger.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Src/SDI12_Driver.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Src/SDI12_Driver.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Src/eTSDB_Driver.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Src/eTSDB_Driver.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Src/eTSDB_Pages.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Src/eTSDB_Pages.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Src/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Src/main.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/control.py" beforeDir="false" afterPath="$PROJECT_DIR$/control.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

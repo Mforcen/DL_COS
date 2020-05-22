@@ -6,10 +6,10 @@
 
 namespace FwLogger
 {
-	class SPIFlash : public SPI_Device
+	class SPIFlash : public SPI_Device, public Module
 	{
 		public:
-			SPIFlash(SPI_HandleTypeDef* hspi, GPIO_TypeDef* gpio, uint16_t pin);
+			SPIFlash(SPI_HandleTypeDef* hspi, GPIO_TypeDef* gpio, uint16_t pin, const char* moduleName = "SPIFlash 0.6");
 			int writePage(uint8_t* data, uint16_t len, uint32_t addr);
 			int readPage(uint16_t len, uint32_t addr, uint8_t* buf);
 			int readPage(uint16_t len, uint32_t addr);
@@ -21,7 +21,7 @@ namespace FwLogger
 
 			void ISR();
 			virtual void flashModuleISR();
-			void poll();
+			bool loop();
 
 			int available();
 			int peek();

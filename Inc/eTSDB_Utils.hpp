@@ -2,6 +2,7 @@
 #define ETSBD_UTILS_INCLUDED
 
 #include <cstdint>
+#include <cstring>
 #include <mem_structs.hpp>
 
 /**	Although the driver will be async, this first version will be partially async. A main class driver which handles a FSM
@@ -53,6 +54,7 @@ namespace FwLogger
 		uint8_t getFormatWidth(Format format);
 		uint32_t getSecondsFromPeriod(uint8_t period);
 		uint64_t divRoundClosest(const uint64_t n, const uint64_t d);
+		void getFormatString(Format format, char* buf);
 
 		struct Value
 		{
@@ -287,7 +289,7 @@ namespace FwLogger
 				}
 				return buf_idx;
 			}
-			int stringify(uint8_t* buf)
+			int stringify(uint8_t* buf) // TODO (forcen#1#): Finish stringify function
 			{
 				return 0;
 			}

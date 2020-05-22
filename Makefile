@@ -80,7 +80,8 @@ Src/Module.cpp \
 Src/VirtualMachine.cpp \
 Src/VMBuiltin.cpp \
 Src/io.cpp \
-Src/Log.cpp
+Src/Log.cpp \
+Src/SSD1306.cpp
 
 # ASM sources
 ASM_SOURCES =  \

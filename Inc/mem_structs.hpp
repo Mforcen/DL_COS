@@ -2,6 +2,7 @@
 #define MEM_STRUCTS_HPP
 
 #include <cstdint>
+#include "Log.h"
 
 template <std::size_t sizeval>
 struct fixed_string
@@ -246,6 +247,7 @@ int prio_queue<T>::right(int id)
 	return (2*id + 2);
 }
 
+template <std::size_t pageSize>
 class Allocator // 128bytes per object
 {
 	public:
@@ -262,7 +264,7 @@ class Allocator // 128bytes per object
 
 		void* Allocate(std::size_t reqSize, uintptr_t owner)
 		{
-			//printf("Allocating %d bytes ", reqSize);
+			FwLogger::Log::Verbose("Allocating %d bytes for 0x%x\n", reqSize, owner);
 			uint8_t reqBlocks = int_ceil(reqSize, pageSize);
 
 			uint8_t freeBlocks = 0;
@@ -284,28 +286,31 @@ class Allocator // 128bytes per object
 				{
 					_idx[i-reqBlocks] = reqBlocks;
 					_ownership[i-reqBlocks] = owner;
-					return &_mem[(i-reqBlocks)*128];
+					return &_mem[(i-reqBlocks)*pageSize];
 				}
 			}
-			//printf("failed \n");
+			FwLogger::Log::Error("Allocation failed\n");
 			return nullptr;
-
 		}
+
 		void Deallocate(void* ptr)
 		{
 			//printf("Deallocating 0x%016x\n", ptr);
 			uintptr_t dealloc_ptr = reinterpret_cast<uintptr_t>(ptr);
 			uintptr_t mem_ptr = reinterpret_cast<uintptr_t>(_mem);
 			uint8_t numBlock = (dealloc_ptr-mem_ptr)/pageSize;
+
+			if(_idx[numBlock] == 0) FwLogger::Log::Warning("Error, double deallocation for block %d\n", numBlock);
+			FwLogger::Log::Verbose("Deallocating block %d\n", numBlock);
 			_idx[numBlock] = 0;
 			_ownership[numBlock] = 0;
 		}
+
 	private:
 		uint8_t* _mem;
 		uint8_t* _idx;
 		uintptr_t* _ownership;
 		std::size_t _numBlocks;
-		std::size_t pageSize = 128;
 
 		int int_ceil(int D, int d)
 		{

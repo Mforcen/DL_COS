@@ -9,7 +9,7 @@ namespace FwLogger
 	}
 
 	OS::OS():_alloc(_alloc_buf, _alloc_idx, _alloc_ownership, 4096), flash(&hspi1, FLASH_CS), etsdb(0, 8192*1024, &hspi1, FLASH_CS, &_alloc), sdi12(SDI12_1),
-	radio(&hspi1, LORA_DIO0, LORA_DIO1, LORA_DIO2, LORA_DIO3, LORA_RXEN, LORA_TXEN, LORA_CS, LORA_RST)
+	radio(&hspi1, LORA_DIO0, LORA_DIO1, LORA_DIO2, LORA_DIO3, LORA_RXEN, LORA_TXEN, LORA_CS, LORA_RST), disp(&hi2c2, 0x78, 128, 32)
 	{
 		errno = 0;
 		parser_remaining = 0;
@@ -26,6 +26,11 @@ namespace FwLogger
 	void OS::init()
 	{
 		radio.init(868000000);
+		disp.Init();
+		disp.setCursor(0,0);
+		disp.fill();
+		disp.writeString("hola");
+		disp.updateScreen();
 	}
 
 	void OS::push_rx(uint8_t c)
@@ -95,10 +100,13 @@ namespace FwLogger
 
 	void OS::loop()
 	{
-		etsdb.poll(); // esto sería interesante pasarlo a estático
-		flash.poll();
-		radio.poll();
-		vm.loop();
+		volatile bool work_left = false;
+		for(int i = 0; i < Module::getModuleNumber(); ++i)
+		{
+			work_left = work_left | Module::getModule(i)->loop();
+		}
+
+		work_left = task_loop() | work_left;
 
 		if(m_rtcFlag) // if it has to wake up from sleep
 		{
@@ -155,10 +163,18 @@ namespace FwLogger
 			}
 		}
 
+		if(radio.available())
+		{
+			radio_eval();
+		}
+	}
+
+	bool OS::task_loop()
+	{
 		Task* currTask = _ops.at_front();
 
 		if(currTask == nullptr)
-			return;
+			return false;
 
 		if(currTask->op == Operation::Eval)
 		{
@@ -170,7 +186,7 @@ namespace FwLogger
 		else if(currTask->op == Operation::OpenFile)
 		{
 			if(etsdb.openFile(currTask->name_buf, static_cast<eTSDB::PageAccessMode>(currTask->counter)) == eTSDB::Ok)
-				_ops.delete_front();
+				currTask->op = Operation::GetPage;
 		}
 
 		else if(currTask->op == Operation::OpenHeader)
@@ -192,22 +208,22 @@ namespace FwLogger
 					_alloc.Deallocate(currTask->buf);
 					currTask->buf = nullptr;
 				}
-				_ops.delete_front();
+				currTask->op = Operation::GetPage;
 			}
 		}
 
-		else if(currTask->op == Operation::ListTables)
+		else if(currTask->op == Operation::ListTables) // TODO (forcen#1#): Add binary mode for these functions
 		{
 			eTSDB::RetValue retval = etsdb.checkGetNextHeader();
+			eTSDB::HeaderPage* hp = reinterpret_cast<eTSDB::HeaderPage*>(currTask->buf);
 			if(retval == eTSDB::Ok)
 			{
-				eTSDB::HeaderPage* hp = reinterpret_cast<eTSDB::HeaderPage*>(currTask->buf);
 				printf("%s\tColumns: %d\n", hp->getName(), hp->getNumColumn());
 				etsdb.startGetNextHeader(*hp);
 			}
 			else if(retval == eTSDB::NotFound)
 			{
-				close(currTask->fd);
+				delete hp;
 				_ops.delete_front();
 			}
 		}
@@ -362,11 +378,6 @@ namespace FwLogger
 								open_tsk.op = Operation::OpenHeader;
 								_ops.push_back(open_tsk);
 
-								Task get_tsk;
-								get_tsk.fd = open_tsk.fd;
-								get_tsk.op = Operation::GetPage;
-								_ops.push_back(get_tsk);
-
 								vm.HeaderFD = open_tsk.fd;
 
 								pi->hi.colLen = currTask->counter;
@@ -407,11 +418,6 @@ namespace FwLogger
 										open_tsk.op = Operation::OpenHeader;
 										_ops.push_back(open_tsk);
 
-										Task get_tsk;
-										get_tsk.fd = open_tsk.fd;
-										get_tsk.op = Operation::GetPage;
-										_ops.push_back(get_tsk);
-
 										vm.HeaderFD = open_tsk.fd;
 
 										pi->hi.colLen = currTask->counter;
@@ -427,7 +433,6 @@ namespace FwLogger
 						if(currTask->counter == 0)
 						{
 							pi->stack_size = 0;
-							pi->static_vars = 0;
 						}
 						if(currTask->counter < 4)
 						{
@@ -457,7 +462,7 @@ namespace FwLogger
 				}
 				if(errno == EIO)
 				{
-					_alloc.Deallocate(currTask->buf); //deallocating program initializer
+					// _alloc.Deallocate(currTask->buf); //should be deallocated in openheader task
 					close(currTask->fd); // close file, cleaning buffers (file page and file buffer)
 					vm.enable(true);
 					_ops.delete_front();
@@ -467,7 +472,7 @@ namespace FwLogger
 		else if(currTask->op == Operation::SaveRow)
 		{
 			eTSDB::HeaderPage* hp = reinterpret_cast<eTSDB::HeaderPage*>(_fds[currTask->fd-1].ptr);
-			if(hp == nullptr) return;
+			if(hp == nullptr) return true;
 			eTSDB::RetValue retval = etsdb.appendValue(*hp, *reinterpret_cast<eTSDB::Row*>(currTask->buf));
 			if(retval == eTSDB::Ok)
 			{
@@ -475,51 +480,23 @@ namespace FwLogger
 				_ops.delete_front();
 			}
 		}
-		/*else if(currTask->op == Operation::TestAppend)
-		{
-			eTSDB::HeaderPage* hp = reinterpret_cast<eTSDB::HeaderPage*>(_fds[currTask->fd-1].ptr);
-			if(hp == nullptr) return;
-			eTSDB::Row* row;
-			if(currTask->buf == nullptr)
-			{
-				currTask->buf = new(_alloc.Allocate(sizeof(eTSDB::Row), 101)) eTSDB::Row();
-				row = reinterpret_cast<eTSDB::Row*>(currTask->buf);
-				row->rowDate.year = 2020;
-				row->rowDate.month = 05;
-				row->rowDate.day = 10;
-				row->rowDate.hour = 1;
-				row->rowDate.minute = 20;
-				row->rowDate.second = 0;
-				row->rowDate.exists = 0;
-
-				row->vals[0].format = eTSDB::Format::Int32;
-				row->vals[1].format = eTSDB::Format::Invalid;
-
-				row->vals[0].data._int32 = 0;
-			}
-			else
-			{
-				row = reinterpret_cast<eTSDB::Row*>(currTask->buf);
-				if(currTask->counter)
-				{
-					row->rowDate = row->rowDate+10;
-					row->vals[0].data._int32++;
-					currTask->counter = 0;
-				}
-			}
-			eTSDB::RetValue retval = etsdb.appendValue(*hp, *row);
-			if(retval == eTSDB::Ok) currTask->counter = 1;
-		}*/
 		else if(currTask->op != Operation::Upload)
 		{
 			printf_("Invalid task with opcode: %d\n", currTask->op);
 			_ops.delete_front();
 		}
+		return true;
 	}
 
 	void OS::eval()
 	{
 		char* str = reinterpret_cast<char*>(rx_buffer.buf);
+
+		if(str[0] == 0x0b)
+		{
+			bin_eval();
+			return;
+		}
 
 		char* token =  strtok(str, " ");
 
@@ -587,11 +564,6 @@ namespace FwLogger
 				for(int i = 0; i < 16 && token[i] != 0; ++i) open_tsk.name_buf[i] = token[i];
 				_ops.push_back(open_tsk);
 
-				Task get_tsk;
-				get_tsk.fd = open_tsk.fd;
-				get_tsk.op = Operation::GetPage;
-				_ops.push_back(get_tsk);
-
 				Task readTable_tsk;
 				readTable_tsk.op = Operation::ReadTable;
 				readTable_tsk.fd = open_tsk.fd;
@@ -625,7 +597,7 @@ namespace FwLogger
 				{
 					flash.readPage(len, addr);
 					HAL_Delay(10);
-					flash.poll();
+					flash.loop();
 					for(int i = 0; i < len; ++i)
 					{
 						printf_("%0x ", flash.pop());
@@ -647,7 +619,7 @@ namespace FwLogger
 				{
 					flash.readPage(len, addr);
 					HAL_Delay(1);
-					flash.poll();
+					flash.loop();
 					for(int i = 0; i < len; ++i)
 					{
 						tx_buffer.push_back(flash.pop());
@@ -677,22 +649,27 @@ namespace FwLogger
 
 				_ops.push_back(tsk);
 			}
+			else if(strcmp(token, "name") == 0)
+			{
+				printf("%s\n", vm.getPrgName());
+			}
 			else if(strcmp(token, "status") == 0)
 			{
 				if(vm.getEnabled())
-				{
-					printf_("VM enabled\n");
-				}
+					printf("VM enabled\n");
 				else
-				{
-					printf_("VM disabled\n");
-				}
+					printf("VM disabled\n");
 			}
 			else if(strcmp(token, "stop") == 0)
 			{
 				vm.enable(false);
+				printf("VM stopped\n");
 			}
-
+			else if(strcmp(token, "start") == 0)
+			{
+				vm.enable();
+				printf("VM started\n");
+			}
 		}
 		else if(strcmp(token, "system") == 0)
 		{
@@ -704,7 +681,23 @@ namespace FwLogger
 				{
 					int used_blocks = 0;
 					for(int i = 0; i < 32; ++i) used_blocks += _alloc_idx[i];
-					printf_("Total memory: 4096 bytes\tUsedMemory: %d bytes\n", used_blocks*128);
+					printf("Total memory: 4096 bytes\tUsedMemory: %d bytes\n", used_blocks*128);
+					for(int i = 0; i < 32; ++i)
+					{
+						if(_alloc_idx[i] == 0)
+						{
+
+						}
+						else if(_alloc_idx[i] < 100) // this is not a debug code
+						{
+							printf("Owner: eTSDB::Page new\tBlocks used: %d\n", _alloc_idx[i]);
+						}
+						else
+						{
+							printf("Owner: %s\tBlocks used: %d\n", reinterpret_cast<Module*>(_alloc_ownership)->getName(), _alloc_idx[i]);
+						}
+						HAL_Delay(1);
+					}
 				}
 			}
 			else if(strcmp(token, "version") == 0)
@@ -712,7 +705,7 @@ namespace FwLogger
                 int mn = Module::getModuleNumber();
                 for(int i = 0; i < mn; ++i)
 				{
-					printf_("%s\n", Module::getNames()[i]);
+					printf_("%s\n", Module::getModule(i)->getName());
 				}
 				printf_("\n");
 			}
@@ -757,7 +750,7 @@ namespace FwLogger
 					HAL_RTC_GetDate(&hrtc, &rtc_date, RTC_FORMAT_BIN);
 					HAL_RTC_GetTime(&hrtc, &rtc_time, RTC_FORMAT_BIN);
 
-					printf_("%d/%d/%d %d:%d:%d\n", rtc_date.Year+2000, rtc_date.Month, rtc_date.Date, rtc_time.Hours, rtc_time.Minutes, rtc_time.Seconds);
+					printf("%d/%d/%d %d:%d:%d\n", rtc_date.Year+2000, rtc_date.Month, rtc_date.Date, rtc_time.Hours, rtc_time.Minutes, rtc_time.Seconds);
 				}
 			}
 			else if(strcmp(token, "log") == 0)
@@ -802,6 +795,57 @@ namespace FwLogger
 					Log::_fd_sink = fd; // set new fd
 				}
 			}
+			else if(strcmp(token, "filetable") == 0) //imprimir fd
+			{
+				token = strtok(NULL, " ");
+				if(strlen(token) == 0)
+				{
+					printf("Idx\tType\n");
+					for(int i = 0; i < 16; ++i)
+					{
+						printf("%d\t",i);
+						if(_fds[i].type == FDType::File)
+						{
+							eTSDB::FilePage* fp = reinterpret_cast<eTSDB::FilePage*>(_fds[i].ptr);
+							printf("File\tName: %s", fp->getName());
+						}
+						else if(_fds[i].type == FDType::TS)
+						{
+							eTSDB::HeaderPage* hp = reinterpret_cast<eTSDB::HeaderPage*>(_fds[i].ptr);
+							printf("TS\tName: %s", hp->getName());
+						}
+						HAL_Delay(1);
+						printf("\n");
+					}
+				}
+				else
+				{
+					int file_idx = std::atoi(token);
+					if(_fds[file_idx].type == FDType::File)
+						{
+							eTSDB::FilePage* fp = reinterpret_cast<eTSDB::FilePage*>(_fds[file_idx].ptr);
+							printf("File\nName: %s\tSize: %d\nObjIdx: %d\tPagIdx: %d", fp->getName(), fp->getFileSize(), fp->getObjectIdx(), fp->getPageIdx());
+						}
+						else if(_fds[file_idx].type == FDType::TS)
+						{
+							eTSDB::HeaderPage* hp = reinterpret_cast<eTSDB::HeaderPage*>(_fds[file_idx].ptr);
+							printf("TS\tName: %s\tPeriod: %d\tCols: %d\n", hp->getName(), hp->getPeriod(), hp->getNumColumn());
+							int i;
+							char buf[8] = {0};
+							for(i = 0; i < hp->getNumColumn()-1; ++i)
+							{
+								eTSDB::getFormatString(hp->getColumnFormat(i), buf);
+								printf("%s,", buf);
+							}
+							eTSDB::getFormatString(hp->getColumnFormat(i), buf);
+							printf("%s\n", buf);
+
+							for(i = 0; i < hp->getNumColumn()-1; ++i)
+								printf("%s,", hp->getColumnName(i));
+							printf("%s\n", hp->getColumnName(i));
+						}
+				}
+			}
 		}
 		else if(strcmp(token, "power") == 0)
 		{
@@ -809,38 +853,175 @@ namespace FwLogger
             int power_enable = std::atoi(token);
             enablePower(power_enable);
 		}
-		/*else if(strcmp(token, "eTestSDB") == 0)
+		else if(strcmp(token, "radio") == 0)
 		{
-			ProgramInitializer* pi = reinterpret_cast<ProgramInitializer*>(_alloc.Allocate(sizeof(ProgramInitializer), 101));
-			strcpy(reinterpret_cast<char*>(pi->name), "test");
-			pi->hi.period = 10;
-			pi->hi.colLen = 1;
-			pi->hi.formats[0] = eTSDB::Format::Int32;
-			pi->hi.formats[1] = eTSDB::Format::Invalid;
-			strcpy(reinterpret_cast<char*>(pi->hi.colNames[0]), "col1");
+			token = strtok(NULL, " ");
+			if(strcmp(token, "receive") == 0) // without error handling
+			{
+				token = strtok(NULL, " ");
+				int continuous = std::atoi(token);
+				if(continuous) continuous = 1;
+				printf("receiving ");
+				radio.receive(continuous);
+				if(continuous)
+					printf("continuous");
+				else
+					printf("single");
+				printf("\n");
+			}
+			else if(strcmp(token, "set") == 0)
+			{
+				token = strtok(NULL, " ");
+				if(strcmp(token, "bandwith") == 0)
+				{
+					token = strtok(NULL, " ");
+					int bw = std::atoi(token);
+					if(radio.setBandwidth(bw) == -1)
+						printf("Invalid value for bandwidth: %d\n", bw);
+					else
+						printf("Bandwidth set\n");
+				}
+				else if(strcmp(token, "spreadfactor") == 0)
+				{
+					token = strtok(NULL, " ");
+					int sf = std::atoi(token);
+					if(radio.setSpreadingFactor(sf) == -1)
+						printf("Invalid value for spread factor: %d\n", sf);
+					else
+						printf("Spreading factor set\n");
+				}
+				else if(strcmp(token, "syncword") == 0)
+				{
+					token = strtok(NULL, " ");
+					int sw = std::atoi(token);
+					if(radio.setSyncWord(sw) == -1)
+						printf("Invalid value for sync wird: %d\n", sw);
+					else
+						printf("Sync word set\n");
+				}
+				else if(strcmp(token, "txpower") == 0)
+				{
+					token = strtok(NULL, " ");
+					int txpower = std::atoi(token);
+					token = strtok(NULL, " ");
+					int tx_pin = std::atoi(token);
+					if(tx_pin > 1) tx_pin = 1;
+					if(radio.setTxPower(txpower, tx_pin) == -1)
+						printf("Invalid value for TxPower: %d\n", txpower);
+					else
+						printf("TxPower with %ddB and %d pin\n", txpower, tx_pin);
+				}
+			}
+			else if(strcmp(token, "setmodebug") == 0)
+			{
+				token = strtok(NULL, " ");
+				int mode = std::atoi(token);
+				if(radio.setModeDebug(mode) == 0)
+					printf("Set mode to %d\n", mode);
+				else
+					printf("Failed to set mode %d\n", mode);
+			}
+			else if(strcmp(token, "send") == 0)
+			{
+				token = strtok(NULL, " ");
+				radio.send(strlen(token), reinterpret_cast<uint8_t*>(token));
+				radio.receive(0);
+				printf("%s sent\n", token);
+			}
+			else if(strcmp(token, "version") == 0)
+			{
+				int chipid = radio.getChipVersion();
+				printf("Chip ID: 0x%x\n", chipid);
+			}
 
-			Task open_tsk;
-			open_tsk.fd = _createFD(FDType::TS);
-			open_tsk.buf = pi;
-			open_tsk.op = Operation::OpenHeader;
-			_ops.push_back(open_tsk);
+			else if(strcmp(token, "rx_stat") == 0)
+				printf("Modem status: %d\n", radio.getModemStatus());
 
-			Task get_tsk;
-			get_tsk.fd = open_tsk.fd;
-			get_tsk.op = Operation::GetPage;
-			_ops.push_back(get_tsk);
+			else if(strcmp(token, "irq_flags") == 0)
+				printf("IRQ Flags: %d\n", radio.getIRQFlags());
 
-			Task test_tsk;
-			test_tsk.fd = open_tsk.fd;
-			test_tsk.op = Operation::TestAppend;
-			test_tsk.buf = nullptr;
-			_ops.push_back(test_tsk);
-		}*/
+			else if(strcmp(token, "irq_masks") == 0)
+				printf("IRQ Flags: %d\n", radio.getIRQFlagMasks());
+
+			else if(strcmp(token, "op_status") == 0)
+				printf("OpStatus: %d\n", radio.readStatus());
+
+			else if(strcmp(token, "rx_bytes") == 0)
+				printf("rx_bytes: %d\n", radio.getRxNbBytes());
+
+			else if(strcmp(token, "rx_headers") == 0)
+				printf("rx_hdrs: %d\n", radio.getRxHeaderCnt());
+
+			else if(strcmp(token, "rx_pckts") == 0)
+				printf("rx_pckts: %d\n", radio.getRxPacketCnt());
+
+			else if(strcmp(token, "rssi") == 0)
+				printf("RSSI: %d\n", radio.getRSSI());
+
+			else if(strcmp(token, "fifo") == 0)
+			{
+				token = strtok(NULL, " ");
+				int addr = std::atoi(token);
+				token = strtok(NULL, " ");
+				int len = std::atoi(token);
+
+				uint8_t buf[256] = {0};
+
+				radio.getFifo(addr, len, buf);
+
+				printf("FIFO Content:\n");
+
+				for(int i = 0; i < len; ++i)
+					printf("%x ", buf[i]);
+			}
+			else if(strcmp(token, "reghop") == 0)
+			{
+				printf("RegHop: %x\n", radio.getRegHopChannel());
+			}
+		}
+		printf("\n>> ");
 	}
 
-	void OS::rf_eval()
+	void OS::bin_eval()
 	{
+		uint8_t* eval_buf = &rx_buffer.buf[1];
+		if(eval_buf[0] == 't')
+		{
+			if(eval_buf[1] == 'r')
+			{
 
+			}
+		}
+	}
+
+	void OS::radio_eval()
+	{
+		uint8_t buf[128];
+		int buf_idx = 0;
+		Log::Info("Radio received with RSSI: %d", radio.getPacketRSSI());
+		if(radio.getPacketIRQFlags() & 0x20)
+			Log::Info(" and wrong crc");
+		else
+			Log::Info(" and correct crc");
+		Log::Info(" (flags 0x%x)\n", radio.getPacketIRQFlags());
+		while(radio.available()>0 && buf_idx < 128) buf[buf_idx++] = radio.pop();
+
+		buf[buf_idx] = 0;
+
+		char outbuf[6];
+		disp.setCursor(0,0);
+		disp.writeString("RSSI:");
+		disp.setCursor(0, 1);
+		if(radio.getPacketIRQFlags() & 0x20)
+			sprintf(outbuf, "%d!", radio.getPacketRSSI());
+		else
+			sprintf(outbuf, "%d", radio.getPacketRSSI());
+		disp.writeString(outbuf);
+		disp.setCursor(0,2);
+		disp.writeString(reinterpret_cast<char*>(buf));
+		disp.updateScreen();
+
+		printf("%s\n", buf);
 	}
 
 	int OS::open(char* path, int oflag)
@@ -885,12 +1066,6 @@ namespace FwLogger
 			strcpy(reinterpret_cast<char*>(tsk_creat.name_buf), pch);
 			tsk_creat.counter = static_cast<uint16_t>(am);
 			_ops.push_back(tsk_creat);
-
-            Task tsk_get;
-            tsk_get.op = Operation::GetPage;
-            tsk_get.fd = fd;
-
-            _ops.push_back(tsk_get);
             return fd;
 		}
 		else if(strcmp(pch, "etsdb") == 0)
@@ -905,13 +1080,6 @@ namespace FwLogger
 				return -1;
 			}
 			if(oflag == O_UPDATE) am = eTSDB::PageAccessMode::PageWriteUpdate;
-			//etsdb.openHeader(pch, am);
-
-			//Task tsk;
-			//tsk.fd = fd;
-			//tsk.op = Operation::GetPage;
-
-			//_ops.push_back(tsk);
 			return fd;
 		}
 		errno = EUNSPEC;
@@ -1085,6 +1253,7 @@ namespace FwLogger
 		}
 		else if(_fd.type == FDType::TS)
 		{
+
 			_alloc.Deallocate(_fd.ptr);
 		}
 		return 0;

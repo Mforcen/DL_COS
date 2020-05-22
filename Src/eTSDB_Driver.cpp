@@ -11,8 +11,8 @@ namespace FwLogger
 			return endAddr;
 		}
 
-		Driver::Driver(uint32_t offsetAddress, uint32_t size, SPI_HandleTypeDef* hspi, GPIO_TypeDef* gpio, uint16_t pin, Allocator* alloc):
-			SPIFlash(hspi, gpio, pin), Module("eTSDB 0.3")
+		Driver::Driver(uint32_t offsetAddress, uint32_t size, SPI_HandleTypeDef* hspi, GPIO_TypeDef* gpio, uint16_t pin, Allocator<128>* alloc):
+			SPIFlash(hspi, gpio, pin, "eTSDB 0.4")
 		{
 			_offset = offsetAddress;
 			_size = size;
@@ -436,7 +436,6 @@ namespace FwLogger
 			_states[0] = State::Read;
 			_states[1] = State::HeaderPageReadDataIndex;
 			_states[2] = State::DataPageReadHeader;
-			//TODO se pone el resto de cosas después
 
 			HeaderPage* hp = reinterpret_cast<HeaderPage*>(_page);
 
@@ -979,6 +978,11 @@ namespace FwLogger
 							}
 						}
 						else break; // después de esto ya se corta la vida
+					}
+					for(i = 0; i < 16; ++i) if(hp->_formats[i] > Format::Float)
+					{
+						Log::Error("Error on table header %s in page %d, format val is %d\n", hp->getName(), hp->getPageIdx(), hp->_formats[i]);
+						hp->_formats[i] = Format::Invalid;
 					}
 					hp->_header_spacing = hp->getSize();
 

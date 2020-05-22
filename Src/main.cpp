@@ -87,98 +87,6 @@ int16_t adc1_data[6], adc3_data[6];
 
 FwLogger::OS os;
 
-static int getLoRaVer()
-{
-	return FwLogger::OS::get().radio.getChipVersion();
-}
-
-static int sendLoRa()
-{
-	if(FwLogger::OS::get().radio.send(12, (const uint8_t*)"holacaracola")) printf_("error\n");
-	return 0;
-}
-
-static int recvLoRa()
-{
-	if(FwLogger::OS::get().radio.receive(0)) printf_("recvLoRa error\n");
-	return 0;
-}
-
-static int recvCont()
-{
-	if(FwLogger::OS::get().radio.receive(1)) printf_("recvCont error\n");
-	return 0;
-}
-
-static int unLockRa()
-{
-	FwLogger::OS::get().radio.unlock();
-	return 0;
-}
-
-static int ackActive()
-{
-	FwLogger::OS::get().sdi12.ackActive(0);
-	return 0;
-}
-
-static int sensorId()
-{
-	FwLogger::OS::get().sdi12.sensorId(0);
-	return 0;
-}
-
-static int queryAddr()
-{
-	FwLogger::OS::get().sdi12.queryAddr();
-	return 0;
-}
-
-static int startVerification()
-{
-	FwLogger::OS::get().sdi12.startVerification(0);
-	return 0;
-}
-
-static int getCmdResponse()
-{
-	FwLogger::OS::get().sdi12.getCmdResponse();
-	return 0;
-}
-
-static int startMeasurement()
-{
-	FwLogger::OS::get().sdi12.startMeasurement(0);
-	return 0;
-}
-
-static int getModules()
-{
-	uint8_t modNumb = FwLogger::Module::getModuleNumber();
-	printf_("Number of loaded modules: %d\n", modNumb);
-	const char** names = FwLogger::Module::getNames();
-	for(uint8_t i = 0; i < modNumb; ++i)
-		printf_("%s\n", names[i]);
-	return 0;
-}
-
-struct def {
-	const char* name;
-	intptr_t val;
-	int nargs;
-} defs[] = {
-	{"getLoRaVersion", (intptr_t)getLoRaVer, 0},
-	{"sendLoRa", (intptr_t) sendLoRa, 0},
-	{"unLockRa", (intptr_t) unLockRa, 0},
-	{"ackActive", (intptr_t) ackActive, 0},
-	{"sensorId", (intptr_t) sensorId, 0},
-	{"queryAddr", (intptr_t) queryAddr, 0},
-	{"startVerification", (intptr_t) startVerification, 0},
-	{"getCmdResponse", (intptr_t) getCmdResponse, 0},
-	{"startMeasurement", (intptr_t) startMeasurement, 0},
-	{"getModules", (intptr_t) getModules, 0},
-	{NULL, 0, 0}
-};
 
 /* USER CODE END PV */
 
@@ -1354,7 +1262,7 @@ static void MX_GPIO_Init(void)
 	/*Configure GPIO pins : PD4 PD7 */
 	/* Pines de entrada para los DIO del LoRa */
 	GPIO_InitStruct.Pin = GPIO_PIN_4;// | GPIO_PIN_7 | GPIO_PIN_10 | GPIO_PIN_11;
-	GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
+	GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 	HAL_NVIC_SetPriority(EXTI4_IRQn, 0, 0);
@@ -1435,7 +1343,13 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 	else if(GPIO_Pin == GPIO_PIN_15)
 		FwLogger::OS::get().sdi12.pin_isr();
 	else if(GPIO_Pin == GPIO_PIN_4)
-		FwLogger::OS::get().radio.isrDIO(GPIO_PIN_4);
+		FwLogger::OS::get().radio.isrDIO(GPIO_Pin);
+}
+
+void HAL_I2C_MemTxCpltCallback(I2C_HandleTypeDef* hi2c)
+{
+	if(hi2c == &hi2c2)
+		FwLogger::OS::get().disp.isr();
 }
 
 /* USER CODE END 4 */

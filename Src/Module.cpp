@@ -4,19 +4,29 @@ namespace FwLogger
 {
 	Module::Module(const char* name)
 	{
-		_names[_nameIdx++] = name;
+		for(int i = 0; i < 16; ++i) _name[i] = 0;
+		for(int i = 0; i < 15; ++i) _name[i] = name[i];
+		_modules[getModuleNumber()] = this;
 	}
 
-	const char* Module::_names[16] = {0};
-	uint8_t Module::_nameIdx = 0;
-
-	const char** Module::getNames()
-	{
-		return _names;
-	}
+	Module* Module::_modules[16] = {nullptr};
 
 	uint8_t Module::getModuleNumber()
 	{
-		return _nameIdx;
+		for(int i = 0; i < 16; ++i)
+		{
+			if(_modules[i] == nullptr) return i;
+		}
+		return 16;
+	}
+
+	uint8_t* Module::getName()
+	{
+		return _name;
+	}
+
+	Module* Module::getModule(int modnum)
+	{
+		return _modules[modnum];
 	}
 }

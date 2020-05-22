@@ -230,6 +230,7 @@
 		<Unit filename="Inc/SDI12_Driver.h" />
 		<Unit filename="Inc/SPIFlash.h" />
 		<Unit filename="Inc/SPI_Device.h" />
+		<Unit filename="Inc/SSD1306.h" />
 		<Unit filename="Inc/VMBuiltin.h" />
 		<Unit filename="Inc/VirtualMachine.h" />
 		<Unit filename="Inc/eTSDB.hpp" />
@@ -254,6 +255,7 @@
 		<Unit filename="Makefile">
 			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
+		<Unit filename="STM32F103VETx_FLASH.ld" />
 		<Unit filename="Src/FwLogger.cpp" />
 		<Unit filename="Src/LoRa.cpp" />
 		<Unit filename="Src/Log.cpp" />
@@ -261,6 +263,7 @@
 		<Unit filename="Src/SDI12_Driver.cpp" />
 		<Unit filename="Src/SPIFlash.cpp" />
 		<Unit filename="Src/SPI_Device.cpp" />
+		<Unit filename="Src/SSD1306.cpp" />
 		<Unit filename="Src/VMBuiltin.cpp" />
 		<Unit filename="Src/VirtualMachine.cpp" />
 		<Unit filename="Src/cppabi.c">

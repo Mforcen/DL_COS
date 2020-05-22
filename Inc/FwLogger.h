@@ -10,16 +10,16 @@
 #include "printf.h"
 
 #include "stm32f1xx_hal.h"
+#include "pin_defs.h"
+#include "errno.h"
+#include "Log.h"
+
 #include "VirtualMachine.h"
 #include "SPIFlash.h"
 #include "eTSDB.hpp"
 #include "LoRa.h"
-#include "pin_defs.h"
-
 #include "SDI12_Driver.h"
-
-#include "errno.h"
-#include "Log.h"
+#include "SSD1306.h"
 
 #define O_RDONLY 1
 #define O_WRONLY 2
@@ -68,6 +68,7 @@ namespace FwLogger
 {
 	class OS
 	{
+		// TODO (forcen#1#): Add Low Power capabilities
 		public:
 			static OS& get();
 			OS();
@@ -79,8 +80,10 @@ namespace FwLogger
 			void RTC_ISR();
 
 			void loop();
+			bool task_loop();
 			void eval();
-			void rf_eval();// TODO (forcen#1#): Eval data from radio
+			void bin_eval(); // TODO (forcen#2#): Eval data in a binary fashion
+			void radio_eval();// TODO (forcen#1#): Eval data from radio
 			int open(char* path, int oflag);
 			int read(int fd, void* buf, size_t count);
 			int poll(int fd);
@@ -97,6 +100,7 @@ namespace FwLogger
 			eTSDB::Driver etsdb;
 			SDI12_Driver sdi12;
 			VirtualMachine vm;
+			SSD1306 disp;
 
 			LoRa radio;
 		protected:
@@ -158,6 +162,10 @@ namespace FwLogger
 
 			struct ProgramInitializer
 			{
+				ProgramInitializer()
+				{
+					for(int i = 0; i < 16; ++i) name[i] = 0;
+				}
                 eTSDB::HeaderInitializer hi;
 				uint8_t status;
 				uint8_t tables;
@@ -165,13 +173,13 @@ namespace FwLogger
                 uint8_t name_counter;
 				uint8_t table_status;
 				uint32_t stack_size;
-				uint32_t static_vars;
 			};
 
 			int errno;
-			circular_buffer<16, Task> _ops; // implementar una priority queue
+			circular_buffer<16, Task> _ops;
 
 			fixed_string<128> rx_buffer;
+			bool m_rxBin;
 			int parser_status;
 			int parser_remaining;
 
@@ -180,7 +188,7 @@ namespace FwLogger
 
 			FileDescriptor _fds[16];
 
-			Allocator _alloc;
+			Allocator<128> _alloc;
 			uint8_t _alloc_buf[4096];
 			uint8_t _alloc_idx[32];
 			uintptr_t _alloc_ownership[32];

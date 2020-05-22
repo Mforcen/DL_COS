@@ -106,7 +106,7 @@ namespace FwLogger
 	{
 		if(_status == Receiving){
 			_last_rx_counter = 0;
-			uint16_t dt_rx = getUS()-_last_rx;
+			uint16_t dt_rx = static_cast<uint16_t>(getUS()-_last_rx);
 			_last_rx = getUS();
 			uint32_t bits = (1200*(dt_rx+_rxFudge))/1000000;
 			GPIO_PinState pinValue = HAL_GPIO_ReadPin(_gpio, _pin);
@@ -397,5 +397,10 @@ namespace FwLogger
 		if(_state != DataFull) return -1;
 		_state = Nop;
 		return 0;
+	}
+
+	bool SDI12_Driver::loop()
+	{
+		return !(_state == Nop);
 	}
 }

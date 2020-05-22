@@ -35,7 +35,7 @@ namespace FwLogger
 			virtual int serialize(uint8_t* buf);
 			virtual int deserialize(uint8_t* buf);
 
-			static void setAllocator(Allocator* alloc){_alloc = alloc; }
+			static void setAllocator(Allocator<128>* alloc){_alloc = alloc; }
 			void* operator new(std::size_t size) { return _alloc->Allocate(size, 1); }
 			void operator delete(void *ptr) { _alloc->Deallocate(ptr); }
 
@@ -46,7 +46,7 @@ namespace FwLogger
 			PageType _type;
 			uint16_t _object_idx;
 			uint8_t _name[16];
-			static Allocator* _alloc;
+			static Allocator<128>* _alloc;
 			PageAccessMode _page_mode;
 
 		private:
@@ -100,6 +100,7 @@ namespace FwLogger
 
 			HeaderPage();
 			HeaderPage(HeaderPage* hp);
+			~HeaderPage();
 
 			uint8_t getNumColumn();
 			uint8_t* getColumnName(uint8_t colIdx);

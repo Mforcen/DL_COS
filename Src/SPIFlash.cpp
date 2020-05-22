@@ -15,7 +15,7 @@
 
 namespace FwLogger
 {
-	SPIFlash::SPIFlash(SPI_HandleTypeDef* hspi, GPIO_TypeDef* gpio, uint16_t pin) : SPI_Device(hspi)
+	SPIFlash::SPIFlash(SPI_HandleTypeDef* hspi, GPIO_TypeDef* gpio, uint16_t pin, const char* moduleName) : SPI_Device(hspi), Module(moduleName)
 	{
 		_gpio = gpio;
 		_pin = pin;
@@ -256,7 +256,7 @@ namespace FwLogger
 		unlock();
 	}
 
-	void SPIFlash::poll()
+	bool SPIFlash::loop()
 	{
 		if(_isr_launched)
 		{
@@ -300,23 +300,25 @@ namespace FwLogger
 				_action = None;
 			}
 			if(_action == None)
+			{
 				flashModuleISR(); // cuando se termina la transacción, en el caso de ser un módulo, se ejecuta dicha función
+			}
 
-			return;
+			return true; //something to do
 		}
 
 
 		switch(_action)
 		{
 		case WENDelay:
-			if(getUS()-_last_us > 5)
+			if(static_cast<uint16_t>(getUS()-_last_us) > 5)
 			{
 				writeEnable();
 			}
 			break;
 
 		case WriteStart: // Para dar la espera para el pulso de NSS, que se requiere después de WriteEnable
-			if(getUS()-_last_us > 5)
+			if(static_cast<uint16_t>(getUS()-_last_us) > 5)
 			{
 				HAL_GPIO_WritePin(_gpio, _pin, GPIO_PIN_RESET);
 
@@ -384,6 +386,7 @@ namespace FwLogger
 		default:
 			break;
 		}
+		if(_action == None) return false; // nothing to do
 	}
 
 	int SPIFlash::available()
