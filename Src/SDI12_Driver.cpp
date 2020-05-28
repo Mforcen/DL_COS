@@ -6,6 +6,16 @@ namespace FwLogger
 	{
 		_gpio = gpio;
 		_pin = pin;
+
+		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_15, GPIO_PIN_RESET); // B to A
+
+		GPIO_InitTypeDef gpio_dir;
+		gpio_dir.Mode = GPIO_MODE_OUTPUT_PP;
+		gpio_dir.Pin = GPIO_PIN_15;
+		gpio_dir.Speed = GPIO_SPEED_FREQ_LOW;
+		gpio_dir.Pull = GPIO_NOPULL;
+		HAL_GPIO_Init(GPIOC, &gpio_dir);
+
 		setStatus(Disabled);
 	}
 
@@ -38,8 +48,55 @@ namespace FwLogger
 			break;
 
 		case MarkingRx:
+			if(_counter == 1)
+			{
+				GPIO_InitTypeDef gpio_init;
+				gpio_init.Pin = _pin;
+				//gpio_init.Mode = GPIO_MODE_INPUT;
+				gpio_init.Mode = GPIO_MODE_IT_RISING_FALLING;
+				gpio_init.Pull = GPIO_NOPULL;
+				gpio_init.Speed = GPIO_SPEED_FREQ_LOW;
+				HAL_GPIO_Init(_gpio, &gpio_init);
+
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_15, GPIO_PIN_SET);
+
+				HAL_NVIC_SetPriority(EXTI15_10_IRQn, 2, 0);
+				HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
+			}
+			else if(_counter == 9)
+			{
+				/*GPIO_InitTypeDef gpio_init;
+				gpio_init.Pin = _pin;
+				gpio_init.Mode = GPIO_MODE_IT_RISING_FALLING;
+				gpio_init.Pull = GPIO_NOPULL;
+				gpio_init.Speed = GPIO_SPEED_FREQ_LOW;
+				HAL_GPIO_Init(_gpio, &gpio_init);
+
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_15, GPIO_PIN_SET);*/
+
+				/*if(_pin == GPIO_PIN_15)
+				{
+					HAL_NVIC_SetPriority(EXTI15_10_IRQn, 2, 0);
+					HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
+
+				}
+				else*/ /*if(_pin == GPIO_PIN_14)
+				{
+					HAL_NVIC_SetPriority(EXTI15_10_IRQn, 2, 0);
+					HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
+				}*/
+			}
 			if(_counter++ >= 10)
 			{
+				/*GPIO_InitTypeDef gpio_init;
+				gpio_init.Pin = _pin;
+				gpio_init.Mode = GPIO_MODE_INPUT;
+				gpio_init.Pull = GPIO_NOPULL;
+				gpio_init.Speed = GPIO_SPEED_FREQ_LOW;
+				HAL_GPIO_Init(_gpio, &gpio_init);
+
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_15, GPIO_PIN_SET);*/
+
 				setStatus(Receiving);
 				_counter = 0;
 			}
@@ -92,7 +149,7 @@ namespace FwLogger
 				{
 					_tx_buffer.clear();
 					_counter = 0;
-					setStatus(MarkingRx);
+					setStatus(Receiving);
 				}
 			}
 			break;
@@ -106,30 +163,37 @@ namespace FwLogger
 	{
 		if(_status == Receiving){
 			_last_rx_counter = 0;
-			uint16_t dt_rx = static_cast<uint16_t>(getUS()-_last_rx);
-			_last_rx = getUS();
+			uint16_t usNow = getUS();
+			uint16_t dt_rx = static_cast<uint16_t>(usNow-_last_rx);
+			_last_rx = usNow;
 			uint32_t bits = (1200*(dt_rx+_rxFudge))/1000000;
 			GPIO_PinState pinValue = HAL_GPIO_ReadPin(_gpio, _pin);
+			Log::Verbose("R:%db, %d, %d\n", bits, _counter, pinValue);
 			while(bits-->0)
 			{
 				if(_counter == 0) // Viene desde marking, entonces, solo puede haber uno independientemente de bits
 				{
-					if(pinValue == GPIO_PIN_RESET) setStatus(Disabled); // debería ser un start bit (nivel alto) pero es bajo, ergo es un error
+					if(pinValue == GPIO_PIN_RESET)
+					{
+						Log::Verbose("Error on start\n");
+						setStatus(Disabled); // debería ser un start bit (nivel alto) pero es bajo, ergo es un error
+					}
 					_rx_char = 0;
 					_counter++;
 					return;
 				}
-				uint8_t innerCounter = _counter % 10; //inner counter puede ser 0 (start bit), 1-7 (data bit), 8 (parity bit) y 9 (stop bit)
-				if(innerCounter == 0)
+				uint8_t innerCounter = _counter % 11; //inner counter puede ser 0 (start bit), 1-7 (data bit), 8 (parity bit) y 9 (stop bit)
+				if(innerCounter == 1)
 				{
 					_rx_char = 0;
 				}
-				else if(innerCounter == 8)
+				else if(innerCounter == 9)
 				{
 					0; // no compruebo paridad porque alv, pero tampoco puedo guardarlo
 				}
-				else if(innerCounter == 9)
+				else if(innerCounter == 10)
 				{
+					Log::Verbose("C: %x\n",_rx_char);
 					_rx_buffer.push_back(_rx_char & 0x7f);
 					if(_rx_buffer.idx > 2)
 					{
@@ -170,7 +234,7 @@ namespace FwLogger
 							}
 						}
 					}
-					if(pinValue == GPIO_PIN_RESET)// antes era low, por lo que se asume que esto es un bit de start
+					if(pinValue == GPIO_PIN_SET)// antes era low, por lo que se asume que esto es un bit de start
 					{
 						_counter = 0; //de forma que luego vale 1
 						_rx_char = 0;
@@ -179,7 +243,7 @@ namespace FwLogger
 				else
 				{
 					if(pinValue == GPIO_PIN_SET)//Antes era todo low, por lo que eran 1's lógicos (invertido)
-						_rx_char |= (0x01 << (innerCounter - 1));
+						_rx_char |= (0x01 << (innerCounter - 2));
 				}
 				_counter++;
 			}
@@ -200,12 +264,15 @@ namespace FwLogger
 
 	void SDI12_Driver::setStatus(SDI12_Driver::TransceiverStatus status)
 	{
+		Log::Verbose("Switching to status %d with counter val %d\n", status, _counter);
 		_status = status;
 		_counter = 0;
 		switch(status)
 		{
 		case Disabled:
 			{
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_15, GPIO_PIN_RESET);
+
 				GPIO_InitTypeDef gpio_init;
 				gpio_init.Pin = _pin;
 				gpio_init.Mode = GPIO_MODE_OUTPUT_PP;
@@ -218,6 +285,8 @@ namespace FwLogger
 			break;
 
 		case Breaking:
+			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_15, GPIO_PIN_RESET);
+
 			GPIO_InitTypeDef gpio_init;
 			gpio_init.Pin = _pin;
 			gpio_init.Mode = GPIO_MODE_OUTPUT_PP;
@@ -232,6 +301,9 @@ namespace FwLogger
 			HAL_GPIO_WritePin(_gpio, _pin, GPIO_PIN_RESET);
 			break;
 
+		case MarkingRx:
+			break;
+
 		case Receiving:
 			{
 				GPIO_InitTypeDef gpio_init;
@@ -240,17 +312,20 @@ namespace FwLogger
 				gpio_init.Pull = GPIO_NOPULL;
 				gpio_init.Speed = GPIO_SPEED_FREQ_LOW;
 				HAL_GPIO_Init(_gpio, &gpio_init);
-				if(_pin == GPIO_PIN_15)
+
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_15, GPIO_PIN_SET);
+
+				/*if(_pin == GPIO_PIN_15)
 				{
 					HAL_NVIC_SetPriority(EXTI15_10_IRQn, 2, 0);
 					HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 
 				}
-				else if(_pin == GPIO_PIN_14)
+				else*/ if(_pin == GPIO_PIN_14)
 				{
-					HAL_NVIC_SetPriority(EXTI15_10_IRQn, 2, 0);
-					HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 				}
+				HAL_NVIC_SetPriority(EXTI15_10_IRQn, 2, 0);
+				HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 			}
 			break;
 
@@ -344,6 +419,11 @@ namespace FwLogger
 
 		setStatus(Breaking);
 		return 0;
+	}
+
+	int SDI12_Driver::setFudge(uint8_t newFudge)
+	{
+		_rxFudge = newFudge;
 	}
 
 	uint8_t* SDI12_Driver::getCmdResponse()

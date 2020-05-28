@@ -106,6 +106,10 @@ namespace FwLogger
 		protected:
 
 		private:
+
+			void sleep();
+			uint32_t _lastTaskTime;
+
 			static OS* ptr;
 
 			enum class Operation : uint8_t
@@ -192,7 +196,7 @@ namespace FwLogger
 			uint8_t _alloc_buf[4096];
 			uint8_t _alloc_idx[32];
 			uintptr_t _alloc_ownership[32];
-			bool m_rtcFlag;
+			bool m_rtcFlag, m_pendingTask;
 	};
 }
 #endif // FWLOGGER_H

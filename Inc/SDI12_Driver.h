@@ -27,6 +27,7 @@ namespace FwLogger
 			int changeAddr(uint8_t srcAddr, uint8_t dstAddr);
 			int queryAddr();
 			int startVerification(uint8_t addr);
+			int setFudge(uint8_t newFudge);
 			uint8_t* getCmdResponse();
 
 			int startMeasurement(uint8_t addr, uint8_t type = 0, uint8_t additional = 0, bool crc = false);
@@ -79,7 +80,7 @@ namespace FwLogger
 
 			uint8_t _rx_char;
 			uint32_t _last_rx;
-			const static uint8_t _rxFudge = 75;
+			uint8_t _rxFudge = 200;
 	};
 }
 #endif // SDI12_DRIVER_H

@@ -15,6 +15,7 @@ namespace FwLogger
 		parser_remaining = 0;
 		parser_status = 0;
 		m_rtcFlag = false;
+		Log::setLogLevel(Log::LevelVerbose);
 		//ctor
 	}
 
@@ -26,11 +27,12 @@ namespace FwLogger
 	void OS::init()
 	{
 		radio.init(868000000);
-		disp.Init();
+		/*disp.Init();
 		disp.setCursor(0,0);
 		disp.fill();
 		disp.writeString("hola");
-		disp.updateScreen();
+		disp.updateScreen();*/
+		radio.receive(1);
 	}
 
 	void OS::push_rx(uint8_t c)
@@ -107,6 +109,25 @@ namespace FwLogger
 		}
 
 		work_left = task_loop() | work_left;
+
+		if(work_left == false)
+		{
+			if(m_pendingTask == true) // there was a pending task in the previous loop
+			{
+				//hacer cosas
+				_lastTaskTime = HAL_GetTick();
+			}
+			else
+			{
+				if((HAL_GetTick()-_lastTaskTime) > 5000)
+				{
+					_lastTaskTime = HAL_GetTick();
+					sleep();
+				}
+			}
+		}
+
+		m_pendingTask = work_left;
 
 		if(m_rtcFlag) // if it has to wake up from sleep
 		{
@@ -671,6 +692,34 @@ namespace FwLogger
 				printf("VM started\n");
 			}
 		}
+		else if(strcmp(token, "sdi12") == 0)
+		{
+			token = strtok(NULL, " ");
+			if(strcmp(token, "qa") == 0)
+			{
+				sdi12.queryAddr();
+				printf("querying addr\n");
+			}
+			else if(strcmp(token, "gd") == 0)
+			{
+				uint8_t* res_data = sdi12.getCmdResponse();
+				if(res_data == nullptr)
+				{
+					printf("Not data yet\n");
+				}
+				else
+				{
+					printf("Data:\n%s\n", res_data);
+				}
+			}
+			else if(strcmp(token, "fudge") == 0)
+			{
+				token = strtok(NULL, " ");
+				uint8_t newFudge = std::atoi(token);
+				sdi12.setFudge(newFudge);
+				printf("New fudge: %d\n", newFudge);
+			}
+		}
 		else if(strcmp(token, "system") == 0)
 		{
 			token = strtok(NULL, " ");
@@ -1009,7 +1058,7 @@ namespace FwLogger
 		buf[buf_idx] = 0;
 
 		char outbuf[6];
-		disp.setCursor(0,0);
+		/*disp.setCursor(0,0);
 		disp.writeString("RSSI:");
 		disp.setCursor(0, 1);
 		if(radio.getPacketIRQFlags() & 0x20)
@@ -1019,7 +1068,7 @@ namespace FwLogger
 		disp.writeString(outbuf);
 		disp.setCursor(0,2);
 		disp.writeString(reinterpret_cast<char*>(buf));
-		disp.updateScreen();
+		disp.updateScreen();*/
 
 		printf("%s\n", buf);
 	}
@@ -1352,5 +1401,10 @@ namespace FwLogger
             if(_fds[fd].ptr != nullptr) _alloc.Deallocate(_fds[fd].ptr);
             if(_fds[fd].buf != nullptr) _alloc.Deallocate(_fds[fd].buf);
 		}
+	}
+
+	void OS::sleep()
+	{
+		Log::Verbose("Going to sleep\n");
 	}
 }
