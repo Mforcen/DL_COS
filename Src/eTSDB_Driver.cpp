@@ -12,7 +12,7 @@ namespace FwLogger
 		}
 
 		Driver::Driver(uint32_t offsetAddress, uint32_t size, SPI_HandleTypeDef* hspi, GPIO_TypeDef* gpio, uint16_t pin, Allocator<128>* alloc):
-			SPIFlash(hspi, gpio, pin, "eTSDB 0.4")
+			SPIFlash(hspi, gpio, pin, "eTSDB", ETSDB_BINID, 0, 4)
 		{
 			_offset = offsetAddress;
 			_size = size;
@@ -194,7 +194,7 @@ namespace FwLogger
 			_row = new(_alloc->Allocate(sizeof(Row), reinterpret_cast<uintptr_t>(this)))Row(row);
 
 			uint32_t period_seconds = getSecondsFromPeriod(hp.getPeriod());
-			if(row.rowDate.seconds() % period_seconds > period_seconds/10) return OutOfTime; // it does not fit
+			if(row.rowDate.timestamp() % period_seconds > period_seconds/10) return OutOfTime; // it does not fit
 			row.rowDate.snapToPeriod(hp.getPeriod());
 
 			if(!hp.checkFormat(row)) return ColError;
@@ -472,7 +472,7 @@ namespace FwLogger
 			_states[1] = State::FreeRow;
 			_states[2] = State::Wait;
 
-			uint16_t num_entry = (_row->rowDate.seconds()-dp->_block_date.seconds())/getSecondsFromPeriod(dp->_period);
+			uint16_t num_entry = (_row->rowDate.timestamp()-dp->_block_date.timestamp())/getSecondsFromPeriod(dp->_period);
 			if(num_entry >= dp->getNumEntries()) return createDataPage(); // if full then create another page
 			if(num_entry < dp->_rowIdx) return createDataPage(); // non monotonic values, raise error
 			dp->_rowIdx = num_entry;
@@ -894,8 +894,8 @@ namespace FwLogger
 				else //good data page, should check if date is within this block
 				{
 					uint32_t _max_block_time = getSecondsFromPeriod(hp->getPeriod())*hp->_currDP->getNumEntries();
-					uint64_t rowDateSecs = _row->rowDate.seconds();
-					uint64_t blockDate = hp->_currDP->_block_date.seconds();
+					uint64_t rowDateSecs = _row->rowDate.timestamp();
+					uint64_t blockDate = hp->_currDP->_block_date.timestamp();
 					uint64_t maxBlockDate = blockDate+_max_block_time;
 					if(blockDate <= rowDateSecs && rowDateSecs <= maxBlockDate) // bingo
 					{

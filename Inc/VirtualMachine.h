@@ -50,6 +50,14 @@ class VirtualMachine : public FwLogger::Module
         void ackSaveFlag();
         bool getWaitFlag(); // it returns true when the alarm should be activated at getNextAlarm
 
+        int getConfigSize();
+        int getConfig(uint8_t* buf);
+        int setConfig(uint8_t* buf);
+
+        int getStatus(uint8_t* buf);
+
+        int bin_eval(uint8_t* buf, uint8_t* outbuf);
+
 	protected:
 
 	private:

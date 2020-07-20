@@ -1,60 +1,32 @@
 #ifndef PIN_DEFS_H_INCLUDED
 #define PIN_DEFS_H_INCLUDED
 
+#include "main.h"
+
 #define ADC_SE_0	0
 #define ADC_SE_1	1
 #define ADC_SE_2	2
 #define ADC_SE_3	3
 #define ADC_SE_4	4
-#define ADC_SE_5	5
-#define ADC_DE_0	6
-#define ADC_DE_1	7
-#define ADC_DE_2	8
-#define ADC_DE_3	9
-#define ADC_DE_4	10
-#define ADC_DE_5	11
 
-#define IO0 GPIOE,GPIO_PIN_0
-#define IO1 GPIOE,GPIO_PIN_1
-#define IO2 GPIOE,GPIO_PIN_2
-#define IO3 GPIOE,GPIO_PIN_3
-#define IO4 GPIOE,GPIO_PIN_4
-#define IO5 GPIOE,GPIO_PIN_5
-#define IO6 GPIOE,GPIO_PIN_6
-#define IO7 GPIOE,GPIO_PIN_7
-#define IO8 GPIOE,GPIO_PIN_8
-#define IO9 GPIOE,GPIO_PIN_10
-#define IO10 GPIOE,GPIO_PIN_11
-#define IO11 GPIOE,GPIO_PIN_12
-#define IO12 GPIOE,GPIO_PIN_13
-#define IO13 GPIOE,GPIO_PIN_14
-#define IO14 GPIOE,GPIO_PIN_15
+#define IO0 GPIOC,GPIO_PIN_0
+#define IO1 GPIOC,GPIO_PIN_1
+#define IO2 GPIOC,GPIO_PIN_2
+#define IO3 GPIOC,GPIO_PIN_3
+#define IO4 GPIOB,GPIO_PIN_4
+#define IO5 GPIOA,GPIO_PIN_6
 
-#define IO20 GPIOD,GPIO_PIN_0
-#define IO21 GPIOD,GPIO_PIN_1
-#define IO22 GPIOD,GPIO_PIN_3
-#define IO23 GPIOD,GPIO_PIN_4
-#define IO24 GPIOD,GPIO_PIN_7
-#define IO25 GPIOD,GPIO_PIN_10
-#define IO26 GPIOD,GPIO_PIN_11
-#define IO27 GPIOD,GPIO_PIN_13
-#define IO28 GPIOD,GPIO_PIN_14
-#define IO29 GPIOD,GPIO_PIN_15
-#define IO210 GPIOB,GPIO_PIN_12
+#define SDI12_0 SDI12_0_GPIO_Port,SDI12_0_Pin
+#define SDI12_1 SDI12_1_GPIO_Port,SDI12_1_Pin
+#define SDI12_DIR SDI12_Dir_GPIO_Port,SDI12_Dir_Pin
 
-#define SDI12_1 GPIOC,GPIO_PIN_14
-#define SDI12_2 GPIOC,GPIO_PIN_15
-#define SDI12_OE GPIOA,GPIO_PIN_15
+#define FLASH_CS Flash_nss_GPIO_Port,Flash_nss_Pin
 
-#define FLASH_CS IO20
-
-#define LORA_CS		IO22
-#define LORA_DIO0	IO23
-#define LORA_DIO1	IO24
-#define LORA_DIO2	IO25
-#define LORA_DIO3	IO26
-#define LORA_TXEN	IO27
-#define LORA_RXEN	IO28
-#define LORA_RST	IO21
+#define LORA_CS		Radio_nss_GPIO_Port,Radio_nss_Pin
+#define LORA_DIO0	Radio_dio0_GPIO_Port,Radio_dio0_Pin
+#define LORA_DIO1	Radio_dio1_GPIO_Port,Radio_dio1_Pin
+#define LORA_TXEN	Radio_txen_GPIO_Port,Radio_txen_Pin
+#define LORA_RXEN	Radio_rxen_GPIO_Port,Radio_rxen_Pin
+#define LORA_RST	Radio_rst_GPIO_Port,Radio_rst_Pin
 
 #endif // PIN_DEFS_H_INCLUDED

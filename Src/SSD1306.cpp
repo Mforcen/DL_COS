@@ -107,7 +107,7 @@ namespace FwLogger
 		_isrFlag = true;
 	}
 
-	SSD1306::SSD1306(I2C_HandleTypeDef* hi2c, uint8_t addr, uint16_t width, uint16_t height) : Module("SSD1306 0.1")
+	SSD1306::SSD1306(I2C_HandleTypeDef* hi2c, uint8_t addr, uint16_t width, uint16_t height) : Module("SSD1306",'D', 1, 0)
 	{
 		_hi2c = hi2c;
 		_addr = addr;

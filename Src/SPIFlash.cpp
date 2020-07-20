@@ -15,7 +15,8 @@
 
 namespace FwLogger
 {
-	SPIFlash::SPIFlash(SPI_HandleTypeDef* hspi, GPIO_TypeDef* gpio, uint16_t pin, const char* moduleName) : SPI_Device(hspi), Module(moduleName)
+	SPIFlash::SPIFlash(SPI_HandleTypeDef* hspi, GPIO_TypeDef* gpio, uint16_t pin, const char* moduleName, const char bin_id, uint8_t major, uint8_t minor) :
+					   SPI_Device(hspi), Module(moduleName, bin_id, major, minor)
 	{
 		_gpio = gpio;
 		_pin = pin;
@@ -406,6 +407,26 @@ namespace FwLogger
 		if(!available()) return -1;
 		uint8_t c = rx_buffer[rx_idx++];
 		return c;
+	}
+
+	int SPIFlash::bin_eval(uint8_t* buf, uint8_t* outbuf)
+	{
+		if(buf[0] == 'r')
+		{
+			int addr = (buf[1] & 0xff)  | ((buf[2] << 8) & 0xff00) | ((buf[3] << 16) & 0xff0000) | ((buf[4] << 24) & 0xff000000);
+			int len = buf[5];
+			readPage(len, addr);
+
+			HAL_Delay(1);
+			loop();
+			outbuf[0] = 'r';
+
+			for(int i = 0; i < len; ++i)
+				outbuf[1+i] = rx_buffer[rx_idx+i];
+			return len+1;
+			unlock();
+		}
+		return 0;
 	}
 
 	void SPIFlash::readStatus(int statusreg)

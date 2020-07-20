@@ -38,3 +38,8 @@ int close(int fd)
 {
 	return OS::get().close(fd);
 }
+
+int SDI12_SingleMeasurementRead(int addr, float* dst, int count)
+{
+	return OS::get().sdi12.singleMeasure(addr, dst, count, 0);
+}

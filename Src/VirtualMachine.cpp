@@ -1,6 +1,6 @@
 #include "VirtualMachine.h"
 
-VirtualMachine::VirtualMachine() : FwLogger::Module("CuleVM 0.1")
+VirtualMachine::VirtualMachine() : FwLogger::Module("CuleVM", VM_BINID, 0, 6)
 {
 	//ctor
 	for(int i= 0; i < 4096; ++i) m_ram[i] = 0;
@@ -556,6 +556,61 @@ bool VirtualMachine::cycle()
 	return true;
 }
 
+void push_uint32(uint8_t* buf, uint32_t val)
+{
+	buf[0] = val & 0xff;
+	buf[1] = (val >> 8) & 0xff;
+	buf[2] = (val >> 16) & 0xff;
+	buf[3] = (val >> 24) & 0xff;
+}
+
+int VirtualMachine::getConfigSize()
+{
+	return 0;
+}
+
+int VirtualMachine::getConfig(uint8_t* buf)
+{
+	return 0;
+}
+int VirtualMachine::setConfig(uint8_t* buf)
+{
+	return 0;
+}
+
+int VirtualMachine::getStatus(uint8_t* buf)
+{
+	buf[0] = m_enabled;
+	buf[1] = m_delayEnabled;
+	buf[2] = m_execBuiltin;
+	buf[3] = m_waitTable;
+	buf[4] = m_saveTable;
+	push_uint32(buf+5, m_programCounter);
+	push_uint32(buf+9, m_stackPointer);
+	push_uint32(buf+13, m_stackSize);
+	push_uint32(buf+17, m_returnAddr);
+	push_uint32(buf+21, m_localVarAddr);
+	push_uint32(buf+25, m_delayStart);
+	push_uint32(buf+29, m_delayTime);
+	strcpy(reinterpret_cast<char*>(buf+33), reinterpret_cast<char*>(m_prgName));
+
+	int namelen = strlen(reinterpret_cast<char*>(m_prgName));
+
+	buf[33+namelen] = 0;
+
+	return namelen+34; // 33+1
+}
+
+int VirtualMachine::bin_eval(uint8_t* buf, uint8_t* outbuf)
+{
+	if(buf[0] == 's')
+	{
+		outbuf[0] = 's';
+		return getStatus(outbuf+1)+1;
+	}
+	return 0;
+}
+
 void VirtualMachine::prepareBuiltin()
 {
 	BuiltinFunc currFunc = builtinFuncs[m_currBuiltin.func_addr];
@@ -572,9 +627,10 @@ void VirtualMachine::prepareBuiltin()
 		}
 		else if(currFunc.argTypes[i] == ARR)
 		{
-			int arr_len = pop<uint32_t>();
+			/*int arr_len = pop<uint32_t>();
 			m_currBuiltin.args[i].ptr_val = reinterpret_cast<intptr_t>(&m_ram[m_stackPointer-arr_len]);
-			m_stackPointer -= arr_len; // values shouldn't been overwritten since the vm is blocked until the function is not finished
+			m_stackPointer -= arr_len; // values shouldn't been overwritten since the vm is blocked until the function is not finished*/
+		m_currBuiltin.args[i].ptr_val = pop<intptr_t>();
 		}
 	}
 }

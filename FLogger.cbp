@@ -2,7 +2,7 @@
 <CodeBlocks_project_file>
 	<FileVersion major="1" minor="6" />
 	<Project>
-		<Option title="FLogger" />
+		<Option title="FLogger2" />
 		<Option makefile_is_custom="1" />
 		<Option pch_mode="2" />
 		<Option compiler="gnu_gcc_compiler_for_arm_mcu" />
@@ -224,6 +224,7 @@
 			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
 		<Unit filename="Inc/FwLogger.h" />
+		<Unit filename="Inc/LinkLayer.h" />
 		<Unit filename="Inc/LoRa.h" />
 		<Unit filename="Inc/Log.h" />
 		<Unit filename="Inc/Module.h" />
@@ -255,8 +256,9 @@
 		<Unit filename="Makefile">
 			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
-		<Unit filename="STM32F103VETx_FLASH.ld" />
+		<Unit filename="STM32F103RETx_FLASH.ld" />
 		<Unit filename="Src/FwLogger.cpp" />
+		<Unit filename="Src/LinkLayer.cpp" />
 		<Unit filename="Src/LoRa.cpp" />
 		<Unit filename="Src/Log.cpp" />
 		<Unit filename="Src/Module.cpp" />
@@ -295,13 +297,13 @@
 		<Extensions>
 			<debugger>
 				<remote_debugging>
-					<options conn_type="0" serial_baud="115200" additional_cmds="set arch arm&#x0A;file build/FLogger.elf&#x0A;load&#x0A;monitor reset halt&#x0A;" />
-				</remote_debugging>
-				<remote_debugging target="flash">
-					<options conn_type="0" serial_baud="115200" extended_remote="1" />
+					<options conn_type="0" additional_cmds="set arch arm&#x0A;file build/FLogger2.elf&#x0A;load&#x0A;monitor reset halt&#x0A;" />
 				</remote_debugging>
 				<remote_debugging target="all">
-					<options conn_type="0" serial_baud="115200" extended_remote="1" />
+					<options conn_type="0" extended_remote="1" />
+				</remote_debugging>
+				<remote_debugging target="flash">
+					<options conn_type="0" extended_remote="1" />
 				</remote_debugging>
 			</debugger>
 			<lib_finder disable_auto="1" />

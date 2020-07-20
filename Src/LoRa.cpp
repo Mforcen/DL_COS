@@ -64,19 +64,15 @@
 
 namespace FwLogger
 {
-	LoRa::LoRa(SPI_HandleTypeDef* hspi, GPIO_TypeDef* gpio0, uint16_t dio0, GPIO_TypeDef* gpio1, uint16_t dio1,
-			   GPIO_TypeDef* gpio2, uint16_t dio2, GPIO_TypeDef* gpio3, uint16_t dio3, GPIO_TypeDef* gpiorx, uint16_t rxenpin,
-			   GPIO_TypeDef* gpiotx, uint16_t txenpin, GPIO_TypeDef* gpiocs, uint16_t cspin, GPIO_TypeDef* gpiorst, uint16_t rstpin) : SPI_Device(hspi), Module("LoRaModem 0.1")
+	LoRa::LoRa(SPI_HandleTypeDef* hspi, GPIO_TypeDef* gpio0, uint16_t dio0, GPIO_TypeDef* gpio1, uint16_t dio1, GPIO_TypeDef* gpiorx, uint16_t rxenpin,
+			   GPIO_TypeDef* gpiotx, uint16_t txenpin, GPIO_TypeDef* gpiocs, uint16_t cspin, GPIO_TypeDef* gpiorst, uint16_t rstpin) :
+			   SPI_Device(hspi), Module("LoRaModem", LORA_BINID, 0, 1)
 	{
 		//ctor
 		_gpio0 = gpio0;
 		_dio0 = dio0;
 		_gpio1 = gpio1;
 		_dio1 = dio1;
-		_gpio2 = gpio2;
-		_dio2 = dio2;
-		_gpio3 = gpio3;
-		_dio3 = dio3;
 
 		_gpiorx = gpiorx;
 		_rxenpin = rxenpin;
@@ -101,6 +97,7 @@ namespace FwLogger
 		_txPowerReg = 0x4f;
 		_ocp = 0x2b;
 		_isrFlag = false;
+		_regPaDac = 0x84;
 
 		_tx_idx = 0;
 		_tx_size = 0;
@@ -155,7 +152,6 @@ namespace FwLogger
 	{
 		return _implicitHeader;
 	}
-
 
 	int LoRa::setSpreadingFactor(uint8_t sf)
 	{
@@ -250,20 +246,20 @@ namespace FwLogger
 		}
 		else
 		{
-			if(txPower > 17)
+			if(txPower > 18)
 			{
-				if(txPower > 20) txPower = 20;
-				txPower -= 3; // se hace lo mismo pero cambiando el vapor en regPaDac
+				txPower = 0x7f; // full power
+				_regPaDac = 0x87;
 				_queueCommand(WriteReg | RegPaDacAddr, 0x87);
-				setOCP(140);
 			}
 			else
 			{
 				if(txPower < 2) txPower = 2;
+				txPower -= 2;
+				_regPaDac = 0x84;
 				_queueCommand(WriteReg | RegPaDacAddr, 0x84);
-				setOCP(100);
 			}
-			_txPowerReg = 0x80 | (txPower-2);
+			_txPowerReg = 0x80 | txPower;
 			_queueCommand(WriteReg | RegPaConfigAddr, _txPowerReg);
 		}
 		return 0;
@@ -272,9 +268,18 @@ namespace FwLogger
 	uint8_t LoRa::getTxPower()
 	{
 		if(_txPowerReg & 0x80)
-			return (_txPowerReg & 0x7f)-2;
+			if(_regPaDac == 0x87)
+			{
+				if((_txPowerReg & 0x0f) == 0xf) return 20;
+				else
+					return (_txPowerReg & 0x0f) + 2;
+			}
+			else
+			{
+				return (_txPowerReg & 0x0f) + 2;
+			}
 		else
-			return (_txPowerReg & 0x0f);
+			return (_txPowerReg & 0x0f); // complex calculations including other registers
 	}
 
 	uint8_t LoRa::getOutputPin()
@@ -292,9 +297,21 @@ namespace FwLogger
 			ocpTrim = (ocpMA + 30) / 10;
 
 		_ocp = 0x20 | ocpTrim;
-		_queueCommand(RegOcpAddr, _ocp);
+		_queueCommand(WriteReg | RegOcpAddr, _ocp);
 
 		return 0;
+	}
+
+	uint8_t LoRa::getOCP()
+	{
+		uint8_t ocpMA;
+		uint8_t ocpTrim = _ocp & 0x1f;
+
+		if(ocpTrim <= 15)
+			ocpMA = 45+5*ocpTrim;
+		else if(ocpTrim <= 27)
+			ocpMA = -30+10*ocpTrim;
+		return ocpMA;
 	}
 
 	uint8_t LoRa::getChipVersion()
@@ -326,6 +343,275 @@ namespace FwLogger
 		_queueCommand(WriteReg | RegOpModeAddr, 0x80 | static_cast<uint8_t>(opmode));
 
 		return 0;
+	}
+
+	int LoRa::getConfigSize()
+	{
+		return 16;
+	}
+
+	int LoRa::getConfig(uint8_t* buf)
+	{
+		buf[0] = _bandwidth;
+		buf[1] = _codingRate;
+		buf[2] = _implicitHeader;
+		buf[3] = _spreadingFactor;
+		buf[4] = _rxPayloadCrc;
+		buf[5] = _preambLength & 0xff;
+		buf[6] = (_preambLength >> 8) & 0xff;
+		buf[7] = _payloadMaxLength;
+		buf[8] = _freqHoppingPeriod;
+		buf[9] = _syncWord;
+		buf[10] = getTxPower();
+		buf[11] = getOCP();
+		buf[12] = _chipVersion;
+		buf[13] = _workingFreq & 0xff;
+		buf[14] = (_workingFreq >> 8) & 0xff;
+		buf[15] = (_workingFreq >> 16) & 0xff;
+		return getConfigSize();
+	}
+
+	int LoRa::setConfig(uint8_t* buf)
+	{
+		setBandwidth(buf[0]);
+		//buf[1] = _codingRate;
+		setImplicitHeader(buf[2]);
+		setSpreadingFactor(buf[3]);
+		//buf[4] = _rxPayloadCrc;
+		setPreambleLength(buf[5] | ((buf[6] << 8) & 0xff00));
+		//buf[6] = (_preambLength >> 8) & 0xff;
+		//buf[7] = _payloadMaxLength;
+		//buf[8] = _freqHoppingPeriod;
+		setSyncWord(buf[9]);
+		//buf[10] = _txPowerReg;
+		setOCP(buf[11]);
+		//buf[12] = _chipVersion;
+		//buf[13] = _workingFreq & 0xff;
+		//buf[14] = (_workingFreq >> 8) & 0xff;
+		//buf[15] = (_workingFreq >> 16) & 0xff;
+		return 0;
+	}
+
+	int LoRa::getStatus(uint8_t* buf)
+	{
+		buf[0] = _PcktRSSI;
+		buf[1] = _recv_flags;
+		buf[2] = m_pendingMsg ? _rx_size-_rx_idx : 0; //TODO known bug when rxsize = 0x100 and rxidx = 0
+		return 3;
+	}
+
+	int LoRa::bin_eval(uint8_t* buf, uint8_t* outbuf)
+	{
+		if(buf[0] == 'c') // config
+		{
+			outbuf[0] = 'c';
+			if(buf[1] == 'g') // get
+			{
+				outbuf[1] = 'g';
+				getConfig(outbuf+2);
+				return 2+getConfigSize();
+			}
+			else if(buf[1] == 's') // set
+			{
+				outbuf[1] = 's';
+				return 2;
+			}
+			else if(buf[1] == 'c') // chip
+			{
+				outbuf[1] = 'c';
+				outbuf[2] = _chipVersion;
+				return 3;
+			}
+			else if(buf[1] == 'b') // bandwidth
+			{
+				outbuf[1] = 'b';
+				if(buf[2] == 'g')
+				{
+					outbuf[2] = 'g';
+					outbuf[3] = _bandwidth;
+					return 4;
+				}
+				else if(buf[2] == 's')
+				{
+					setBandwidth(buf[3]);
+					outbuf[2] = 's';
+					return 3;
+				}
+			}
+			else if(buf[1] == 's') // spreading factor
+			{
+				outbuf[1] = 's';
+				if(buf[2] == 'g')
+				{
+					outbuf[2] = 'g';
+					outbuf[3] = _spreadingFactor;
+					return 4;
+				}
+				else if(buf[2] == 's')
+				{
+					setSpreadingFactor(buf[3]);
+					outbuf[2] = 's';
+					return 3;
+				}
+			}
+			else if(buf[1] == 'w') // sync word
+			{
+				outbuf[1] = 'w';
+				if(buf[2] == 'g')
+				{
+					outbuf[2] = 'g';
+					outbuf[3] = _syncWord;
+					return 4;
+				}
+				else if(buf[2] == 's')
+				{
+					setSyncWord(buf[3]);
+					outbuf[2] = 's';
+					return 3;
+				}
+			}
+			else if(buf[1] == 'p') // preamble length
+			{
+				outbuf[1] = 'p';
+				if(buf[2] == 'g')
+				{
+					outbuf[2] = 'g';
+					outbuf[3] = _preambLength & 0xff;
+					outbuf[4] = (_preambLength >> 8) & 0xff;
+					return 5;
+				}
+				else if(buf[2] == 's')
+				{
+					setPreambleLength(buf[3] & (buf[4] << 8));
+					outbuf[2] = 's';
+					return 3;
+				}
+			}
+			else if(buf[1] == 't') // symb timeout
+			{
+				outbuf[1] = 't';
+				if(buf[2] == 'g')
+				{
+					outbuf[2] = 'g';
+					outbuf[3] = _regSymbTimeout & 0xff;
+					outbuf[4] = (_regSymbTimeout >> 8) & 0xff;
+					return 5;
+				}
+				else if(buf[2] == 's')
+				{
+					setRegSymbTimeout(buf[3] & (buf[4] << 8));
+					outbuf[2] = 's';
+					return 3;
+				}
+			}
+			else if(buf[1] == 'c') // coding rate
+			{
+				outbuf[1] = 'c';
+				if(buf[2] == 'g')
+				{
+					outbuf[2] = 'g';
+					outbuf[3] = _codingRate;
+					return 4;
+				}
+				else if(buf[2] == 's')
+				{
+					// TODO create set coding rate
+					outbuf[2] = 's';
+					return 3;
+				}
+			}
+			else if(buf[1] == 'C') // crc
+			{
+				outbuf[1] = 'C';
+				if(buf[2] == 'g')
+				{
+					outbuf[2] = 'g';
+					outbuf[3] = _rxPayloadCrc;
+					return 4;
+				}
+				else if(buf[2] == 's')
+				{
+					//TODO set crc
+					outbuf[2] = 's';
+					return 3;
+				}
+			}
+			else if(buf[1] == 'l') // max-length
+			{
+				outbuf[1] = 'l';
+				if(buf[2] == 'g')
+				{
+					outbuf[2] = 'g';
+					outbuf[3] = _payloadMaxLength;
+					return 4;
+				}
+				else if(buf[2] == 's')
+				{
+					//TODO set maxlength
+					outbuf[2] = 's';
+					return 3;
+				}
+			}
+			else if(buf[1] == 'h') // freq hoping
+			{
+				outbuf[1] = 'h';
+				if(buf[2] == 'g')
+				{
+					outbuf[2] = 'g';
+					outbuf[3] = _freqHoppingPeriod;
+					return 4;
+				}
+				else if(buf[2] == 's')
+				{
+					outbuf[2] = 's';
+					return 3;
+				}
+			}
+			else if(buf[1] == 'p') // power
+			{
+				outbuf[1] = 'p';
+				if(buf[2] == 'g')
+				{
+					outbuf[2] = 'g';
+					outbuf[3] = getTxPower();
+					return 4;
+				}
+				else if(buf[2] == 's')
+				{
+					setTxPower(buf[3], 1);
+					outbuf[2] = 's';
+					return 3;
+				}
+			}
+			else if(buf[1] == 'o') // ocp
+			{
+				outbuf[1] = 'o';
+				if(buf[2] == 'g')
+				{
+					outbuf[2] = 'g';
+					outbuf[3] = getOCP();
+					return 4;
+				}
+				else if(buf[2] == 's')
+				{
+					setOCP(buf[3]);
+					outbuf[2] = 's';
+					return 3;
+				}
+			}
+		}
+		else if(buf[0] == 's') // status
+		{
+			outbuf[0] = 's';
+			return getStatus(outbuf+1) + 1;
+		}
+		else if(buf[0] == 'm') // reads last message in memory
+		{
+			outbuf[0] = 'm';
+			outbuf[1] = _rx_size;
+			for(int i = 0; i < _rx_size; ++i) outbuf[2+i] = _rx_buf[i+1];
+			return _rx_size + 2;
+		}
 	}
 
 	int LoRa::getPacketRSSI()
@@ -458,17 +744,6 @@ namespace FwLogger
 		return rx_buf[1];
 	}
 
-	int LoRa::setModeDebug(int value)
-	{
-		if(try_lock() != 0) return -1;
-		HAL_GPIO_WritePin(_gpiocs, _cspin, GPIO_PIN_RESET);
-		uint8_t tx_buf[2] = { 0x80 | RegOpModeAddr, 0x80 | value & 0x7};
-		HAL_SPI_Transmit(_hspi, tx_buf, 2, 1000);
-		unlock();
-		HAL_GPIO_WritePin(_gpiocs, _cspin, GPIO_PIN_SET);
-		return 0;
-	}
-
 	int LoRa::getRegHopChannel()
 	{
 		if(try_lock() != 0) return -1;
@@ -565,31 +840,10 @@ namespace FwLogger
 		{
 
 		}
-		else if(nPin == _dio2)
-		{
-
-		}
-		else if(nPin == _dio3)
-		{
-
-		}
 	}
 
 	bool LoRa::loop()
 	{
-		/*if(HAL_GPIO_ReadPin(_gpio0, _dio0) == GPIO_PIN_SET)
-		{
-			if(_dio0Ack == false)
-			{
-				isrDIO(_dio0);
-				_dio0Ack = true;
-			}
-		}
-		else
-		{
-			_dio0Ack = false;
-		}*/
-
 		if(static_cast<uint16_t>(getUS() - _lastUs) < 5) return true;
 
 		if(!_isrFlag) return m_waiting;

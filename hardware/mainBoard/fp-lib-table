@@ -1,3 +1,0 @@
-(fp_lib_table
-  (lib (name chinalandfoot)(type KiCad)(uri ${KIPRJMOD}/chinalandfoot.pretty)(options "")(descr ""))
-)

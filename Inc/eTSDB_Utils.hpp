@@ -92,7 +92,7 @@ namespace FwLogger
 
 			Date(uint64_t secs)
 			{
-				fromSeconds(secs);
+				fromTimestamp(secs);
 			}
 
 			void serialize(uint8_t* arr)
@@ -119,12 +119,12 @@ namespace FwLogger
 				exists = 0;
 			}
 
-			uint64_t seconds() const
+			uint64_t timestamp() const
 			{
 				uint64_t retval;
 				retval = second + minute*60 + hour*3600 + (day-1)*86400;
 
-				for(int i = 0; i < year; ++i)
+				for(int i = 1970; i < year; ++i)
 					retval += ((i%4 == 0 )|( i%400 == 0) ? 366 : 365)*86400;
 
 				uint8_t days[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
@@ -134,12 +134,12 @@ namespace FwLogger
 				return retval;
 			}
 
-			void fromSeconds(uint64_t seconds)
+			void fromTimestamp(uint64_t seconds)
 			{
 				exists = 0;
 
-				year = 0;
-				int seconds_in_year = 366*86400;
+				year = 1970;
+				int seconds_in_year = 365*86400;
 				while(seconds >= seconds_in_year)
 				{
 					year++;
@@ -170,51 +170,52 @@ namespace FwLogger
 			bool snapToPeriod(uint8_t period)
 			{
 				uint32_t period_seconds = getSecondsFromPeriod(period);
-				uint64_t datesecs = seconds();
+				uint64_t datesecs = timestamp();
 				datesecs = divRoundClosest(datesecs, period_seconds);
 				datesecs *= period_seconds;
-				fromSeconds(datesecs);
+				fromTimestamp(datesecs);
 				return true;
 			}
 
 			Date operator-(Date const& other)
 			{
-				return Date(seconds()-other.seconds());
+				return Date(timestamp()-other.timestamp());
 			}
 
 			Date operator-(uint64_t const dt)
 			{
-				return Date(seconds()-dt);
+				return Date(timestamp()-dt);
 			}
 
 			Date operator+(uint64_t const dt)
 			{
-				return Date(seconds()+dt);
+				return Date(timestamp()+dt);
 			}
 
 			bool operator==(Date const& other)
 			{
-				return ((year==other.year) && (month == other.month) && (day == other.day) && (hour == other.hour) && (minute == other.minute) && (second == other.second));
+				return ((year==other.year) && (month == other.month) && (day == other.day) &&
+						(hour == other.hour) && (minute == other.minute) && (second == other.second));
 			}
 
 			bool operator>(Date const& other)
 			{
-				return seconds() > other.seconds();
+				return timestamp() > other.timestamp();
 			}
 
 			bool operator<(Date const& other)
 			{
-				return seconds() < other.seconds();
+				return timestamp() < other.timestamp();
 			}
 
 			bool operator>=(Date const& other)
 			{
-				return seconds() >= other.seconds();
+				return timestamp() >= other.timestamp();
 			}
 
 			bool operator<=(Date const& other)
 			{
-				return seconds() <= other.seconds();
+				return timestamp() <= other.timestamp();
 			}
 
 			uint8_t exists;

@@ -3,13 +3,15 @@
 
 #include "SPI_Device.h"
 #include "mem_structs.hpp"
+#include "stm32f1xx_hal.h"
 
 namespace FwLogger
 {
 	class SPIFlash : public SPI_Device, public Module
 	{
 		public:
-			SPIFlash(SPI_HandleTypeDef* hspi, GPIO_TypeDef* gpio, uint16_t pin, const char* moduleName = "SPIFlash 0.6");
+			SPIFlash(SPI_HandleTypeDef* hspi, GPIO_TypeDef* gpio, uint16_t pin, const char* moduleName="SPIFlash",
+					 char bin_id=FLASH_BINID, uint8_t major=0, uint8_t minor=6);
 			int writePage(uint8_t* data, uint16_t len, uint32_t addr);
 			int readPage(uint16_t len, uint32_t addr, uint8_t* buf);
 			int readPage(uint16_t len, uint32_t addr);
@@ -26,6 +28,8 @@ namespace FwLogger
 			int available();
 			int peek();
 			int pop();
+
+			int bin_eval(uint8_t* buf, uint8_t* outbuf);
 		protected:
 
 		private:

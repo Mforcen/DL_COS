@@ -21,7 +21,7 @@ namespace FwLogger
 		if(_locker != this) return -2;
 
 		_status = Transmitting;
-		HAL_StatusTypeDef status = HAL_SPI_Transmit_IT(_hspi, pdata, len);
+		HAL_StatusTypeDef status = HAL_SPI_Transmit_DMA(_hspi, pdata, len);
 		if(status != HAL_OK) return -status;
 
 		return len;
@@ -33,7 +33,7 @@ namespace FwLogger
 		if(_locker != this) return -2; // está en locked organizado por otro módulo
 
 		_status = Receiving;
-		return -HAL_SPI_Receive_IT(_hspi, buf, len);
+		return -HAL_SPI_Receive_DMA(_hspi, buf, len);
 	}
 
 	int SPI_Device::startTxRx(uint8_t* txbuf, uint8_t* rxbuf, uint16_t len)
@@ -42,7 +42,7 @@ namespace FwLogger
 		if(_locker != this) return -1;
 
 		_status = TxRx;
-		return -HAL_SPI_TransmitReceive_IT(_hspi, txbuf, rxbuf, len);
+		return -HAL_SPI_TransmitReceive_DMA(_hspi, txbuf, rxbuf, len);
 	}
 
 	int SPI_Device::try_lock()

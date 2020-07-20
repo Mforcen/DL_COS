@@ -15,7 +15,7 @@ struct fixed_string
 	uint8_t buf[sizeval];
 	int8_t push_back(uint8_t val)
 	{
-		if(idx == sizeval) return -1;
+		if(idx >= sizeval) return -1;
 		buf[idx++]=val;
 		return 0;
 	}
@@ -172,7 +172,7 @@ int prio_queue<T>::insert(unsigned char prio, T val)
 	arr[i].prio = prio;
 	arr[i].val = val;
 	fix_up(i);
-
+	return 0;
 }
 
 template <typename T>
@@ -180,6 +180,7 @@ int prio_queue<T>::del(int idx)
 {
 	arr[idx].prio = 0xff;
 	fix_down(idx);
+	return 0;
 }
 
 template <typename T>

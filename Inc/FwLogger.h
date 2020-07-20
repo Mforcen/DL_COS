@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <cstring>
 #include <cstdlib>
+#include <cctype>
 #include <new>
 
 #include "mem_structs.hpp"
@@ -25,43 +26,41 @@
 #define O_WRONLY 2
 #define O_UPDATE 4
 
+#define FWVMAJOR 0
+#define FWVMINOR 1
+
 
 extern ADC_HandleTypeDef hadc1;
-extern ADC_HandleTypeDef hadc3;
 extern DMA_HandleTypeDef hdma_adc1;
-extern DMA_HandleTypeDef hdma_adc3;
 
 extern DAC_HandleTypeDef hdac;
 
 extern I2C_HandleTypeDef hi2c1;
-extern I2C_HandleTypeDef hi2c2;
+extern DMA_HandleTypeDef hdma_i2c1_rx;
 extern DMA_HandleTypeDef hdma_i2c1_tx;
 
 extern RTC_HandleTypeDef hrtc;
 
 extern SD_HandleTypeDef hsd;
+extern DMA_HandleTypeDef hdma_sdio;
 
 extern SPI_HandleTypeDef hspi1;
 extern SPI_HandleTypeDef hspi2;
-extern SPI_HandleTypeDef hspi3;
+extern DMA_HandleTypeDef hdma_spi1_rx;
 extern DMA_HandleTypeDef hdma_spi1_tx;
 
-extern TIM_HandleTypeDef htim1;
-extern TIM_HandleTypeDef htim2;
-extern TIM_HandleTypeDef htim3;
-extern TIM_HandleTypeDef htim4;
-extern TIM_HandleTypeDef htim6; // SDI12 Timer
-extern TIM_HandleTypeDef htim7; // uS timer
+extern TIM_HandleTypeDef htim6; //sdi12 timer
+extern TIM_HandleTypeDef htim7; //µS timer
 
 extern UART_HandleTypeDef huart1;
-extern UART_HandleTypeDef huart2;
 extern UART_HandleTypeDef huart3;
+extern DMA_HandleTypeDef hdma_usart1_rx;
 extern DMA_HandleTypeDef hdma_usart1_tx;
-extern DMA_HandleTypeDef hdma_usart2_tx;
-extern DMA_HandleTypeDef hdma_usart3_tx;
+
+extern PCD_HandleTypeDef hpcd_USB_FS;
 
 extern circular_buffer<256> tx_buffer;
-extern int16_t adc1_data[6], adc3_data[6];
+extern int16_t adc_data[5];
 extern uint8_t _UART_txing;
 
 namespace FwLogger
@@ -82,8 +81,8 @@ namespace FwLogger
 			void loop();
 			bool task_loop();
 			void eval();
-			void bin_eval(); // TODO (forcen#2#): Eval data in a binary fashion
-			void radio_eval();// TODO (forcen#1#): Eval data from radio
+			void bin_eval(uint8_t* ebuf);
+			void radio_eval();
 			int open(char* path, int oflag);
 			int read(int fd, void* buf, size_t count);
 			int poll(int fd);
@@ -100,13 +99,12 @@ namespace FwLogger
 			eTSDB::Driver etsdb;
 			SDI12_Driver sdi12;
 			VirtualMachine vm;
-			SSD1306 disp;
+			//SSD1306 disp;
 
 			LoRa radio;
 		protected:
 
 		private:
-
 			void sleep();
 			uint32_t _lastTaskTime;
 
@@ -116,8 +114,10 @@ namespace FwLogger
 			{
 				None,
 				Eval,
+				BinEval,
 
 				OpenFile,
+				DownloadFile,
 				Upload,
 				Close,
 				ReadNext,
@@ -183,9 +183,22 @@ namespace FwLogger
 			circular_buffer<16, Task> _ops;
 
 			fixed_string<128> rx_buffer;
-			bool m_rxBin;
-			int parser_status;
-			int parser_remaining;
+			bool m_rxBin, m_rtcFlag, m_pendingTask, m_lpEnabled;
+			enum class ParserStatus : uint8_t
+			{
+				Start,
+				AsciiCommand,
+				BinSize,
+				BinCommand,
+				Upload
+			};
+
+			ParserStatus m_pStatus;
+			int m_pIndex;
+			int m_pSize;
+			int m_pLastRecv;
+			uint8_t* m_pCmdBuf;
+			float sdi12_test[2];
 
 			int8_t _createFD(FDType type);
 			void _deleteFD(int fd);
@@ -196,7 +209,11 @@ namespace FwLogger
 			uint8_t _alloc_buf[4096];
 			uint8_t _alloc_idx[32];
 			uintptr_t _alloc_ownership[32];
-			bool m_rtcFlag, m_pendingTask;
+
+			void saveConfig();
+			void loadConfig();
+
+			char m_name[32];
 	};
 }
 #endif // FWLOGGER_H

@@ -125,38 +125,16 @@ uint32_t _setPin(void* rv, int pin, int level)
 	case 5:
 		HAL_GPIO_WritePin(IO5, pinlevel);
 		break;
-	case 6:
-		HAL_GPIO_WritePin(IO6, pinlevel);
-		break;
-	case 7:
-		HAL_GPIO_WritePin(IO7, pinlevel);
-		break;
-	case 8:
-		HAL_GPIO_WritePin(IO8, pinlevel);
-		break;
-	case 9:
-		HAL_GPIO_WritePin(IO9, pinlevel);
-		break;
-	case 10:
-		HAL_GPIO_WritePin(IO10, pinlevel);
-		break;
-	case 11:
-		HAL_GPIO_WritePin(IO11, pinlevel);
-		break;
-	case 12:
-		HAL_GPIO_WritePin(IO12, pinlevel);
-		break;
-	case 13:
-		HAL_GPIO_WritePin(IO13, pinlevel);
-		break;
-	case 14:
-		HAL_GPIO_WritePin(IO14, pinlevel);
-		break;
     }
     return 0;
 }
 
-BuiltinFunc builtinFuncs[17];
+uint32_t _SDI12_ReadSingleMeasurement(void* rv, int addr, float* dst, int count)
+{
+	return SDI12_SingleMeasurementRead(addr, dst, count);
+}
+
+BuiltinFunc builtinFuncs[18];
 
 void init_builtinFuncs()
 {
@@ -246,6 +224,13 @@ void init_builtinFuncs()
 	builtinFuncs[16].argTypes[0] = INT;
 	builtinFuncs[16].argTypes[1] = INT;
 	builtinFuncs[16].func_ptr = (intptr_t)_setPin;
+
+	builtinFuncs[17].nArgs = 3;
+	builtinFuncs[17].retValue = VOID;
+	builtinFuncs[17].argTypes[0] = INT;
+	builtinFuncs[17].argTypes[1] = ARR;
+	builtinFuncs[17].argTypes[2] = INT;
+	builtinFuncs[17].func_ptr = (intptr_t)_SDI12_ReadSingleMeasurement;
 }
 
 

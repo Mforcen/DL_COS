@@ -10,8 +10,7 @@ namespace FwLogger
 	class LoRa : public SPI_Device, public Module
 	{
 		public:
-			LoRa(SPI_HandleTypeDef* hspi, GPIO_TypeDef* gpio0, uint16_t dio0, GPIO_TypeDef* gpio1, uint16_t dio1,
-				 GPIO_TypeDef* gpio2, uint16_t dio2, GPIO_TypeDef* gpio3, uint16_t dio3, GPIO_TypeDef* gpiorx, uint16_t rxenpin,
+			LoRa(SPI_HandleTypeDef* hspi, GPIO_TypeDef* gpio0, uint16_t dio0, GPIO_TypeDef* gpio1, uint16_t dio1, GPIO_TypeDef* gpiorx, uint16_t rxenpin,
 				 GPIO_TypeDef* gpiotx, uint16_t txenpin, GPIO_TypeDef* gpiocs, uint16_t cspin, GPIO_TypeDef* gpiorst, uint16_t rstpin);
 			int init(uint64_t workingFreq);
 
@@ -59,6 +58,12 @@ namespace FwLogger
 			int setOpMode(OpMode opMode);
 			//OpMode getOpMode();
 
+			int getConfigSize();
+			int getConfig(uint8_t* buf);
+			int setConfig(uint8_t* buf);
+			int getStatus(uint8_t* buf);
+			int bin_eval(uint8_t* buf, uint8_t* outbuf);
+
 			int getPacketRSSI();
 			int getPacketIRQFlags();
 			int getPayloadLength();
@@ -74,8 +79,6 @@ namespace FwLogger
 			int getRxPacketCnt();
 			int getFifo(int addr, int len, uint8_t* buf);
 			int getRegHopChannel();
-
-			int setModeDebug(int value);
 
 			int send(uint16_t len, const uint8_t* data); // carga datos y configura el modo de transmisión
 
@@ -93,13 +96,13 @@ namespace FwLogger
 			void writeFifo(uint16_t len, uint8_t* data, uint16_t fifoAddr);
 			void readFifo(uint16_t len, uint16_t fifoAddr);
 
-			GPIO_TypeDef* _gpio0, *_gpio1, *_gpio2, *_gpio3, *_gpiorx, *_gpiotx, *_gpiocs, *_gpiorst;
-			uint16_t _dio0, _dio1, _dio2, _dio3, _rxenpin, _txenpin, _cspin, _rstpin;
+			GPIO_TypeDef* _gpio0, *_gpio1, *_gpiorx, *_gpiotx, *_gpiocs, *_gpiorst;
+			uint16_t _dio0, _dio1, _rxenpin, _txenpin, _cspin, _rstpin;
 
 			int _workingFreq;
 			uint16_t _preambLength, _regSymbTimeout, _lastUs;
 			uint8_t _spreadingFactor, _syncWord, _bandwidth, _codingRate, _rxPayloadCrc, _payloadLength, _payloadMaxLength;
-			uint8_t _freqHoppingPeriod, _txPowerReg, _ocp, _chipVersion, _recv_flags, _PcktRSSI, _recvAddr;
+			uint8_t _freqHoppingPeriod, _txPowerReg, _regPaDac, _ocp, _chipVersion, _recv_flags, _PcktRSSI, _recvAddr;
 			bool _implicitHeader, _isrFlag, m_waiting, m_pendingMsg, _dio0Ack;
 
 			int _queueAvailable();

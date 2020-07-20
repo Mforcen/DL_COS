@@ -5,6 +5,8 @@
 #include "mem_structs.hpp"
 #include "Module.h"
 
+#include "pin_defs.h"
+
 #include "stm32f1xx_hal.h"
 
 uint16_t getUS();
@@ -30,11 +32,12 @@ namespace FwLogger
 			int setFudge(uint8_t newFudge);
 			uint8_t* getCmdResponse();
 
+			int singleMeasure(uint8_t addr, float* dst, uint8_t count, int additional = 0);
+			int continuousMeasure(uint8_t addr, float* dst, uint8_t count, int additional = 0);
+
 			int startMeasurement(uint8_t addr, uint8_t type = 0, uint8_t additional = 0, bool crc = false);
-			int getData();
 
 			bool loop();
-
 		protected:
 
 		private:
@@ -74,9 +77,17 @@ namespace FwLogger
 			int _last_rx_counter;
 			uint8_t _measNumber;
 			uint8_t _additionalMeas;
+
 			uint8_t _measAddr;
+			uint8_t _measCount;
+			float* _measDst;
 
 			uint8_t parity_even(uint8_t byte);
+			//int startMeasurement(uint8_t addr, uint8_t type = 0, uint8_t additional = 0, bool crc = false);
+			int startGetData(uint8_t addr, uint8_t additional);
+			int parseData(float* dst, int count, uint8_t* buf);
+
+			void push_bits(int16_t bits, GPIO_PinState pinValue);
 
 			uint8_t _rx_char;
 			uint32_t _last_rx;

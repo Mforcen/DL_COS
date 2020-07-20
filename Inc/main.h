@@ -37,8 +37,7 @@ extern "C" {
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
-extern uint8_t uart_rx_buffer[128];
-extern uint8_t uart_tx_buffer[128];
+
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
@@ -51,18 +50,40 @@ extern uint8_t uart_tx_buffer[128];
 
 /* USER CODE END EM */
 
-void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
-
 /* Exported functions prototypes ---------------------------------------------*/
 void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
-
+void sdi12_Isr();
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define Radio_rst_Pin GPIO_PIN_7
+#define Radio_rst_GPIO_Port GPIOA
+#define Radio_rxen_Pin GPIO_PIN_4
+#define Radio_rxen_GPIO_Port GPIOC
+#define Radio_txen_Pin GPIO_PIN_5
+#define Radio_txen_GPIO_Port GPIOC
+#define Radio_dio0_Pin GPIO_PIN_0
+#define Radio_dio0_GPIO_Port GPIOB
+#define Radio_dio1_Pin GPIO_PIN_1
+#define Radio_dio1_GPIO_Port GPIOB
+#define SDI12_0_Pin GPIO_PIN_6
+#define SDI12_0_GPIO_Port GPIOC
+#define SDI12_1_Pin GPIO_PIN_7
+#define SDI12_1_GPIO_Port GPIOC
+#define SDIO_CD_Pin GPIO_PIN_9
+#define SDIO_CD_GPIO_Port GPIOC
+#define SDI12_Dir_Pin GPIO_PIN_8
+#define SDI12_Dir_GPIO_Port GPIOA
+#define Flash_nss_Pin GPIO_PIN_15
+#define Flash_nss_GPIO_Port GPIOA
+#define Radio_nss_Pin GPIO_PIN_8
+#define Radio_nss_GPIO_Port GPIOB
+#define SPI2_NSS_Pin GPIO_PIN_9
+#define SPI2_NSS_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
-void sdi12_Isr();
+
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus
