@@ -97,6 +97,23 @@ public:
 		return &buffer[read_ptr];
 	}
 
+	T* at_back()
+	{
+		if(read_ptr == write_ptr && !full) //vacío
+		{
+            return nullptr;
+		}
+		int read_back = write_ptr-1;
+		if(read_back < 0) read_back = sizeval -1;
+		return &buffer[read_back];
+	}
+
+	T* at(int pos)
+	{
+		if(pos >= size()) return nullptr;
+		return &buffer[(read_ptr+pos) % sizeval];
+	}
+
 	void clear()
 	{
 		//for(std::size_t i = 0; i < sizeval; ++i) buffer[i] = 0;
