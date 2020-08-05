@@ -108,7 +108,7 @@ public:
 		return &buffer[read_back];
 	}
 
-	T* at(int pos)
+	T* at(unsigned int pos)
 	{
 		if(pos >= size()) return nullptr;
 		return &buffer[(read_ptr+pos) % sizeval];
@@ -286,7 +286,7 @@ class Allocator // 128bytes per object
 			uint8_t reqBlocks = int_ceil(reqSize, pageSize);
 
 			uint8_t freeBlocks = 0;
-			int i = 0;
+			std::size_t i = 0;
 
 			while(i < (_numBlocks))
 			{

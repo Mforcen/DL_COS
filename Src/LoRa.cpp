@@ -304,7 +304,7 @@ namespace FwLogger
 
 	uint8_t LoRa::getOCP()
 	{
-		uint8_t ocpMA;
+		uint8_t ocpMA = 0;
 		uint8_t ocpTrim = _ocp & 0x1f;
 
 		if(ocpTrim <= 15)
@@ -599,6 +599,7 @@ namespace FwLogger
 					return 3;
 				}
 			}
+
 		}
 		else if(buf[0] == 's') // status
 		{
@@ -612,6 +613,7 @@ namespace FwLogger
 			for(int i = 0; i < _rx_size; ++i) outbuf[2+i] = _rx_buf[i+1];
 			return _rx_size + 2;
 		}
+		return 0;
 	}
 
 	int LoRa::getPacketRSSI()
@@ -711,12 +713,12 @@ namespace FwLogger
 		return retval;
 	}
 
-	int LoRa::getFifo(int addr, int len, uint8_t* buf)
+	int LoRa::getFifo(uint8_t addr, int len, uint8_t* buf)
 	{
 		if(try_lock() != 0) return -1;
 
 		HAL_GPIO_WritePin(_gpiocs, _cspin, GPIO_PIN_RESET);
-		uint8_t tx_send[2] = {WriteReg | RegFifoAddrPtr, addr & 0xff};
+		uint8_t tx_send[2] = {WriteReg | RegFifoAddrPtr, static_cast<uint8_t>(addr & 0xff)};
 		HAL_SPI_Transmit(_hspi, tx_send, 2, 1000);
 		HAL_GPIO_WritePin(_gpiocs, _cspin, GPIO_PIN_SET);
 

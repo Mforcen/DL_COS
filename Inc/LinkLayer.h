@@ -2,6 +2,7 @@
 #define LINKLAYER_H
 
 #include "mem_structs.hpp"
+#include "stm32f1xx_hal.h"
 #include <cstdint>
 
 namespace FwLogger
@@ -10,7 +11,8 @@ namespace FwLogger
 
 	enum LLVersion : uint8_t
 	{
-		Testing = 0
+		Testing = 0,
+		Void = 0xff
 	};
 
 	enum LLType : uint8_t
@@ -48,8 +50,8 @@ namespace FwLogger
 			payload = buf;
 			seq = 0;
 		}
-		LLVersion version;
-		LLType type;
+		LLVersion version; // 4 bits
+		LLType type; // 4 bits
 		uint16_t srcAddr; // 12 bits
 		uint16_t dstAddr; // 12 bits
 		uint16_t len; // 12 bits
@@ -123,16 +125,16 @@ namespace FwLogger
 	class LinkLayer
 	{
 		public:
-			LinkLayer(Allocator<128>* alloc, uint16_t addr, void (*callback)(uint8_t*, int));
+			LinkLayer(Allocator<128>* alloc, uint16_t addr, void (*write)(uint8_t*, int), void (*cb)());
 
 			uint16_t getAddr();
 			int setAddr(uint16_t addr);
 
 			int available();
-			uint8_t* pop();
+			LLPacket* pop();
 
 			void receive(uint8_t* buf, uint8_t length); // this will be called from serial or so
-			int send(uint16_t dstAddr, LLType type, uint8_t* buf, uint16_t len); // this will queue a packet
+			int send(uint16_t dstAddr, LLType type, const uint8_t* buf, uint16_t len); // this will queue a packet
 
 			bool loop();
 		protected:
@@ -145,7 +147,7 @@ namespace FwLogger
 			LLPacket m_txData[16]; //this will hold confirmable data until an ack is received
 
 			circular_buffer<16> m_rxIds;// this will hold pending get msgs
-			uint8_t* m_rxData[16]; // hay que cambiarlo por un hashmap
+			LLPacket m_rxData[16]; // hay que cambiarlo por un hashmap
 
 			uint16_t m_addr;
 
@@ -168,11 +170,15 @@ namespace FwLogger
 
 			void processRx();
 
-			int getFreeId();
+			int getFreeTx();
 
 			int m_lastTx;
+			int m_lastRx;
 
-			void (*m_CB)(uint8_t*, int); // callback function to send packet
+			void send_pkt();
+
+			void (*m_write)(uint8_t*, int); // function to send packet
+			void (*m_cb)(); // callback function
 	};
 }
 #endif // LINKLAYER_H

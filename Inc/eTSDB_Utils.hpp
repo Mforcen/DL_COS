@@ -139,7 +139,7 @@ namespace FwLogger
 				exists = 0;
 
 				year = 1970;
-				int seconds_in_year = 365*86400;
+				unsigned int seconds_in_year = 365*86400;
 				while(seconds >= seconds_in_year)
 				{
 					year++;
@@ -148,7 +148,7 @@ namespace FwLogger
 				}
 
 				month = 0;
-				int seconds_in_month = 31*86400;
+				unsigned int seconds_in_month = 31*86400;
 				uint8_t days[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 				if(year % 4 == 0 || year % 400 == 0) days[1] = 29;
 				while(seconds >= seconds_in_month)

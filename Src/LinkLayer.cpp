@@ -1,18 +1,9 @@
 #include "LinkLayer.h"
-#include <ctime>
 
 namespace FwLogger
 {
-	int HAL_GetTick()
-	{
-		struct timespec t;
-		clock_gettime(CLOCK_MONOTONIC, &t);
-		return t.tv_sec*1000+t.tv_nsec/1000000;
-	}
-
 	//CRC courtesy from LibCRC
 
-	static void             init_crc16_tab( void );
 	static bool             crc_tabccitt_init          = false;
 	static uint16_t         crc_tabccitt[256];
 	#define	CRC_POLY_CCITT		0x1021
@@ -77,15 +68,22 @@ namespace FwLogger
 		crc_tabccitt_init = true;
 	}
 
-	LinkLayer::LinkLayer(Allocator<128>* alloc, uint16_t addr, void (*callback)(uint8_t*, int))
+	LinkLayer::LinkLayer(Allocator<128>* alloc, uint16_t addr, void (*write)(uint8_t*, int), void (*cb)())
 	{
 		m_addr = addr;
 		m_state = State::Nop;
 		m_counter = 0;
 		_alloc = alloc;
 
-		m_CB = callback;
+		m_write = write;
+		m_cb = cb;
 		m_txPacket = -1;
+
+		for(int i = 0; i < 16; ++i)
+		{
+			m_txData[i].version = LLVersion::Void;
+			m_rxData[i].id = i;
+		}
 	}
 
 	uint16_t LinkLayer::getAddr()
@@ -106,15 +104,16 @@ namespace FwLogger
 		return m_rxIds.size();
 	}
 
-	uint8_t* LinkLayer::pop()
+	LLPacket* LinkLayer::pop()
 	{
 		uint8_t ptr;
 		if(m_rxIds.pop_front(&ptr) == -1) return nullptr;
-		return m_rxData[ptr];
+		return &m_rxData[ptr];
 	}
 
 	void LinkLayer::receive(uint8_t* buf, uint8_t length)
 	{
+		m_lastRx = HAL_GetTick();
 		for(int i = 0; i < length; ++i)
 		{
 			if(m_state == State::Nop)
@@ -160,20 +159,15 @@ namespace FwLogger
 						m_state = State::ReceivingPayload;
 						if(m_pkt.seq == 0)
 						{
-							m_rxData[m_pkt.id] = reinterpret_cast<uint8_t*>(_alloc->Allocate(m_counter, reinterpret_cast<uintptr_t>(this)));
-							m_pkt.payload = m_rxData[m_pkt.id];
+							m_pkt.payload = reinterpret_cast<uint8_t*>(_alloc->Allocate(m_counter, reinterpret_cast<uintptr_t>(this)));
+							m_rxData[m_pkt.id] = m_pkt;
 						}
-						else
-							m_pkt.payload = m_rxData[m_pkt.id];
 					}
 					else
 					{
 						processRx();
 						m_state = State::Nop;
 					}
-					//if(m_rxData[m_pkt.id] != nullptr)
-					//	m_rxData[m_pkt.id] = reinterpret_cast<uint8_t*>(_alloc->Allocate(m_counter, reinterpret_cast<uintptr_t>(this)));
-
 					continue; // avoid ++m_counter;
 				}
 				++m_counter;
@@ -193,9 +187,6 @@ namespace FwLogger
 				m_pkt.checksum |= buf[i] << ((m_counter++) * 8);
 				if(m_counter == 2)
 				{
-					int padding = m_pkt.seq*118;
-					m_rxData[m_pkt.id] = m_pkt.payload;
-
 					m_pkt.payload = nullptr;
 					m_rxIds.push_back(m_pkt.id);
 
@@ -207,22 +198,25 @@ namespace FwLogger
 		}
 	}
 
-	int LinkLayer::send(uint16_t dstAddr, LLType type, uint8_t* buf, uint16_t len)
+	int LinkLayer::send(uint16_t dstAddr, LLType type, const uint8_t* buf, uint16_t len)
 	{
+		int idx = getFreeTx();
+		if(idx == -1) return -1;
+
 		LLPacket pkt;
 		pkt.version = LLVersion::Testing;
 		pkt.type = type;
 		pkt.srcAddr = m_addr;
 		pkt.dstAddr = dstAddr;
 		pkt.len = len;
-		pkt.id = getFreeId();
+		pkt.id = idx;
 		pkt.seq = 0;
 		pkt.payload = reinterpret_cast<uint8_t*>(_alloc->Allocate(len, reinterpret_cast<uintptr_t>(this)));
 
 		for(int i = 0; i < len; ++i) pkt.payload[i] = buf[i];
 
-		m_txIdx.push_back(pkt.id);
-		m_txData[pkt.id] = pkt;
+		m_txIdx.push_back(idx);
+		m_txData[idx] = pkt;
 
 		return 0;
 	}
@@ -235,71 +229,106 @@ namespace FwLogger
 			LLPacket pkt(LLType::Acknowledgement, m_addr, m_pkt.srcAddr, m_pkt.id);
 			pkt.seq = m_pkt.seq;
 			pkt.serialize(buf, 8);
-			m_CB(buf, 8);
+			m_write(buf, 8);
+			m_cb();
 		}
 		else if(m_pkt.type == LLType::Acknowledgement)
 		{
-			if(m_pkt.id == m_txPacket)
+			if(m_pkt.id == m_txData[m_txPacket].id)
 			{
 				_alloc->Deallocate(m_txData[m_txPacket].payload);
+				m_txData[m_txPacket].payload = nullptr;
+				m_txData[m_txPacket].version = LLVersion::Void;
 				m_txPacket = -1;
 			}
 		}
 		else if(m_pkt.type == LLType::Ping)
 		{
 			uint8_t buf[8];
-			LLPacket pkt(LLType::PingAck, m_addr, pkt.srcAddr, m_pkt.id);
+			LLPacket pkt(LLType::PingAck, m_addr, m_pkt.srcAddr, m_pkt.id);
 			pkt.serialize(buf, 8);
-			m_CB(buf, 8);
+			m_write(buf, 8);
 		}
 		else if(m_pkt.type == LLType::PacketError)
 		{
 
 		}
-}
+	}
 
-	int LinkLayer::getFreeId()
+	int LinkLayer::getFreeTx()
 	{
-		int8_t ids[16] = {-1};
-		int i;
-		for(i = 0; i < m_txIdx.size(); ++i)
+		bool found;
+		for(int i = 0; i < 16; ++i)
 		{
-			int8_t* idPtr = m_txIdx.at(i);
-			if(idPtr != nullptr)
-			{
-				ids[i] = *idPtr;
-			}
-		}
-
-		for(i = 0; i < 16; ++i)
-		{
-			int j;
+			int j; // add m_txPacket check
+			if(i == m_txPacket) continue;
+			found = false;
 			for(j = 0; j < m_txIdx.size(); ++j)
 			{
-				if(i == ids[j]) break;
+				if(i == *m_txIdx.at(j))
+				{
+					found = true;
+					break;
+				}
 			}
-			if(m_txIdx.size() == j) break;
+			if(!found) return i;
 		}
-		return i; // i will be the lesser id that is not in the ids vector
+		return -1;
 	}
 
 	bool LinkLayer::loop()
 	{
-		if(m_state != State::Nop) return true;
+		if(m_state != State::Nop)
+		{
+			if(HAL_GetTick()-m_lastRx > 1000)
+			{
+				m_state = State::Nop; // timeout
+			}
+			return true;
+		}
+
 		if(m_txPacket == -1)
 		{
 			int8_t p;
-			if(m_txIdx.pop_front(&p) != -1) m_txPacket = p;
+			if(m_txIdx.pop_front(&p) == -1) return false;
+			m_txPacket = p;
+
+			if(m_txData[m_txPacket].version != LLVersion::Void)
+				send_pkt();
+
+			return true;
 		}
 		else
 		{
 			if(HAL_GetTick()-m_lastTx > 2000)
 			{
-				uint8_t pkt[128];
-				int packet_len = m_txData[m_txPacket].serialize(pkt, 128);
-				m_CB(pkt, packet_len);
-				m_lastTx = HAL_GetTick();
+				send_pkt();
 			}
 		}
+		return true;
+	}
+
+	void LinkLayer::send_pkt()
+	{
+		LLPacket& pkt = m_txData[m_txPacket];
+		if(pkt.version == LLVersion::Void)
+		{
+			m_txPacket = -1;
+			return;
+		}
+		if(pkt.type == LLType::Non_confirmable || pkt.type == LLType::Ping)
+		{
+			uint8_t pkt_buf[128];
+			int packet_len = pkt.serialize(pkt_buf, 128);
+			m_write(pkt_buf, packet_len);
+			pkt.version = LLVersion::Void;
+		}
+		else if(pkt.type == LLType::Confirmable)
+		{
+			uint8_t pkt_buf[128];
+			int packet_len = pkt.serialize(pkt_buf, 128);
+			m_write(pkt_buf, packet_len);
+		}
+		m_lastTx = HAL_GetTick();
 	}
 }

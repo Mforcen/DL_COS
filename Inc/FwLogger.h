@@ -21,6 +21,7 @@
 #include "LoRa.h"
 #include "SDI12_Driver.h"
 #include "SSD1306.h"
+#include "LinkLayer.h"
 
 #define O_RDONLY 1
 #define O_WRONLY 2
@@ -81,7 +82,7 @@ namespace FwLogger
 			void loop();
 			bool task_loop();
 			void eval();
-			void bin_eval(uint8_t* ebuf);
+			void bin_eval(uint8_t* ebuf, int fd);
 			void radio_eval();
 			int open(char* path, int oflag);
 			int read(int fd, void* buf, size_t count);
@@ -95,10 +96,14 @@ namespace FwLogger
 
 			void enablePower(int enable);
 
+			void ll_receive();
+
 			SPIFlash flash;
 			eTSDB::Driver etsdb;
 			SDI12_Driver sdi12;
 			VirtualMachine vm;
+			LinkLayer lluart;
+
 			//SSD1306 disp;
 
 			LoRa radio;
@@ -150,6 +155,7 @@ namespace FwLogger
 				TS,
 				SPI,
 				UART,
+				LL_UART,
 				I2C,
 				SDI12,
 				Radio
@@ -188,16 +194,13 @@ namespace FwLogger
 			{
 				Start,
 				AsciiCommand,
-				BinSize,
 				BinCommand,
-				Upload
 			};
 
 			ParserStatus m_pStatus;
 			int m_pIndex;
 			int m_pSize;
 			int m_pLastRecv;
-			uint8_t* m_pCmdBuf;
 			float sdi12_test[2];
 
 			int8_t _createFD(FDType type);

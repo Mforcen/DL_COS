@@ -297,6 +297,7 @@ namespace FwLogger
 			_states[1] = State::LoadPage;
 			_states[2] = State::Found;
 
+			_opFind = 0;
 			_opIdx = _page->_object_idx;
 			_page->_page_idx++;
 			_opAddr = (_page->_page_idx-1)*2;

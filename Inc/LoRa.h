@@ -77,7 +77,7 @@ namespace FwLogger
 			int getRxNbBytes();
 			int getRxHeaderCnt();
 			int getRxPacketCnt();
-			int getFifo(int addr, int len, uint8_t* buf);
+			int getFifo(uint8_t addr, int len, uint8_t* buf);
 			int getRegHopChannel();
 
 			int send(uint16_t len, const uint8_t* data); // carga datos y configura el modo de transmisión

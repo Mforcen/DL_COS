@@ -297,7 +297,7 @@
 		<Extensions>
 			<debugger>
 				<remote_debugging>
-					<options conn_type="0" additional_cmds="set arch arm&#x0A;file build/FLogger2.elf&#x0A;load&#x0A;monitor reset halt&#x0A;" />
+					<options conn_type="0" additional_cmds="set arch arm&#x0A;file build/FLogger.elf&#x0A;load&#x0A;monitor reset halt&#x0A;" />
 				</remote_debugging>
 				<remote_debugging target="all">
 					<options conn_type="0" extended_remote="1" />
