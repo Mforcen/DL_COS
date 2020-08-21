@@ -1,4 +1,4 @@
-18214827483009007
+18219652559048007
 Battery
 BatteryHolder_Bulgin_BX0036_1xC
 Bulgin Battery Holder, BX0036, Battery Type C (https://www.bulgin.com/products/pub/media/bulgin/data/Battery_holders.pdf)
@@ -70357,6 +70357,13 @@ E19-868MS1W
 22
 22
 Personal
+E19-868MS1W_VollGo
+
+
+0
+38
+24
+Personal
 ESP-12F
 
 
@@ -70392,12 +70399,26 @@ HLK-PM03
 4
 4
 Personal
+KH-IPEX3-2020
+
+IPEX
+0
+4
+2
+Personal
 MicroSD-KoreanHroparts
 https://lcsc.com/product-detail/Connector-Card-Sockets_Korean-Hroparts-Elec-TF-01A_C91145.html
 
 0
 13
 10
+Personal
+SDI12-SparkGap
+
+
+0
+2
+2
 Personal
 SLO0630h
 

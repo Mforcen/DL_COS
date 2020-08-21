@@ -40,7 +40,7 @@ uint32_t _acos(float* rv, float rad)
 
 uint32_t _atan(float* rv, float rad)
 {
-	*rv =atan(rad);
+	*rv = atan(rad);
 	return 0;
 }
 

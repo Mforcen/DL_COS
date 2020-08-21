@@ -5,6 +5,8 @@
 #include "mem_structs.hpp"
 #include "Module.h"
 
+#include <limits>
+
 #include "pin_defs.h"
 
 #include "stm32f1xx_hal.h"
@@ -38,6 +40,8 @@ namespace FwLogger
 			int startMeasurement(uint8_t addr, uint8_t type = 0, uint8_t additional = 0, bool crc = false);
 
 			bool loop();
+
+			void reset_pins();
 		protected:
 
 		private:

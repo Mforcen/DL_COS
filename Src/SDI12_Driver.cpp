@@ -265,7 +265,7 @@ namespace FwLogger
 		{
 		case Disabled:
 			{
-				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_15, GPIO_PIN_RESET);
+				HAL_GPIO_WritePin(SDI12_DIR, GPIO_PIN_RESET); // B to A
 
 				GPIO_InitTypeDef gpio_init;
 				gpio_init.Pin = _pin;
@@ -593,6 +593,11 @@ namespace FwLogger
 				if(pinValue == GPIO_PIN_RESET)
 				{
 					Log::Verbose("Error on start\n");
+					for(int i = 0; i < _measCount; ++i)
+					{
+						_measDst[i] = std::numeric_limits<float>::quiet_NaN();
+					}
+					_state = Nop;
 					setStatus(Disabled); // debería ser un start bit (nivel alto) pero es bajo, ergo es un error
 				}
 
@@ -665,5 +670,27 @@ namespace FwLogger
 	bool SDI12_Driver::loop()
 	{
 		return !(_state == Nop);
+	}
+
+	void SDI12_Driver::reset_pins()
+	{
+		HAL_GPIO_WritePin(SDI12_DIR, GPIO_PIN_RESET); // B to A
+
+		GPIO_InitTypeDef gpio_dir;
+		gpio_dir.Mode = GPIO_MODE_OUTPUT_PP;
+		gpio_dir.Pin = SDI12_Dir_Pin;
+		gpio_dir.Speed = GPIO_SPEED_FREQ_LOW;
+		gpio_dir.Pull = GPIO_NOPULL;
+		HAL_GPIO_Init(SDI12_Dir_GPIO_Port, &gpio_dir);
+
+		HAL_NVIC_DisableIRQ(EXTI9_5_IRQn);
+		HAL_GPIO_WritePin(_gpio, _pin, GPIO_PIN_RESET); // line standby
+
+		GPIO_InitTypeDef gpio_init;
+		gpio_init.Pin = _pin;
+		gpio_init.Mode = GPIO_MODE_OUTPUT_PP;
+		gpio_init.Pull = GPIO_NOPULL;
+		gpio_init.Speed = GPIO_SPEED_FREQ_LOW;
+		HAL_GPIO_Init(_gpio, &gpio_init);
 	}
 }

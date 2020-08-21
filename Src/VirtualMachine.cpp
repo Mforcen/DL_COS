@@ -630,7 +630,7 @@ void VirtualMachine::prepareBuiltin()
 			/*int arr_len = pop<uint32_t>();
 			m_currBuiltin.args[i].ptr_val = reinterpret_cast<intptr_t>(&m_ram[m_stackPointer-arr_len]);
 			m_stackPointer -= arr_len; // values shouldn't been overwritten since the vm is blocked until the function is not finished*/
-		m_currBuiltin.args[i].ptr_val = pop<intptr_t>();
+			m_currBuiltin.args[i].ptr_val = pop<intptr_t>()+reinterpret_cast<intptr_t>(m_ram);
 		}
 	}
 }

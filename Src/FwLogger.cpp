@@ -892,6 +892,11 @@ namespace FwLogger
 				sdi12.setFudge(newFudge);
 				printf("New fudge: %d\n", newFudge);
 			}
+			else if(strcmp(token, "reset") == 0)
+			{
+				sdi12.reset_pins();
+				printf("Resetting driver\n");
+			}
 		}
 		else if(strcmp(token, "system") == 0)
 		{
@@ -1888,12 +1893,15 @@ namespace FwLogger
 				LLPacket* ptr = lluart.pop();
 				if(ptr == nullptr) return;
 
-				write(currTask->fd, ptr->payload, ptr->chunkSize());
+				write(currTask->name_buf[0], ptr->payload, ptr->chunkSize());
 
 				int rem_len = currTask->counter;
 				rem_len-= ptr->chunkSize();
 				if(rem_len <= 0)
+				{
+					close(currTask->name_buf[0]);
 					_ops.delete_front();
+				}
 				else
 					currTask->counter = rem_len;
 
