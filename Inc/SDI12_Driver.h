@@ -41,7 +41,7 @@ namespace FwLogger
 
 			bool loop();
 
-			void reset_pins();
+			void reset();
 		protected:
 
 		private:
@@ -59,7 +59,8 @@ namespace FwLogger
 				MarkingRx,
 				Receiving,
 				Transmitting,
-				MeasWaiting
+				MeasWaiting,
+				RetryWaiting
 			};
 			TransceiverStatus _status;
 			void setStatus(TransceiverStatus status);
@@ -77,6 +78,7 @@ namespace FwLogger
 			SDI12States _state;
 
 			int8_t _error;
+			int8_t _retry_counter;
 			int _counter;
 			int _last_rx_counter;
 			uint8_t _measNumber;

@@ -229,9 +229,18 @@ namespace FwLogger
 
 		struct Row
 		{
-			Row()
+			Row(){}
+
+			Row(const Row& row)
 			{
-				for(int i = 0; i < 16; ++i) vals[i].format = Format::Invalid;
+				rowDate = row.rowDate;
+				vals = row.vals;
+			}
+
+			Row(Row&& row)
+			{
+				rowDate = row.rowDate;
+				vals = std::move(row.vals);
 			}
 
 			Row(Row* row)
@@ -239,24 +248,33 @@ namespace FwLogger
 				clone(row);
 			}
 
+			Row& operator=(const Row& row)
+			{
+				rowDate = row.rowDate;
+				vals = row.vals;
+				return *this;
+			}
+
+			Row& operator=(Row&& row)
+			{
+				rowDate = row.rowDate;
+				vals = std::move(row.vals);
+				return *this;
+			}
+
 			Date rowDate;
-			Value vals[16];
+			vector<Value> vals;
 
 			void clone(Row* row)
 			{
 				rowDate = row->rowDate;
-				for(int i = 0; i < 16; ++i)
-				{
-					vals[i].format = row->vals[i].format;
-					vals[i].data._uint32 = row->vals[i].data._uint32;
-				}
+				vals = row->vals;
 			}
 
 			void clear()
 			{
 				rowDate.exists = 0xff;
-				for(int i = 0; i < 16; ++i)
-					vals[i].format = Format::Invalid;
+				vals.clear();
 			}
 
 			int getBufSize()
@@ -269,8 +287,8 @@ namespace FwLogger
 			int serialize(uint8_t* buf)
 			{
 				int buf_idx = 0;
-				int val_idx;
-				for(val_idx = 0; val_idx < 16; ++val_idx)
+				std::size_t val_idx;
+				for(val_idx = 0; val_idx < vals.size(); ++val_idx)
 				{
 					int formatWidth = getFormatWidth(vals[val_idx].format);
 					for(int inner_idx = 0; inner_idx < formatWidth; ++inner_idx) buf[buf_idx++] = vals[val_idx].data.bytes[inner_idx];
@@ -281,10 +299,9 @@ namespace FwLogger
 			int deserialize(uint8_t* buf)
 			{
 				int buf_idx = 0;
-				int val_idx;
-				for(val_idx=0; val_idx < 16; ++ val_idx)
+				std::size_t val_idx;
+				for(val_idx=0; val_idx < vals.size(); ++ val_idx)
 				{
-					if(vals[val_idx].format == Format::Invalid) break;
 					int formatWidth = getFormatWidth(vals[val_idx].format);
                     for(int inner_idx = 0; inner_idx < formatWidth; ++inner_idx) vals[val_idx].data.bytes[inner_idx] = buf[buf_idx++];
 				}

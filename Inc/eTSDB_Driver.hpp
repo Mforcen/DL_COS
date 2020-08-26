@@ -62,6 +62,7 @@ namespace FwLogger
 			  */
 			RetValue readNextValue(HeaderPage& hp);
 			RetValue appendValue(HeaderPage& gp, Row& row);
+			RetValue appendValue(HeaderPage& gp, Row&& row);
 
 			/**
 			  * File functions-> Write function only can write once
@@ -138,7 +139,7 @@ namespace FwLogger
 			int _stateIdx;
 
 			Page* _page;
-			Row* _row;
+			Row _row;
 
 			uint32_t _offset, _size;
 			int _error;

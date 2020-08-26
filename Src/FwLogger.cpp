@@ -1,5 +1,7 @@
 #include "FwLogger.h"
 
+Allocator<128>* _vectAllocator;
+
 namespace FwLogger
 {
 	OS* OS::ptr = nullptr;
@@ -59,6 +61,8 @@ namespace FwLogger
 		disp.writeString("hola");
 		disp.updateScreen();*/
 		radio.receive(1);
+
+		_vectAllocator = &_alloc;
 
 		m_lpEnabled = false;
 	}
@@ -237,7 +241,7 @@ namespace FwLogger
 			LLPacket* ptr = reinterpret_cast<LLPacket*>(_fds[currTask->fd-1].ptr);
 			if(ptr)
 			{
-				bin_eval(ptr->payload, currTask->fd);
+				bin_eval(ptr->payload, ptr->len, currTask->fd);
 				_alloc.Deallocate(ptr->payload);
 			}
 			_ops.delete_front();
@@ -552,64 +556,43 @@ namespace FwLogger
 
 						else if(pi->table_status == 2)
 						{
-							if(file_buf[i] == 0)
-							{
-								pi->status= 2; // no more formats
-
-								Task open_tsk;
-								open_tsk.fd = _createFD(FDType::TS);
-								open_tsk.buf = currTask->buf;
-								open_tsk.op = Operation::OpenHeader;
-								_ops.push_back(open_tsk);
-
-								vm.HeaderFD = open_tsk.fd;
-
-								pi->hi.colLen = currTask->counter;
-
-								currTask->counter = 0;
-							}
-							else
-							{
-								pi->hi.formats[currTask->counter] = static_cast<eTSDB::Format>(file_buf[i]);
-								pi->table_status++;
-								pi->name_counter = 0;
-							}
+							pi->hi.cols.resize(file_buf[i]);
+							pi->table_status++;
+							currTask->counter = 0;
 						}
 
 						else if(pi->table_status == 3)
 						{
-							if(file_buf[i] == 0)
+							pi->hi.cols[currTask->counter].format = static_cast<eTSDB::Format>(file_buf[i]);
+							pi->table_status++;
+							pi->name_counter = 0;
+						}
+
+						else if(pi->table_status == 4)
+						{
+							pi->hi.cols[currTask->counter].name[pi->name_counter++] = file_buf[i];
+
+							if(pi->name_counter == 16 || file_buf[i] == 0)
 							{
-								pi->table_status = 2;
 								currTask->counter++;
+								if(currTask->counter == pi->hi.cols.size()) pi->table_status = 5;
+								else pi->table_status = 3;
+
 							}
-							else
-							{
-								pi->hi.colNames[currTask->counter][pi->name_counter++] = file_buf[i];
+						}
+						if(pi->table_status == 5)
+						{
+							pi->status = 2;
 
-								if(pi->name_counter == 16)
-								{
-									pi->table_status = 2;
-									currTask->counter++;
+							Task open_tsk;
+							open_tsk.fd = _createFD(FDType::TS);
+							open_tsk.buf = currTask->buf;
+							open_tsk.op = Operation::OpenHeader;
+							_ops.push_back(open_tsk);
 
-									if(currTask->counter == 16) //16 columns
-									{
-										pi->status = 2;
+							vm.HeaderFD = open_tsk.fd;
 
-										Task open_tsk;
-										open_tsk.fd = _createFD(FDType::TS);
-										open_tsk.buf = currTask->buf;
-										open_tsk.op = Operation::OpenHeader;
-										_ops.push_back(open_tsk);
-
-										vm.HeaderFD = open_tsk.fd;
-
-										pi->hi.colLen = currTask->counter;
-
-										currTask->counter = 0;
-									}
-								}
-							}
+							currTask->counter = 0;
 						}
 					}
 					else if(pi->status == 2)
@@ -658,9 +641,10 @@ namespace FwLogger
 		{
 			eTSDB::HeaderPage* hp = reinterpret_cast<eTSDB::HeaderPage*>(_fds[currTask->fd-1].ptr);
 			if(hp == nullptr) return true;
-			eTSDB::RetValue retval = etsdb.appendValue(*hp, *reinterpret_cast<eTSDB::Row*>(currTask->buf));
+			eTSDB::RetValue retval = etsdb.appendValue(*hp, std::move(*reinterpret_cast<eTSDB::Row*>(currTask->buf)));
 			if(retval == eTSDB::Ok)
 			{
+				reinterpret_cast<eTSDB::Row*>(currTask->buf)->~Row();
 				_alloc.Deallocate(currTask->buf);
 				_ops.delete_front();
 			}
@@ -753,6 +737,55 @@ namespace FwLogger
 				readTable_tsk.fd = open_tsk.fd;
 				readTable_tsk.counter = 0;
 				_ops.push_back(readTable_tsk);
+			}
+			else if(strcmp(token, "test") == 0)
+			{
+				eTSDB::Row* test = new (_alloc.Allocate(sizeof(eTSDB::Row), reinterpret_cast<uintptr_t>(this))) eTSDB::Row();
+				test->vals.resize(2);
+				test->vals[0].data._float = 1;
+				test->vals[0].format = eTSDB::Format::Float;
+				test->vals[1].data._float = 2;
+				test->vals[1].format = eTSDB::Format::Float;
+
+				test->rowDate.year = 2020;
+				test->rowDate.month = 1;
+				test->rowDate.day = 1;
+				test->rowDate.hour = 0;
+				test->rowDate.minute = 0;
+				test->rowDate.second = 0;
+
+				Task open_tsk;
+				open_tsk.op = Operation::OpenHeader;
+				open_tsk.fd = _createFD(FDType::TS);
+				open_tsk.buf = _alloc.Allocate(sizeof(ProgramInitializer), reinterpret_cast<uintptr_t>(this));
+				reinterpret_cast<ProgramInitializer*>(open_tsk.buf)->name[0] = 't';
+				reinterpret_cast<ProgramInitializer*>(open_tsk.buf)->name[1] = 'e';
+				reinterpret_cast<ProgramInitializer*>(open_tsk.buf)->name[2] = 's';
+				reinterpret_cast<ProgramInitializer*>(open_tsk.buf)->name[3] = 't';
+				reinterpret_cast<ProgramInitializer*>(open_tsk.buf)->name[4] = 0;
+				eTSDB::HeaderInitializer* hi = &reinterpret_cast<ProgramInitializer*>(open_tsk.buf)->hi;
+				hi->cols.resize(2);
+				hi->cols[0].format = eTSDB::Format::Float;
+				hi->cols[1].format = eTSDB::Format::Float;
+				hi->cols[0].name[0] = 'p';
+				hi->cols[0].name[1] = 'o';
+				hi->cols[0].name[2] = 't';
+				hi->cols[0].name[3] = 0;
+
+				hi->cols[1].name[0] = 't';
+				hi->cols[1].name[1] = 'e';
+				hi->cols[1].name[2] = 'm';
+				hi->cols[1].name[3] = 'p';
+				hi->cols[1].name[4] = '0';
+				hi->period = 10;
+
+				_ops.push_back(open_tsk);
+
+				Task append_tsk;
+				append_tsk.op = Operation::SaveRow;
+				append_tsk.fd = open_tsk.fd;
+				append_tsk.buf = test;
+				_ops.push_back(append_tsk);
 			}
 		}
 
@@ -894,7 +927,7 @@ namespace FwLogger
 			}
 			else if(strcmp(token, "reset") == 0)
 			{
-				sdi12.reset_pins();
+				sdi12.reset();
 				printf("Resetting driver\n");
 			}
 		}
@@ -1228,7 +1261,7 @@ namespace FwLogger
 		}
 	}
 
-	void OS::bin_eval(uint8_t* ebuf, int fd)
+	void OS::bin_eval(uint8_t* ebuf, int length, int fd)
 	{
 		if(fd == -1) return;
 		if(ebuf[0] == 'a') // ack
@@ -1415,9 +1448,10 @@ namespace FwLogger
 		{
 			if(ebuf[1] == 'u')
 			{
-				char path[26] = {0};
+				char path[26];
+				for(int i = 0; i < 26; ++i) path[i] = 0;
 				strcpy(path, "/file/");
-				strcpy(path+6, reinterpret_cast<char*>(ebuf+4));
+				for(int i = 0; i < length-4; ++i) path[i+6] = ebuf[i+4];
 
 				int remaining_file = ebuf[2] | (ebuf[3] << 8);
 				if(remaining_file == 0)
@@ -1439,7 +1473,8 @@ namespace FwLogger
 			}
 			else if(ebuf[1] == 'd')
 			{
-				char path[26] = {0};
+				char path[26];
+				for(int i = 0; i < 26; ++i) path[i] = 0;
 				strcpy(path, "/file/");
 				strcpy(path+6, reinterpret_cast<char*>(ebuf+2));
 				Task tsk;
@@ -1540,7 +1575,7 @@ namespace FwLogger
 			for(int i = 0; i < Module::getModuleNumber(); ++i)
 			{
 				if(Module::getModule(i)->bin_id == ebuf[0])
-					out_len = Module::getModule(i)->bin_eval(ebuf+1, outbuf+1);
+					out_len = Module::getModule(i)->bin_eval(ebuf+1, length-1, outbuf+1);
 				if(out_len > 0)
 				{
 					out_len++;
@@ -1899,7 +1934,10 @@ namespace FwLogger
 				rem_len-= ptr->chunkSize();
 				if(rem_len <= 0)
 				{
-					close(currTask->name_buf[0]);
+					Task close_tsk;
+					close_tsk.op = Operation::Close;
+					close_tsk.fd = currTask->name_buf[0];
+					_ops.push_back(close_tsk);
 					_ops.delete_front();
 				}
 				else

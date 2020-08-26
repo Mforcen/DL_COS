@@ -83,9 +83,9 @@ namespace FwLogger
 		if(len_high > 0)
 		{
 			WritingOp high_op;
-            high_op.addr = i + 4;
-            high_op.len = len_high + 4;
-            write_ops.push_back(high_op);
+			high_op.addr = i + 4;
+			high_op.len = len_high + 4;
+			write_ops.push_back(high_op);
 
 			tx_buffer[i+4] = CMD_WRITE_DATA;
 			tx_buffer[i+5] = (addr_high >> 16) & 0xff;

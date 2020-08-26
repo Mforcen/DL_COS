@@ -146,10 +146,23 @@ namespace FwLogger
 				byte_idx = _counter / 10;
 				if(byte_idx == _tx_buffer.idx)
 				{
-					_tx_buffer.clear();
+					//_tx_buffer.clear();
 					_counter = 0;
 					setStatus(MarkingRx);
 				}
+			}
+			break;
+		case RetryWaiting:
+			_retry_counter++;
+			if(_retry_counter >= 5)
+			{
+				_error = 1;
+				setStatus(Disabled);
+			}
+			_counter++;
+			if(_counter >= 45)
+			{
+				setStatus(Transmitting);
 			}
 			break;
 
@@ -163,12 +176,17 @@ namespace FwLogger
 		if(_status == Receiving){
 			if(_state == WaitingSR) return;
 			_last_rx_counter = 0;
+
 			uint16_t usNow = getUS();
 			uint16_t dt_rx = static_cast<uint16_t>(usNow-_last_rx);
 			_last_rx = usNow;
+
 			uint32_t bits = (1200*(dt_rx+_rxFudge))/1000000;
+
 			GPIO_PinState pinValue = HAL_GPIO_ReadPin(_gpio, _pin);
-			Log::Verbose("R:%d,%d,%d\n", bits, pinValue, _counter);
+
+			Log::Verbose("R:%d,%d,%d\n", dt_rx, pinValue, _counter);
+
 			push_bits(bits, pinValue);
 			/*while(bits-->0)
 			{
@@ -265,6 +283,7 @@ namespace FwLogger
 		{
 		case Disabled:
 			{
+				reset();
 				HAL_GPIO_WritePin(SDI12_DIR, GPIO_PIN_RESET); // B to A
 
 				GPIO_InitTypeDef gpio_init;
@@ -279,16 +298,18 @@ namespace FwLogger
 			break;
 
 		case Breaking:
-			HAL_GPIO_WritePin(SDI12_DIR, GPIO_PIN_RESET); // 3V3 a 5V
+			{
+				HAL_GPIO_WritePin(SDI12_DIR, GPIO_PIN_RESET); // 3V3 a 5V
 
-			GPIO_InitTypeDef gpio_init;
-			gpio_init.Pin = _pin;
-			gpio_init.Mode = GPIO_MODE_OUTPUT_PP;
-			gpio_init.Pull = GPIO_NOPULL;
-			gpio_init.Speed = GPIO_SPEED_FREQ_LOW;
-			HAL_GPIO_WritePin(_gpio, _pin, GPIO_PIN_SET);
-			HAL_GPIO_Init(_gpio, &gpio_init);
-			HAL_NVIC_DisableIRQ(EXTI9_5_IRQn);
+				GPIO_InitTypeDef gpio_init;
+				gpio_init.Pin = _pin;
+				gpio_init.Mode = GPIO_MODE_OUTPUT_PP;
+				gpio_init.Pull = GPIO_NOPULL;
+				gpio_init.Speed = GPIO_SPEED_FREQ_LOW;
+				HAL_GPIO_WritePin(_gpio, _pin, GPIO_PIN_SET);
+				HAL_GPIO_Init(_gpio, &gpio_init);
+				HAL_NVIC_DisableIRQ(EXTI9_5_IRQn);
+			}
 			break;
 
 		case MarkingTx:
@@ -328,8 +349,25 @@ namespace FwLogger
 				else*/ if(_pin == GPIO_PIN_6)
 				{
 				}
+				_last_rx = getUS();
+				HAL_NVIC_ClearPendingIRQ(EXTI9_5_IRQn);
 				HAL_NVIC_SetPriority(EXTI9_5_IRQn, 2, 0);
 				HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
+			}
+			break;
+
+		case RetryWaiting:
+			{
+				HAL_GPIO_WritePin(SDI12_DIR, GPIO_PIN_RESET); // 3V3 a 5V
+
+				GPIO_InitTypeDef gpio_init;
+				gpio_init.Pin = _pin;
+				gpio_init.Mode = GPIO_MODE_OUTPUT_PP;
+				gpio_init.Pull = GPIO_NOPULL;
+				gpio_init.Speed = GPIO_SPEED_FREQ_LOW;
+				HAL_GPIO_WritePin(_gpio, _pin, GPIO_PIN_SET);
+				HAL_GPIO_Init(_gpio, &gpio_init);
+				HAL_NVIC_DisableIRQ(EXTI9_5_IRQn);
 			}
 			break;
 
@@ -597,8 +635,8 @@ namespace FwLogger
 					{
 						_measDst[i] = std::numeric_limits<float>::quiet_NaN();
 					}
-					_state = Nop;
-					setStatus(Disabled); // debería ser un start bit (nivel alto) pero es bajo, ergo es un error
+					_state = StartMeasure;
+					setStatus(Transmitting); // debería ser un start bit (nivel alto) pero es bajo, ergo es un error
 				}
 
 				GPIO_InitTypeDef gpio_init;
@@ -672,7 +710,7 @@ namespace FwLogger
 		return !(_state == Nop);
 	}
 
-	void SDI12_Driver::reset_pins()
+	void SDI12_Driver::reset()
 	{
 		HAL_GPIO_WritePin(SDI12_DIR, GPIO_PIN_RESET); // B to A
 
@@ -692,5 +730,17 @@ namespace FwLogger
 		gpio_init.Pull = GPIO_NOPULL;
 		gpio_init.Speed = GPIO_SPEED_FREQ_LOW;
 		HAL_GPIO_Init(_gpio, &gpio_init);
+
+		_state = Nop;
+		_status = Disabled;
+
+		_error = 0;
+		_counter = 0;
+		_last_rx_counter = 0;
+		_measNumber = 0;
+		_additionalMeas = 0;
+		_measAddr = 0;
+		_measDst = nullptr;
+		_retry_counter = 0;
 	}
 }

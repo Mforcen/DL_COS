@@ -82,7 +82,7 @@ namespace FwLogger
 			void loop();
 			bool task_loop();
 			void eval();
-			void bin_eval(uint8_t* ebuf, int fd);
+			void bin_eval(uint8_t* ebuf, int length, int fd);
 			void radio_eval();
 			int open(char* path, int oflag);
 			int read(int fd, void* buf, size_t count);

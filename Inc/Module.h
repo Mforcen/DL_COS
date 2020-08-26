@@ -35,7 +35,7 @@ namespace FwLogger
 
 		virtual int getStatus(uint8_t* buf);
 
-		virtual int bin_eval(uint8_t* buf, uint8_t* outbuf);
+		virtual int bin_eval(uint8_t* buf, int buflen, uint8_t* outbuf);
     };
 }
 

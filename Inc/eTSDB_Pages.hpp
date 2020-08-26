@@ -72,26 +72,29 @@ namespace FwLogger
 			DataPage(uint16_t page_idx, uint16_t object_idx, Date block_date, HeaderPage* header);
 
 			static const uint8_t _header_span = 10;
-			static const uint8_t _starter_magic[2];
-			static const uint8_t _ender_magic[2];
+			static const uint8_t _starter_magic[1];
+			static const uint8_t _ender_magic[1];
 
 			uint16_t _rowIdx; ///< This helps to find the writing address of the block
-			uint8_t _rowWidth;
+			uint16_t _rowWidth;
 			uint8_t _period;
 
 			Date _block_date; ///< This stores the first measure date, used to check the measures
 			HeaderPage* _header; // Will be stored at page as block_idx of header page
-			Format _formats[16];
 
 			friend class Driver;
 		};
 
+		struct ColumnHeader
+		{
+			Format format;
+			uint8_t name[16];
+		};
+
 		struct HeaderInitializer
 		{
-			uint8_t colNames[16][16];
-			Format formats[16];
+			vector<ColumnHeader> cols;
 			uint8_t period;
-			uint8_t colLen;
 		};
 
 		class HeaderPage : public Page
@@ -105,7 +108,7 @@ namespace FwLogger
 			uint8_t getNumColumn();
 			uint8_t* getColumnName(uint8_t colIdx);
 			Format getColumnFormat(uint8_t colIdx);
-			uint8_t getColumnStride();
+			uint16_t getColumnStride();
 			int8_t getColumnIdx(int8_t span);
 
 			uint8_t getPeriod();
@@ -118,18 +121,19 @@ namespace FwLogger
 			int deserialize(uint8_t* dst);
 
 			void copy(HeaderPage* hp);
+			void move(HeaderPage* hp);
 
 		protected:
 
 		private:
 			HeaderPage(uint16_t page_idx, uint16_t object_idx);
-			uint8_t _colNames[16][16];
-			Format _formats[16];
 
 			uint16_t _header_spacing; ///< This variable indicates how many space uses the header, up to 304 bytes
-			uint8_t _data_idx; ///< This variable indicates where the next data index could be stored
-			uint8_t _data_stride; ///< This variable holds the space that a row needs to be fully stored. It's only calculated once based on the format array
+			uint16_t _data_idx; ///< This variable indicates where the next data index could be stored
+			uint16_t _data_stride; ///< This variable holds the space that a row needs to be fully stored. It's only calculated once based on the format array
 			uint8_t _period; ///< This allows to know how many times there will be between samples
+
+			vector <ColumnHeader> _cols;
 
 			DataPage* _currDP;
 

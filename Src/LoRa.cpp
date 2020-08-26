@@ -400,7 +400,7 @@ namespace FwLogger
 		return 3;
 	}
 
-	int LoRa::bin_eval(uint8_t* buf, uint8_t* outbuf)
+	int LoRa::bin_eval(uint8_t* buf, int buflen, uint8_t* outbuf)
 	{
 		if(buf[0] == 'c') // config
 		{

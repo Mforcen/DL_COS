@@ -24,10 +24,9 @@ namespace FwLogger
 			_opBuf = nullptr;
 
 			_page = nullptr;
-			_row = nullptr;
 		}
 
-		RetValue Driver::openHeader(const uint8_t* name, PageAccessMode am, uint8_t period, uint8_t colLen, const Format* formats, const uint8_t** colNames)
+		RetValue Driver::openHeader(const uint8_t* name, PageAccessMode am, uint8_t period, uint8_t colNum, const Format* formats, const uint8_t** colNames)
 		{
 			RetValue prep_ret = prepareCom();
 			if(prep_ret != Ok) return prep_ret;
@@ -46,25 +45,24 @@ namespace FwLogger
 			{
 				hp->_period = period;
 
-				if(colLen > 16) colLen = 16;
-
 				int i;
 				for(i = 0; i < 16 && name[i] != 0; ++i)
 				{
 					hp->_name[i] = name[i];
 				}
 				if(i<16) hp->_name[i] = 0;
+				hp->_cols.resize(colNum);
 
-				for(i = 0; i < colLen; ++i)
+				for(i = 0; i < colNum; ++i)
 				{
-					hp->_formats[i] = formats[i];
+					hp->_cols[i].format = formats[i];
 					int j;
 					for(j = 0; j < 16 && colNames[i][j] != 0; ++j)
 					{
 						char c = colNames[i][j];
-						hp->_colNames[i][j] = c;
+						hp->_cols[i].name[j] = c;
 					}
-					if(j<16) hp->_colNames[i][j] = 0;
+					if(j<16) hp->_cols[i].name[j] = 0;
 				}
 
 				hp->_header_spacing = hp->getSize();
@@ -91,10 +89,47 @@ namespace FwLogger
 
 		RetValue Driver::openHeader(const uint8_t* name, PageAccessMode am, HeaderInitializer& hi)
 		{
-			const uint8_t* colnames[16];
-			for(int i = 0; i < 16; ++i) colnames[i] = &hi.colNames[i][0];
+			RetValue prep_ret = prepareCom();
+			if(prep_ret != Ok) return prep_ret;
 
-			return openHeader(name, am, hi.period, hi.colLen, hi.formats, colnames);
+			HeaderPage* hp = new HeaderPage(); // this will be allocated using the mempool
+
+			for(int i = 0; i < 16; ++i) hp->_name[i] = 0;
+
+			_page = hp;
+			_page->_page_mode = am;
+
+			_states[0] = State::FindNewObject;
+
+			if(am == PageAccessMode::PageWrite || am == PageAccessMode::PageWriteUpdate)
+			{
+
+				int i;
+				for(i = 0; i < 16 && name[i] != 0; ++i)	hp->_name[i] = name[i];
+				if(i<16) hp->_name[i] = 0;
+
+				hp->_period = hi.period;
+				hp->_cols = std::move(hi.cols);
+
+				hp->_header_spacing = hp->getSize();
+				if(am == PageAccessMode::PageWrite)
+				{
+					_states[1] = State::WritePageObjectIndexInRoot;
+					_states[2] = State::WritePageHeader;
+					_states[3] = State::Full;
+				}
+				else if(am == PageAccessMode::PageWriteUpdate)
+					_states[1] = State::WritePageUpdate;
+			}
+			else
+			{
+				for(int i = 0; i < 16 && name[i] != 0; ++i) hp->_name[i] = name[i];
+				_states[1] = State::LoadPage;
+				_states[2] = State::Full;
+			}
+
+			findNewObject();
+			return Ok;
 		}
 
 		RetValue Driver::startGetNextHeader(HeaderPage& hp)
@@ -154,10 +189,9 @@ namespace FwLogger
 			{
 				_opAddr = hp._currDP->getPageIdx()*PageWidth + DataPage::_header_span + hp._currDP->_rowWidth*hp._currDP->_rowIdx;
 				hp._currDP->_rowIdx++; // por lo menos
-				_row = static_cast<Row*>(_alloc->Allocate(sizeof(Row), reinterpret_cast<uintptr_t>(this)));
-				_row->clear();
+				_row.clear();
 
-				for(int i = 0; i < 16; ++i)  _row->vals[i].format = hp._formats[i];
+				for(int i = 0; i < hp._cols.size(); ++i)  _row.vals[i].format = hp._cols[i].format;
 
 				_states[0] = State::ReadValue;
 				_states[1] = State::Full;
@@ -183,6 +217,7 @@ namespace FwLogger
 			//The first two are handled here, the last one will be handled in next steps
 			//Since space check should not be a problem (garbage collector will free the oldest data pages) it is not considered an error
 
+
 			RetValue prep_ret = prepareCom();
 			if(prep_ret != Ok) return prep_ret;
 			if(hp._currDP != nullptr)
@@ -191,13 +226,59 @@ namespace FwLogger
 				Log::Verbose("Creating datapage to hp %d\n", hp._object_idx);
 
 			_page = &hp;
-			_row = new(_alloc->Allocate(sizeof(Row), reinterpret_cast<uintptr_t>(this)))Row(row);
+			_row.clear();
+			_row = row;
 
 			uint32_t period_seconds = getSecondsFromPeriod(hp.getPeriod());
 			if(row.rowDate.timestamp() % period_seconds > period_seconds/10) return OutOfTime; // it does not fit
 			row.rowDate.snapToPeriod(hp.getPeriod());
 
 			if(!hp.checkFormat(row)) return ColError;
+
+			if(hp._currDP == nullptr)// find matching dp or empty dp
+			{
+				hp._currDP = new DataPage();
+				hp._currDP->_header = &hp;
+				_states[0] = State::Read;
+				_states[1] = State::HeaderPageReadDataIndex; // reset or die
+				_states[2] = State::DataPageCheckHeaderDate; //if not, skip to 0
+				_states[3] = State::DataPageAppend;
+				_states[4] = State::Wait;
+
+				hp._data_idx = 0;
+				readPage(2, hp.getPageIdx()*PageWidth+hp.getSize());
+			}
+			else
+				return flushValue();
+
+			return Ok;
+		}
+
+		RetValue Driver::appendValue(HeaderPage& hp, Row&& move_row)
+		{
+			//things that can go wrong:
+			//Format check
+			//Date check
+			//Space check
+
+			//The first two are handled here, the last one will be handled in next steps
+			//Since space check should not be a problem (garbage collector will free the oldest data pages) it is not considered an error
+
+			RetValue prep_ret = prepareCom();
+			if(prep_ret != Ok) return prep_ret;
+			if(hp._currDP != nullptr)
+				Log::Verbose("Append to pag %d, pos %d\n", hp._currDP->_page_idx, hp._currDP->_rowIdx);
+			else
+				Log::Verbose("Creating datapage to hp %d\n", hp._object_idx);
+
+			_page = &hp;
+			_row = std::move(move_row);
+
+			uint32_t period_seconds = getSecondsFromPeriod(hp.getPeriod());
+			if(_row.rowDate.timestamp() % period_seconds > period_seconds/10) return OutOfTime; // it does not fit
+			_row.rowDate.snapToPeriod(hp.getPeriod());
+
+			if(!hp.checkFormat(_row)) return ColError;
 
 			if(hp._currDP == nullptr)// find matching dp or empty dp
 			{
@@ -381,6 +462,8 @@ namespace FwLogger
 			file._file_size += file._data_idx;
 			uint16_t writingLen = file._data_idx;
 			file._data_idx = 0;
+			_opLen = writingLen;
+			_opIdx = 1;
 
 			writePage(&file._databuf[file._data_status*64], writingLen, opAddr);
 
@@ -416,14 +499,12 @@ namespace FwLogger
 			Log::Verbose("Creating new dp after idx %d\n", dp->_page_idx);
 
 			dp->_header = hp;
-			dp->_block_date = _row->rowDate;
+			dp->_block_date = _row.rowDate;
 			dp->_object_idx = hp->getObjectIdx();
 			dp->_period = hp->getPeriod();
 			dp->_rowIdx = 0; // reset the row idx, since it is a new data page
 
 			_opLen = dp->getSize();
-
-			for(int i = 0; i < 16; ++i) dp->_formats[i] = hp->_formats[i];
 
 			dp->_rowWidth = hp->getColumnStride();
 
@@ -473,24 +554,23 @@ namespace FwLogger
 			_states[1] = State::FreeRow;
 			_states[2] = State::Wait;
 
-			uint16_t num_entry = (_row->rowDate.timestamp()-dp->_block_date.timestamp())/getSecondsFromPeriod(dp->_period);
+			uint16_t num_entry = (_row.rowDate.timestamp()-dp->_block_date.timestamp())/getSecondsFromPeriod(dp->_period);
 			if(num_entry >= dp->getNumEntries()) return createDataPage(); // if full then create another page
 			if(num_entry < dp->_rowIdx) return createDataPage(); // non monotonic values, raise error
 			dp->_rowIdx = num_entry;
 
 			_opAddr = num_entry*dp->_rowWidth + dp->_header_span + dp->getPageIdx()*PageWidth;
-			_opLen = 0;
+			_opLen = dp->_rowWidth;
+			_opIdx = 1;
 			_opBuf = _alloc->Allocate(dp->_rowWidth, reinterpret_cast<uintptr_t>(this));
 
 			uint8_t* opBuf = static_cast<uint8_t*>(_opBuf);
 
 			opBuf[0] = DataPage::_starter_magic[0];
-			opBuf[1] = DataPage::_starter_magic[1];
 
-			int bufIdx = _row->serialize(opBuf+2)+2;
+			int bufIdx = _row.serialize(opBuf+1)+1;
 
 			opBuf[bufIdx++] = DataPage::_ender_magic[0];
-			opBuf[bufIdx++] = DataPage::_ender_magic[1];
 
 			writePage(opBuf, dp->_rowWidth, _opAddr); //_opAddr should be updated
 
@@ -551,14 +631,11 @@ namespace FwLogger
 
 			else if(_states[_stateIdx] == State::Write)
 			{
-				if(_opLen > 0)
+				if(_opLen > _opIdx*255)
 				{
-					int writingLen = _opLen;
-					if(writingLen > 255) writingLen = 255;
-					_opLen -= writingLen; // le quita lo que va a escribir
-
-					_opAddr += writingLen;
-					writePage(static_cast<uint8_t*>(_opBuf)+_opAddr, writingLen, _opAddr-writingLen);
+					int write_offset = _opIdx*255;
+					_opIdx++;
+					writePage(static_cast<uint8_t*>(_opBuf) + write_offset, _opLen-write_offset > 255 ? 255 : _opLen-write_offset, _opAddr+write_offset);
 				}
 				else
 				{
@@ -584,9 +661,9 @@ namespace FwLogger
 
 			else if(_states [_stateIdx] == State::ReadValue)
 			{
-				uint16_t magic =  ((pop() << 8) & 0xff00) | (pop() & 0xff);
+				uint8_t magic =  pop()&0xff;
 				HeaderPage* hp = reinterpret_cast<HeaderPage*>(_page);
-				if(magic != 0xdead)
+				if(magic != 0xde)
 				{
 					if(hp->_currDP->_rowIdx < hp->_currDP->getNumEntries())
 					{
@@ -604,13 +681,13 @@ namespace FwLogger
 				{
 					for(int i = 0; i < 16; ++i)
 					{
-						for(int j = 0; j < getFormatWidth(_row->vals[i].format); ++j)
+						for(int j = 0; j < getFormatWidth(_row.vals[i].format); ++j)
 						{
-							_row->vals[i].data.bytes[j] = pop() & 0xff;
+							_row.vals[i].data.bytes[j] = pop() & 0xff;
 						}
 					}
-					_row->rowDate = hp->_currDP->_block_date + getSecondsFromPeriod(hp->_period)*hp->_currDP->_rowIdx;
-					_row->rowDate.exists = 0;
+					_row.rowDate = hp->_currDP->_block_date + getSecondsFromPeriod(hp->_period)*hp->_currDP->_rowIdx;
+					_row.rowDate.exists = 0;
 					_states[_stateIdx] = State::Full;
 				}
 			}
@@ -895,7 +972,7 @@ namespace FwLogger
 				else //good data page, should check if date is within this block
 				{
 					uint32_t _max_block_time = getSecondsFromPeriod(hp->getPeriod())*hp->_currDP->getNumEntries();
-					uint64_t rowDateSecs = _row->rowDate.timestamp();
+					uint64_t rowDateSecs = _row.rowDate.timestamp();
 					uint64_t blockDate = hp->_currDP->_block_date.timestamp();
 					uint64_t maxBlockDate = blockDate+_max_block_time;
 					if(blockDate <= rowDateSecs && rowDateSecs <= maxBlockDate) // bingo
@@ -928,12 +1005,7 @@ namespace FwLogger
 				_states[_stateIdx] = State::ReadValue;
 				_states[_stateIdx+1] = State::Full;
 
-				if(_row == nullptr)
-				{
-					_row = static_cast<Row*>(_alloc->Allocate(sizeof(Row), reinterpret_cast<uintptr_t>(this)));
-					_row->clear();
-				}
-
+				_row.clear();
 				readPage(hp->_currDP->_rowWidth, _opAddr);
 			}
 
@@ -957,19 +1029,20 @@ namespace FwLogger
 					HeaderPage* hp = static_cast<HeaderPage*>(_page);
 
 					hp->_period = pop();
+					hp->_cols.resize(pop());
 
 					int i;
-					for(i = 0; i < 16; ++i)
+					for(i = 0; i < hp->_cols.size(); ++i)
 					{
 						uint8_t c = pop();
 						if(c != 0 && c != 0xff)
 						{
-							hp->_formats[i] = static_cast<Format>(c);
+							hp->_cols[i].format = static_cast<Format>(c);
 							c = pop();
 							int j;
 							for(j = 0; j < 16; ++j)
 							{
-								if(c != 0) hp->_colNames[i][j] = c;
+								if(c != 0) hp->_cols[i].name[j] = c;
 								else
 								{
 									 //c = pop();//hay que sacar a src_idx del 0
@@ -980,10 +1053,10 @@ namespace FwLogger
 						}
 						else break; // después de esto ya se corta la vida
 					}
-					for(i = 0; i < 16; ++i) if(hp->_formats[i] > Format::Float)
+					for(i = 0; i < hp->_cols.size(); ++i) if(hp->_cols[i].format > Format::Float)
 					{
-						Log::Error("Error on table header %s in page %d, format val is %d\n", hp->getName(), hp->getPageIdx(), hp->_formats[i]);
-						hp->_formats[i] = Format::Invalid;
+						Log::Error("Error on table header %s in page %d, format val is %d\n", hp->getName(), hp->getPageIdx(), hp->_cols[i].format);
+						hp->_cols[i].format = Format::Invalid;
 					}
 					hp->_header_spacing = hp->getSize();
 
@@ -997,7 +1070,6 @@ namespace FwLogger
 						hp->_currDP->_rowWidth = hp->getColumnStride();
 						hp->_currDP->_period = hp->_period;
 						hp->_data_idx = 0;
-						for(int i = 0; i < 16; ++i) hp->_currDP->_formats[i] = hp->_formats[i];
 						_states[_stateIdx+3] = _states[_stateIdx+1]; // full o found o lo que sea
 						_states[_stateIdx] = State::Read;
 						_states[_stateIdx+1] = State::LoadPage;
@@ -1092,8 +1164,7 @@ namespace FwLogger
  			}
  			else if(_states[_stateIdx] == State::FreeRow)
 			{
-				if(_row != nullptr) _alloc->Deallocate(_row);
-				_row = nullptr;
+				_row.clear();
 				step();
 			}
 			else if(_states[_stateIdx] == State::Full || _states[_stateIdx] == State::FreePage || _states[_stateIdx] == State::Error || _states[_stateIdx] == State::Wait || _states[_stateIdx] == State::Nop)
@@ -1120,11 +1191,10 @@ namespace FwLogger
 			if(_states[_stateIdx] != State::Full && _states[_stateIdx] != State::FreeRow && _states[_stateIdx] != State::NotFound) return nullptr;
 			if(_states[_stateIdx] == State::NotFound)
 			{
-				if(_row == nullptr) _row = reinterpret_cast<Row*>(_alloc->Allocate(sizeof(Row), reinterpret_cast<uintptr_t>(this)));
-				_row->clear();
+				_row.clear();
 			}
 			_states[_stateIdx] = State::FreeRow;
-			return _row;
+			return &_row;
 		}
 
 		RetValue Driver::findEmptyPage()
@@ -1177,11 +1247,7 @@ namespace FwLogger
 			}
 			if(_states[_stateIdx] == State::FreeRow)
 			{
-				if(_row != nullptr)
-				{
-					_alloc->Deallocate(static_cast<void*>(_row));
-					_row = nullptr;
-				}
+				_row.clear();
 			}
 
 			for(int i = 0; i < 16; ++i) _states[i] = State::Nop;

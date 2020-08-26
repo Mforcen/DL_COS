@@ -2,6 +2,10 @@
 #define MEM_STRUCTS_HPP
 
 #include <cstdint>
+#include <cstring>
+#include <utility>
+#include <new>
+
 #include "Log.h"
 
 template <std::size_t sizeval>
@@ -331,6 +335,161 @@ class Allocator // 128bytes per object
 		std::size_t _numBlocks;
 
 		int int_ceil(int D, int d)
+		{
+			return (D / d) + (D % d > 0 ? 1 : 0);
+		}
+};
+
+extern Allocator<128>* _vectAllocator;
+
+template<typename T>
+class vector
+{
+	public:
+		vector()
+		{
+			_data = nullptr;
+			_size = 0;
+			_capacity = 0;
+		}
+
+		~vector()
+		{
+			clear();
+		}
+
+		vector& operator= (const vector& other)
+		{
+			clear();
+
+			_size = other._size;
+			_capacity = other._capacity;
+			if(other._data != nullptr)
+			{
+				_data = reinterpret_cast<T*>(_vectAllocator->Allocate(_capacity*sizeof(T), reinterpret_cast<uintptr_t>(this)));
+
+				for(int i = 0; i < _size; ++i)
+					_data[i] = other._data[i];
+			}
+
+			return *this;
+		}
+
+		vector& operator= (vector&& other)
+		{
+			clear();
+
+			_size = other._size;
+			_capacity = other._capacity;
+			_data = other._data;
+
+			other._size = 0;
+			other._capacity = 0;
+			other._data = nullptr;
+
+			return *this;
+		}
+
+		void push_back(const T& val)
+		{
+			if(_size <= _capacity)
+			{
+				reserve(_size+1);
+			}
+			_data[_size++] = val;
+		}
+
+		void clear()
+		{
+			if(_data != nullptr)
+			{
+				for(int i = 0; i < _size; ++i)
+					_data[i].~T();
+				_vectAllocator->Deallocate(_data);
+			}
+			_size = 0;
+			_capacity = 0;
+			_data = nullptr;
+		}
+
+		void pop_back()
+		{
+			_data[--_size].~T();
+		}
+
+		void resize(int count)
+		{
+			if(count > _capacity)
+				reserve(count);
+
+			if(_size < count)
+			{
+				for(;_size < count; ++_size)
+					new(&_data[_size]) T();
+			}
+
+			else if(_size > count)
+			{
+				for(int i = count; i < _size; ++i)
+					_data[i].~T();
+			}
+			_size = count;
+
+		}
+
+		void reserve(int count)
+		{
+			std::size_t mem_req = int_ceil(count * sizeof(T), 128)*128;
+			if(_capacity*sizeof(T) < mem_req)
+			{
+				T* old_data = _data;
+				_data = reinterpret_cast<T*>(_vectAllocator->Allocate(mem_req, reinterpret_cast<uintptr_t>(this)));
+
+				if(old_data != nullptr)
+				{
+					memcpy(_data, old_data, _size*sizeof(T));
+					_vectAllocator->Deallocate(old_data);
+					_capacity = mem_req / sizeof(T);
+				}
+			}
+		}
+
+		T& at(std::size_t pos)
+		{
+			return _data[pos];
+		}
+
+		T& operator[](std::size_t pos)
+		{
+			return _data[pos];
+		}
+
+		T& front()
+		{
+			return _data[0];
+		}
+
+		T& back()
+		{
+			return _data[_size-1];
+		}
+
+		T* data()
+		{
+			return _data;
+		}
+
+		std::size_t size()
+		{
+			return _size;
+		}
+
+	private:
+		T* _data;
+		std::size_t _size;
+		std::size_t _capacity;
+
+		static int int_ceil(int D, int d)
 		{
 			return (D / d) + (D % d > 0 ? 1 : 0);
 		}

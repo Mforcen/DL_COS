@@ -601,7 +601,7 @@ int VirtualMachine::getStatus(uint8_t* buf)
 	return namelen+34; // 33+1
 }
 
-int VirtualMachine::bin_eval(uint8_t* buf, uint8_t* outbuf)
+int VirtualMachine::bin_eval(uint8_t* buf, int buflen, uint8_t* outbuf)
 {
 	if(buf[0] == 's')
 	{

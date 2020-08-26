@@ -6,8 +6,8 @@ namespace FwLogger
 {
 	namespace eTSDB
 	{
-		const uint8_t DataPage::_starter_magic[] = {0xde, 0xad};
-		const uint8_t DataPage::_ender_magic[] = {0xbe, 0xef};
+		const uint8_t DataPage::_starter_magic[] = {0xde};
+		const uint8_t DataPage::_ender_magic[] = {0xad};
 
 		uint8_t getFormatWidth(Format format)
 		{
@@ -98,6 +98,7 @@ namespace FwLogger
 				for(i = 0; i < 16; ++i) if(buf[i+2] != 0) _name[i] = buf[i+2];
 				if(i < 16) _name[i] = 0;
 			}
+			return 0;
 		}
 
 		/**
@@ -108,7 +109,6 @@ namespace FwLogger
 		{
 			_rowIdx = 0;
 			_rowWidth = 0;
-			for(int i = 0; i < 16; ++i) _formats[i] = Format::Invalid;
 		}
 
 		DataPage::DataPage(uint16_t page_idx, uint16_t object_idx, Date block_date, HeaderPage* header) : Page(page_idx, DataType, object_idx)
@@ -117,7 +117,6 @@ namespace FwLogger
 			_header = header;
 			_rowIdx = 0;
 			_rowWidth = 0;
-			for(int i = 0; i < 16; ++i) _formats[i] = Format::Invalid;
 		}
 
 		int DataPage::getTypeSize()
@@ -147,7 +146,6 @@ namespace FwLogger
 			_rowWidth = dp->_rowWidth;
 			_block_date = dp->_block_date;
 			_period = dp->_period;
-			for(int i = 0; i < 16; ++i) _formats[i] = dp->_formats[i];
 		}
 
 		Date DataPage::getBlockDate()
@@ -175,16 +173,6 @@ namespace FwLogger
 			_data_stride = 0;
 			_data_idx = 0xffff;
 			_currDP = nullptr;
-
-			for(int i = 0; i < 16; ++i)
-			{
-				_name[i] = 0;
-				_formats[i] = Format::Invalid;
-				for(int j = 0; j < 16; ++j)
-				{
-					_colNames[i][j] = 0;
-				}
-			}
 			_period = 0;
 
 		}
@@ -194,6 +182,7 @@ namespace FwLogger
 			_data_stride = 0;
 			_data_idx = 0xffff;
 			_currDP = nullptr;
+			_period = 0;
 		}
 
 		HeaderPage::~HeaderPage()
@@ -204,30 +193,25 @@ namespace FwLogger
 
 		uint8_t HeaderPage::getNumColumn()
 		{
-			uint8_t cols = 0;
-			for(int i = 0; i < 16; ++i)
-			{
-				if(_formats[i] == Format::Invalid) break;
-					++cols;
-			}
-			return cols;
+			_cols.size();
 		}
 
 		uint8_t* HeaderPage::getColumnName(uint8_t colIdx)
 		{
-			return _colNames[colIdx];
+			return _cols[colIdx].name;
 		}
 
 		Format HeaderPage::getColumnFormat(uint8_t colIdx)
 		{
-			return _formats[colIdx];
+			return _cols[colIdx].format;
 		}
 
-		uint8_t HeaderPage::getColumnStride()
+		uint16_t HeaderPage::getColumnStride()
 		{
 			_data_stride = 0;
-			for(int i = 0; i < 16; ++i) _data_stride+=getFormatWidth(_formats[i]);
-			_data_stride += 4; //num mágico inicial y final
+			for(int i = 0; i < _cols.size(); ++i)
+				_data_stride += getFormatWidth(_cols[i].format);
+			_data_stride += 2; //num mágico inicial y final
 			return _data_stride;
 		}
 
@@ -238,10 +222,10 @@ namespace FwLogger
 			int col_idx;
 			for(col_idx = 0; span > 0; ++col_idx)
 			{
-				int formatWidth = getFormatWidth(_formats[col_idx]);
+				int formatWidth = getFormatWidth(_cols[col_idx].format);
 				span -= formatWidth;
 			}
-			if(getFormatWidth(_formats[col_idx]) == 0) return -2;
+			if(getFormatWidth(_cols[col_idx].format) == 0) return -2;
 			if(span < 0) return -3; //algún error ha debido haber
 			return col_idx;
 		}
@@ -253,9 +237,10 @@ namespace FwLogger
 
 		bool HeaderPage::checkFormat(Row& row)
 		{
-			for(int i = 0; i < 16 && _formats[i] != Format::Invalid; ++i)
+			if(row.vals.size() != _cols.size()) return false;
+			for(int i = 0; i < _cols.size(); ++i)
 			{
-				if(_formats[i] != row.vals[i].format)
+				if(_cols[i].format != row.vals[i].format)
 					return false;
 			}
 			return true;
@@ -263,10 +248,10 @@ namespace FwLogger
 
 		void HeaderPage::getFormat(Row& row)
 		{
-			for(int i = 0; i < 16; ++i)
+			row.vals.resize(_cols.size());
+			for(int i = 0; i < _cols.size(); ++i)
 			{
-				if(_formats[i] == Format::Invalid) break;
-				row.vals[i].format = _formats[i];
+				row.vals[i].format = _cols[i].format;
 			}
 		}
 
@@ -284,28 +269,20 @@ namespace FwLogger
 				}
 			}
 
-			++size; // El period
+			size += 2; // El period y el num column
 
-			for(i = 0; i < 16; ++i)
+			for(i = 0; i < _cols.size(); ++i)
 			{
-				if(_formats[i] != Format::Invalid)
+				++size;
+				int j;
+				for(j = 0; j < 16; ++j)
 				{
-					++size;
-					int j;
-					for(j = 0; j < 16; ++j)
+					if(_cols[i].name[j] != 0) ++size;
+					else
 					{
-						if(_colNames[i][j] != 0) ++size;
-						else
-						{
-							++size;
-							j = 16;
-						}
+						++size;
+						j = 16;
 					}
-				}
-				else
-				{
-					++size;
-					i = 16;
 				}
 			}
 			return size;
@@ -330,25 +307,19 @@ namespace FwLogger
 			}
 
 			dst[dst_idx++] = _period;
+			dst[dst_idx++] = _cols.size();
 
-			for(i = 0; i < 16; ++i)
+			for(i = 0; i < _cols.size(); ++i)
 			{
-				if(_formats[i] != Format::Invalid)
+				dst[dst_idx++] = (uint8_t) _cols[i].format;
+				for(int j = 0; j < 16; ++j)
 				{
-					dst[dst_idx++] = (uint8_t) _formats[i];
-					for(int j = 0; j < 16; ++j)
+					if(_cols[i].name[j] != 0) dst[dst_idx++] = _cols[i].name[j];
+					else
 					{
-						if(_colNames[i][j] != 0) dst[dst_idx++] = _colNames[i][j];
-						else
-						{
-							dst[dst_idx++] = 0;
-							j = 16;
-						}
+						dst[dst_idx++] = 0;
+						j = 16;
 					}
-				}
-				else
-				{
-					dst[dst_idx++] = 0;
 				}
 			}
 
@@ -372,24 +343,21 @@ namespace FwLogger
 				src_idx = i+4; // saltarse el 0 que indica el fin de la cadena
 
 			_period = src[src_idx++];
+			_cols.resize(src[src_idx++]);
 
-			for(i = 0; i < 16; ++i)
+			while(src[src_idx] != 0 && src[src_idx] != 0xff)
 			{
-				if(src[src_idx] != 0 && src[src_idx] != 0xff)
+				_cols[i].format = static_cast<Format>(src[src_idx++]);
+				int j;
+				for(j = 0; j < 16; ++j, ++src_idx)
 				{
-					_formats[i] = static_cast<Format>(src[src_idx++]);
-					int j;
-					for(j = 0; j < 16; ++j, ++src_idx)
+					if(src[src_idx] != 0) _cols[i].name[j] = src[src_idx];
+					else
 					{
-						if(src[src_idx] != 0) _colNames[i][j] = src[src_idx];
-						else
-						{
-							++src_idx;//hay que sacar a src_idx del 0
-							break;
-						}
+						++src_idx;//hay que sacar a src_idx del 0
+						break;
 					}
 				}
-				else break; // después de esto ya se corta la vida
 			}
 			_header_spacing = src_idx + 1;
 			return 0;
@@ -398,12 +366,31 @@ namespace FwLogger
 		void HeaderPage::copy(HeaderPage* hp)
 		{
 			for(int i = 0; i < 16; ++i) _name[i] = hp->_name[i];
-			for(int i = 0; i < 16; ++i)
+			_cols = hp->_cols;
+			_period = hp->_period;
+			_header_spacing = hp->_header_spacing;
+
+			_object_idx = hp->getObjectIdx();
+			_page_idx = hp->getPageIdx();
+			_page_mode = hp->_page_mode;
+
+			if(_currDP != nullptr)
 			{
-				_formats[i] = hp->_formats[i];
-				for(int j = 0; j < 16; ++j) _colNames[i][j] = hp->_colNames[i][j];
+				_alloc->Deallocate(_currDP);
+				_currDP = nullptr;
 			}
 
+			if(hp->_currDP != nullptr)
+			{
+				_currDP = new DataPage();
+				_currDP->copy(hp->_currDP);
+			}
+		}
+
+		void HeaderPage::move(HeaderPage* hp)
+		{
+			for(int i = 0; i < 16; ++i) _name[i] = hp->_name[i];
+			_cols = std::move(hp->_cols);
 			_period = hp->_period;
 			_header_spacing = hp->_header_spacing;
 

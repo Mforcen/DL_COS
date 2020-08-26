@@ -50,7 +50,7 @@ namespace FwLogger
 		return 0;
 	}
 
-	int Module::bin_eval(uint8_t* buf, uint8_t* outbuf)
+	int Module::bin_eval(uint8_t* buf, int buflen, uint8_t* outbuf)
 	{
 		return 0;
 	}
