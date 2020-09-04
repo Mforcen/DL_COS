@@ -52,7 +52,7 @@ namespace FwLogger
 		if(_action != None) return EBUSY;
 		if(try_lock() != 0) return EBUSY;
 
-		int addr_high = (addr + len) & 0xffff00;
+		uint32_t addr_high = (addr + len) & 0xffff00;
 		uint16_t len_low;
 
 		if((addr&0xffff00) == addr_high) // empieza y acaba en el mismo bloque
@@ -338,7 +338,7 @@ namespace FwLogger
 
 		case WaitBusy:
 			{
-				int dt = HAL_GetTick()-_last_write_ms;
+				uint32_t dt = HAL_GetTick()-_last_write_ms;
 				if(dt < _max_delay_time)
 				{
 					int left_time = _max_delay_time-dt;
@@ -388,6 +388,7 @@ namespace FwLogger
 			break;
 		}
 		if(_action == None) return false; // nothing to do
+		return true; // something to do
 	}
 
 	int SPIFlash::available()

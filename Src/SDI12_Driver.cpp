@@ -34,7 +34,7 @@ namespace FwLogger
 		switch(_status)
 		{
 		case Breaking:
-			if(_counter++ >= 15)
+			if(_counter++ >= 16)
 			{
 				setStatus(MarkingTx);
 			}
@@ -60,6 +60,14 @@ namespace FwLogger
 				HAL_GPIO_Init(_gpio, &gpio_init);
 
 				HAL_GPIO_WritePin(SDI12_DIR, GPIO_PIN_SET); // 5V a 3V3*/
+				GPIO_InitTypeDef gpio_init;
+				gpio_init.Pin = _pin;
+				gpio_init.Mode = GPIO_MODE_IT_RISING; // busco bit de start
+				gpio_init.Pull = GPIO_NOPULL;
+				gpio_init.Speed = GPIO_SPEED_FREQ_LOW;
+				HAL_GPIO_Init(_gpio, &gpio_init);
+
+				HAL_GPIO_WritePin(SDI12_DIR, GPIO_PIN_SET); // 5V a 3V3
 			}
 			else if(_counter == 9)
 			{
@@ -107,22 +115,26 @@ namespace FwLogger
 			if(_state == Command || _state == GettingData)
 			{
 				_last_rx_counter++;
-				if(_last_rx_counter < 30 && _last_rx_counter > 20)
+				if(_last_rx_counter < 40 && _last_rx_counter > 30)
 				{
-					push_bits(1, GPIO_PIN_RESET); //put stop bit
-					_last_rx_counter = 30;
+					if(_counter == 0) //0 bits received, sensor not responding
+					{
+						setStatus(RetryWaiting);
+					}
+					else
+					{
+						push_bits(1, GPIO_PIN_RESET); //put stop bit
+						_last_rx_counter = 40;
+					}
 				}
-				if(_last_rx_counter == 12000) setStatus(Disabled);
 				//_state = Nop;
 			}
-			else if(_state == WaitingSR)
+			else if(_state == WaitingSR) // add error
 			{
 				_last_rx_counter--;
 				if(_last_rx_counter <= 0)
 				{
-					startGetData(_measAddr, _additionalMeas);
-
-					_counter = 0;
+					startGetData(_measAddr, 0);
 				}
 			}
 			break;
@@ -147,7 +159,6 @@ namespace FwLogger
 				if(byte_idx == _tx_buffer.idx)
 				{
 					//_tx_buffer.clear();
-					_counter = 0;
 					setStatus(MarkingRx);
 				}
 			}
@@ -156,11 +167,25 @@ namespace FwLogger
 			_retry_counter++;
 			if(_retry_counter >= 5)
 			{
+				if(_state == GettingData)
+				{
+					for(std::size_t i = 0; i < _measSize; ++i)
+					{
+						_measDst[i] = std::numeric_limits<float>::quiet_NaN();
+					}
+					_state = DataFull;
+					Log::Warning("Sensor not responding data\n");
+				}
+				else if(_state == Command)
+				{
+					Log::Warning("Sensor not responding command\n");
+				}
+
 				_error = 1;
 				setStatus(Disabled);
 			}
 			_counter++;
-			if(_counter >= 45)
+			if(_counter >= 10)
 			{
 				setStatus(Transmitting);
 			}
@@ -318,14 +343,15 @@ namespace FwLogger
 
 		case MarkingRx:
 			{
-				GPIO_InitTypeDef gpio_init;
+				HAL_GPIO_WritePin(_gpio, _pin, GPIO_PIN_RESET);
+				/*GPIO_InitTypeDef gpio_init;
 				gpio_init.Pin = _pin;
 				gpio_init.Mode = GPIO_MODE_IT_RISING; // busco bit de start
 				gpio_init.Pull = GPIO_NOPULL;
 				gpio_init.Speed = GPIO_SPEED_FREQ_LOW;
 				HAL_GPIO_Init(_gpio, &gpio_init);
 
-				HAL_GPIO_WritePin(SDI12_DIR, GPIO_PIN_SET); // 5V a 3V3
+				HAL_GPIO_WritePin(SDI12_DIR, GPIO_PIN_SET); // 5V a 3V3*/
 			}
 			break;
 
@@ -367,7 +393,7 @@ namespace FwLogger
 				gpio_init.Speed = GPIO_SPEED_FREQ_LOW;
 				HAL_GPIO_WritePin(_gpio, _pin, GPIO_PIN_SET);
 				HAL_GPIO_Init(_gpio, &gpio_init);
-				HAL_NVIC_DisableIRQ(EXTI9_5_IRQn);
+				HAL_NVIC_DisableIRQ(EXTI9_5_IRQn);  //modo output
 			}
 			break;
 
@@ -429,6 +455,7 @@ namespace FwLogger
 		_tx_buffer.push_back('!');
 
 		setStatus(Breaking);
+		return 0;
 	}
 
 	int SDI12_Driver::queryAddr()
@@ -466,6 +493,7 @@ namespace FwLogger
 	int SDI12_Driver::setFudge(uint8_t newFudge)
 	{
 		_rxFudge = newFudge;
+		return _rxFudge;
 	}
 
 	uint8_t* SDI12_Driver::getCmdResponse()
@@ -480,29 +508,15 @@ namespace FwLogger
 	{
 		if(_state == Nop) // start measure
 		{
+			Log::Info("SDI12 %d meas on %d\n", count, addr);
 			startMeasurement(addr, additional);
 			_measDst = dst;
-			_measCount = count;
+			_measSize = count;
 			return 1;
 		}
 		else if(_state == DataFull)
 		{
-			//parse things
-			/*int val_idx, buf_idx;
-			for(val_idx = 0; val_idx < count; ++val_idx)
-				_measAddr[val_idx] = 0;
-			val_idx = -1;
-			int decimal;
-			for(buf_idx = 0; buf_idx < _rx_buffer.idx; ++buf_idx)
-			{
-				if(_rx_buffer.buf[buf_idx] == '+' || _rx_buffer.buf[buf_idx] == '-')
-				{
-					val_idx++;
-					decimal = 0;
-				}
-			}
-
-			setStatus(Disabled);*/
+			Log::Info("SDI12 collected\n");
 			_state = Nop;
 			return 0;
 		}
@@ -526,7 +540,7 @@ namespace FwLogger
 
 		_tx_buffer.clear();
 
-		_tx_buffer.push_back(addr<9 ? addr+'0' : addr);
+		_tx_buffer.push_back(addr < 9 ? addr+'0' : addr);
 		_measAddr = _tx_buffer.buf[0];
 
 		if(type == 0 || type == 'M')
@@ -573,48 +587,71 @@ namespace FwLogger
 	int SDI12_Driver::parseData(float* dst, int count, uint8_t* buf)
 	{
 		int val_idx = -1;
-		uint8_t sign, decimal;
-		if(buf[0] != _measAddr) return -1;
+
+		uint8_t sign, decimal = 0;
+		int integer_part = 0;
+
+		if(buf[0] != '0') return -1;
+
 		int buf_idx = 1;
-		while(buf[buf_idx] != '\r')
+
+		do
 		{
 			char c = buf[buf_idx];
 			if(c == '+' || c == '-')
 			{
 				if(val_idx >= 0)
 				{
+					float decs = 1;
+					for(uint8_t i = 0; i < (decimal-1); ++i) decs *= 0.1;
+					dst[val_idx] += integer_part * decs;
 					if(sign) dst[val_idx] = -dst[val_idx];
 				}
 
 				val_idx += 1;
 				if(val_idx >= count) return count; // exceeds number of values
 
-				dst[val_idx] = 0;
 				if(c == '-') sign = 1;
 				else sign = 0;
+				integer_part = 0;
 				decimal = 0;
 			}
 			else
 			{
-				if(c == '.') decimal = 1;
+				if(c == '.')
+				{
+					dst[val_idx] = integer_part;
+					integer_part = 0;
+					decimal = 1;
+				}
 				else
 				{
 					if(decimal == 0)
 					{
-						dst[val_idx] *= 10;
-						dst[val_idx] += (c - '0');
+						/*dst[val_idx] *= 10;
+						dst[val_idx] += (c - '0');*/
+						integer_part *= 10;
+						integer_part += (c -'0');
 					}
 					else
 					{
-						float dec = c -'0';
-						for(int d_idx = 0; d_idx < decimal; ++d_idx) dec *= 0.1;
-						dst[val_idx] += dec;
+						decimal++;
+						integer_part *= 10;
+						integer_part += (c -'0');
 					}
 				}
 			}
-			++buf_idx;
+		} while(buf[++buf_idx] != '\r');
+
+		if(val_idx >= 0)
+		{
+			float decs = 1;
+			for(uint8_t i = 0; i < (decimal-1); ++i) decs *= 0.1;
+			dst[val_idx] += integer_part * decs;
+			if(sign) dst[val_idx] = -dst[val_idx];
 		}
-		return val_idx;
+
+		return val_idx+1;
 	}
 
 	void SDI12_Driver::push_bits(int16_t bits, GPIO_PinState pinValue)
@@ -631,7 +668,7 @@ namespace FwLogger
 				if(pinValue == GPIO_PIN_RESET)
 				{
 					Log::Verbose("Error on start\n");
-					for(int i = 0; i < _measCount; ++i)
+					for(int i = 0; i < _measSize; ++i)
 					{
 						_measDst[i] = std::numeric_limits<float>::quiet_NaN();
 					}
@@ -674,6 +711,8 @@ namespace FwLogger
 						else if(_state == StartMeasure)
 						{
 							_measNumber = _rx_buffer.buf[4]-'0'; //guarda el número de medidas
+							_measIdx = 0;
+							_measCommand = 1;
 
 							_last_rx_counter = (_rx_buffer.buf[1]-'0')*100 + (_rx_buffer.buf[2]-'0')*10 + (_rx_buffer.buf[3]-'0');
 							_last_rx_counter *= 1200;
@@ -683,10 +722,17 @@ namespace FwLogger
 						}
 						else if(_state == GettingData)
 						{
-							parseData(_measDst, _measCount, _rx_buffer.buf);
-
-							setStatus(Disabled);
-							_state = DataFull;
+							Log::Info("SDI12 got %d data from %d\n", _measIdx, _measAddr);
+							_measIdx += parseData(&(_measDst[_measIdx]), _measNumber-_measIdx, _rx_buffer.buf);
+							if(_measIdx < _measNumber)
+							{
+								startGetData(_measAddr, _measCommand++);
+							}
+							else
+							{
+								setStatus(Disabled);
+								_state = DataFull;
+							}
 						}
 					}
 				}

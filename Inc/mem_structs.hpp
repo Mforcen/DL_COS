@@ -286,7 +286,7 @@ class Allocator // 128bytes per object
 
 		void* Allocate(std::size_t reqSize, uintptr_t owner)
 		{
-			FwLogger::Log::Verbose("Allocating %d bytes for 0x%x\n", reqSize, owner);
+			//FwLogger::Log::Verbose("Allocating %d bytes for 0x%x\n", reqSize, owner);
 			uint8_t reqBlocks = int_ceil(reqSize, pageSize);
 
 			uint8_t freeBlocks = 0;
@@ -311,7 +311,7 @@ class Allocator // 128bytes per object
 					return &_mem[(i-reqBlocks)*pageSize];
 				}
 			}
-			FwLogger::Log::Error("Allocation failed\n");
+			//FwLogger::Log::Error("Allocation failed\n");
 			return nullptr;
 		}
 
@@ -322,8 +322,8 @@ class Allocator // 128bytes per object
 			uintptr_t mem_ptr = reinterpret_cast<uintptr_t>(_mem);
 			uint8_t numBlock = (dealloc_ptr-mem_ptr)/pageSize;
 
-			if(_idx[numBlock] == 0) FwLogger::Log::Warning("Error, double deallocation for block %d\n", numBlock);
-			FwLogger::Log::Verbose("Deallocating block %d\n", numBlock);
+			//if(_idx[numBlock] == 0) FwLogger::Log::Warning("Error, double deallocation for block %d\n", numBlock);
+			//FwLogger::Log::Verbose("Deallocating block %d\n", numBlock);
 			_idx[numBlock] = 0;
 			_ownership[numBlock] = 0;
 		}
@@ -368,7 +368,7 @@ class vector
 			{
 				_data = reinterpret_cast<T*>(_vectAllocator->Allocate(_capacity*sizeof(T), reinterpret_cast<uintptr_t>(this)));
 
-				for(int i = 0; i < _size; ++i)
+				for(std::size_t i = 0; i < _size; ++i)
 					_data[i] = other._data[i];
 			}
 
@@ -403,7 +403,7 @@ class vector
 		{
 			if(_data != nullptr)
 			{
-				for(int i = 0; i < _size; ++i)
+				for(std::size_t i = 0; i < _size; ++i)
 					_data[i].~T();
 				_vectAllocator->Deallocate(_data);
 			}
@@ -417,7 +417,7 @@ class vector
 			_data[--_size].~T();
 		}
 
-		void resize(int count)
+		void resize(std::size_t count)
 		{
 			if(count > _capacity)
 				reserve(count);
@@ -430,14 +430,14 @@ class vector
 
 			else if(_size > count)
 			{
-				for(int i = count; i < _size; ++i)
+				for(std::size_t i = count; i < _size; ++i)
 					_data[i].~T();
 			}
 			_size = count;
 
 		}
 
-		void reserve(int count)
+		void reserve(std::size_t count)
 		{
 			std::size_t mem_req = int_ceil(count * sizeof(T), 128)*128;
 			if(_capacity*sizeof(T) < mem_req)

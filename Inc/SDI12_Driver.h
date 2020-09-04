@@ -85,7 +85,9 @@ namespace FwLogger
 			uint8_t _additionalMeas;
 
 			uint8_t _measAddr;
-			uint8_t _measCount;
+			uint8_t _measSize;
+			uint8_t _measIdx;
+			uint8_t _measCommand;
 			float* _measDst;
 
 			uint8_t parity_even(uint8_t byte);

@@ -810,7 +810,7 @@ static void MX_GPIO_Init(void)
 						  |Radio_rxen_Pin|Radio_txen_Pin|SDI12_0_Pin|SDI12_1_Pin;
 	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
-	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_MEDIUM;
 	HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
 	/*Configure GPIO pins : PA6 Radio_rst_Pin SDI12_Dir_Pin Flash_nss_Pin */

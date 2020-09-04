@@ -6,13 +6,13 @@ namespace FwLogger
 		int clampAddrToPage(int addr, int len)
 		{
 			int endAddr = addr+len;
-			if(endAddr & 0xfffff000 != addr &0xfffff000)
+			if((endAddr & 0xfffff000) != (addr & 0xfffff000))
 				endAddr = endAddr & 0xfffff000;
 			return endAddr;
 		}
 
 		Driver::Driver(uint32_t offsetAddress, uint32_t size, SPI_HandleTypeDef* hspi, GPIO_TypeDef* gpio, uint16_t pin, Allocator<128>* alloc):
-			SPIFlash(hspi, gpio, pin, "eTSDB", ETSDB_BINID, 0, 4)
+			SPIFlash(hspi, gpio, pin, "eTSDB", ETSDB_BINID, 0, 8)
 		{
 			_offset = offsetAddress;
 			_size = size;
@@ -191,7 +191,7 @@ namespace FwLogger
 				hp._currDP->_rowIdx++; // por lo menos
 				_row.clear();
 
-				for(int i = 0; i < hp._cols.size(); ++i)  _row.vals[i].format = hp._cols[i].format;
+				for(std::size_t i = 0; i < hp._cols.size(); ++i)  _row.vals[i].format = hp._cols[i].format;
 
 				_states[0] = State::ReadValue;
 				_states[1] = State::Full;
@@ -614,7 +614,7 @@ namespace FwLogger
 					_opAddr += 256; // next iteration starting addr
 					int _endOpaddr = (_opAddr & 0xfffff000)+0x1000;
 					if((_opAddr + 256) < _endOpaddr) _endOpaddr = _opAddr + 256;
-					if(_opAddr & 0xfffff000 == _endOpaddr & 0xfffff000) //they are in the same block
+					if((_opAddr & 0xfffff000) == (_endOpaddr & 0xfffff000)) //they are in the same block
 					{
 						_opAddr += 256;
 						_opLen= 256;
@@ -653,7 +653,7 @@ namespace FwLogger
 				if(_page->getType() == FileType)
 				{
                     FilePage* fp = reinterpret_cast<FilePage*>(_page);
-                    if(fp->_read_status = 1)
+                    if(fp->_read_status == 1)
 						fp->_read_status = 2;
 				}
 				step(); // esto se puede mejorar
@@ -782,7 +782,7 @@ namespace FwLogger
 						break;
 					}
 				}
-				if(i == 128) // si llega al final y no encuentra lo que busca, pues sigue buscando
+				if(i == _opLen/2) // si llega al final y no encuentra lo que busca, pues sigue buscando
 				{
 					if(_opLen < 256 || _opFindEnd) //ending block
 					{
@@ -792,7 +792,7 @@ namespace FwLogger
 					_opAddr += 256; // next iteration starting addr
 					int _endOpaddr = (_opAddr & 0xfffff000)+0x1000;
 					if((_opAddr + 256) < _endOpaddr) _endOpaddr = _opAddr + 256;
-					if(_opAddr & 0xfffff000 == _endOpaddr & 0xfffff000) //they are in the same block
+					if((_opAddr & 0xfffff000) == (_endOpaddr & 0xfffff000)) //they are in the same block
 					{
 						_opLen= 256;
 						readPage(_opLen, _opAddr);
@@ -829,7 +829,7 @@ namespace FwLogger
 
 					_opAddr += 2;
 					int endAddr = _opAddr+256;
-					if(endAddr & 0xfffff000 != _opAddr & 0xfffff000)
+					if((endAddr & 0xfffff000) != (_opAddr & 0xfffff000))
 						endAddr = endAddr & 0xfffff000;
 
 					_opLen = endAddr-_opAddr;
@@ -1142,14 +1142,24 @@ namespace FwLogger
 			else if(_states[_stateIdx] == State::CloseFile)
 			{
 				FilePage* fp = static_cast<FilePage*>(_page);
+				if(fp->getAccessMode() == PageAccessMode::PageRead)
+				{
+					step();
+				}
+				else if(fp->getAccessMode() == PageAccessMode::PageWrite)
+				{
+					uint8_t buf[64] = {0};
+
+					uint8_t header_length = fp->serialize(buf);// TODO deallocate page
+					uint32_t addr = fp->getPageIdx()*PageWidth;
+					_alloc->Deallocate(fp);
+
+					_states[_stateIdx] = State::Write;
+					_states[_stateIdx+1] = State::Wait;
+					writePage(buf, header_length, addr);
+				}
+				delete fp;
 				_page = nullptr;
-				uint8_t buf[64] = {0};
-
-				uint8_t header_length = fp->serialize(buf);
-
-				_states[_stateIdx] = State::Write;
-				_states[_stateIdx+1] = State::Wait;
-				writePage(buf, header_length, fp->getPageIdx()*PageWidth);
 			}
 			else if(_states[_stateIdx] == State::ReadFile)
 			{

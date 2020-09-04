@@ -67,9 +67,9 @@ namespace FwLogger
 			uint16_t rx_idx;
 			uint16_t rx_size;
 
-			uint16_t _last_us; // para añadir un poco de espera por si hace falta para que a la memoria le de tiempo de hacer cosas
+			uint32_t _last_us; // para añadir un poco de espera por si hace falta para que a la memoria le de tiempo de hacer cosas
 			uint32_t _last_write_ms;
-			uint16_t _max_delay_time;
+			uint32_t _max_delay_time;
 
 			int writeEnable(); // añadir bsy check
 			int writeDisable();

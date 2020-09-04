@@ -21,7 +21,7 @@ VirtualMachine::VirtualMachine() : FwLogger::Module("CuleVM", VM_BINID, 0, 6)
 
 void VirtualMachine::setProgram(uint8_t* program, uint32_t addr, uint32_t length)
 {
-	for(int i = 0; i < length; ++i)
+	for(std::size_t i = 0; i < length; ++i)
 		m_ram[m_stackSize+i+addr] = program[i]; // de momento
 	m_tableAddress = &m_ram[m_stackSize+length+addr];
 }
@@ -45,7 +45,7 @@ bool VirtualMachine::getEnabled()
 template<typename T>
 void VirtualMachine::pack(uint32_t addr, T val)
 {
-	for(int i = 0; i < sizeof(T); ++i)
+	for(std::size_t i = 0; i < sizeof(T); ++i)
 		m_ram[addr+i] = *( ((uint8_t*)&val)+i );
 }
 
@@ -53,7 +53,7 @@ template<typename T>
 T VirtualMachine::unpack(uint32_t addr)
 {
 	uint32_t retval = 0;
-	for(int i = 0; i < sizeof(T); ++i)
+	for(std::size_t i = 0; i < sizeof(T); ++i)
 		retval |= (m_ram[addr+i] << (8*i));
 	return *((T*)&retval);
 }
@@ -86,6 +86,7 @@ bool VirtualMachine::loop()
 	{
 		if(!cycle()) return true; //false cycle means exit from loop
 	}
+	return true;
 }
 
 void VirtualMachine::reset()
@@ -198,7 +199,7 @@ bool VirtualMachine::cycle()
 				if(arr_len > sizeof(uint32_t)) push<uint32_t>(arr_len);
 				++m_programCounter;
 			}
-			else if((op_type & 0x00) == 0) // los saves
+			else if((op_type & 0x00) == 0) // los stores
 			{
 				uint32_t addr_save = pop<uint32_t>();
 				uint8_t addr_space = op_type >> 1 & 0x3;
@@ -585,20 +586,21 @@ int VirtualMachine::getStatus(uint8_t* buf)
 	buf[2] = m_execBuiltin;
 	buf[3] = m_waitTable;
 	buf[4] = m_saveTable;
-	push_uint32(buf+5, m_programCounter);
-	push_uint32(buf+9, m_stackPointer);
-	push_uint32(buf+13, m_stackSize);
-	push_uint32(buf+17, m_returnAddr);
-	push_uint32(buf+21, m_localVarAddr);
-	push_uint32(buf+25, m_delayStart);
-	push_uint32(buf+29, m_delayTime);
-	strcpy(reinterpret_cast<char*>(buf+33), reinterpret_cast<char*>(m_prgName));
+	buf[5] = m_ram[m_programCounter];
+	push_uint32(buf+6, m_programCounter);
+	push_uint32(buf+10, m_stackPointer);
+	push_uint32(buf+14, m_stackSize);
+	push_uint32(buf+18, m_returnAddr);
+	push_uint32(buf+22, m_localVarAddr);
+	push_uint32(buf+26, m_delayStart);
+	push_uint32(buf+30, m_delayTime);
+	strcpy(reinterpret_cast<char*>(buf+34), reinterpret_cast<char*>(m_prgName));
 
 	int namelen = strlen(reinterpret_cast<char*>(m_prgName));
 
-	buf[33+namelen] = 0;
+	buf[34+namelen] = 0;
 
-	return namelen+34; // 33+1
+	return namelen+35; // 34+1
 }
 
 int VirtualMachine::bin_eval(uint8_t* buf, int buflen, uint8_t* outbuf)
@@ -607,6 +609,15 @@ int VirtualMachine::bin_eval(uint8_t* buf, int buflen, uint8_t* outbuf)
 	{
 		outbuf[0] = 's';
 		return getStatus(outbuf+1)+1;
+	}
+	else if(buf[0] == 'C')
+	{
+		if(buf[1] == 'e') enable();
+		else if(buf[1] == 'd') enable(false);
+	}
+	else if(buf[0] == 'c')
+	{
+		cycle();
 	}
 	return 0;
 }

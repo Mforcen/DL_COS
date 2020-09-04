@@ -201,7 +201,7 @@ namespace FwLogger
 			int m_pIndex;
 			int m_pSize;
 			int m_pLastRecv;
-			float sdi12_test[2];
+			float sdi12_test[6];
 
 			int8_t _createFD(FDType type);
 			void _deleteFD(int fd);

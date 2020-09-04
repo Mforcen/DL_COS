@@ -212,6 +212,8 @@ namespace FwLogger
 				op.buf = dataRow;
 				_ops.push_back(op);
 
+				Log::Verbose("Saving row\n");
+
 				vm.ackSaveFlag();
 			}
 		}
@@ -311,7 +313,7 @@ namespace FwLogger
 		else if(currTask->op == Operation::ReadTable)
 		{
 			eTSDB::HeaderPage* hp = reinterpret_cast<eTSDB::HeaderPage*>(_fds[currTask->fd-1].ptr);
-			if(currTask->counter & 1 == 0)
+			if((currTask->counter & 1) == 0)
 			{
 				if(etsdb.readNextValue(*hp) == eTSDB::Ok) currTask->counter |= 1;
 			}
@@ -360,7 +362,7 @@ namespace FwLogger
 						{
 							printf("%d/%d/%d %d:%d:%d", rowPtr->rowDate.year, rowPtr->rowDate.month, rowPtr->rowDate.day
 													  , rowPtr->rowDate.hour, rowPtr->rowDate.minute, rowPtr->rowDate.second);
-							for(int i = 0; i < 16; ++i)
+							for(std::size_t i = 0; i < rowPtr->vals.size(); ++i)
 							{
 								if(rowPtr->vals[i].format == eTSDB::Format::Int32 || rowPtr->vals[i].format == eTSDB::Format::Uint32)
 								{
@@ -512,7 +514,7 @@ namespace FwLogger
 			{
 				currTask->counter = 0;
 				currTask->buf = _alloc.Allocate(sizeof(ProgramInitializer), reinterpret_cast<uintptr_t>(this));
-				for(int i = 0; i < sizeof(ProgramInitializer); ++i)
+				for(std::size_t i = 0; i < sizeof(ProgramInitializer); ++i)
 					reinterpret_cast<uint8_t*>(currTask->buf)[i] = 0;
 			}
 			uint8_t file_buf[128];
@@ -631,8 +633,8 @@ namespace FwLogger
 				{
 					// _alloc.Deallocate(currTask->buf); //should be deallocated in openheader task
 					close(currTask->fd); // close file, cleaning buffers (file page and file buffer)
-					vm.enable(true);
-					printf("running\n");
+					//vm.enable(true);
+					//printf("running\n");
 					_ops.delete_front();
 				}
 			}
@@ -644,6 +646,7 @@ namespace FwLogger
 			eTSDB::RetValue retval = etsdb.appendValue(*hp, std::move(*reinterpret_cast<eTSDB::Row*>(currTask->buf)));
 			if(retval == eTSDB::Ok)
 			{
+				Log::Verbose("Row saved\n");
 				reinterpret_cast<eTSDB::Row*>(currTask->buf)->~Row();
 				_alloc.Deallocate(currTask->buf);
 				_ops.delete_front();
@@ -901,6 +904,10 @@ namespace FwLogger
 				sdi12.queryAddr();
 				printf("querying addr\n");
 			}
+			else if(strcmp(token, "ca") == 0)
+			{
+				sdi12.changeAddr('g', '0');
+			}
 			else if(strcmp(token, "gd") == 0)
 			{
 				uint8_t* res_data = sdi12.getCmdResponse();
@@ -915,8 +922,20 @@ namespace FwLogger
 			}
 			else if(strcmp(token, "meas") == 0)
 			{
-				printf("Start measure\n");
-				sdi12.singleMeasure(0, sdi12_test, 2);
+				token = strtok(NULL, " ");
+				int meas = std::atoi(token);
+				token = strtok(NULL, " ");
+				printf("Start measure on %d\n", meas);
+				sdi12.singleMeasure(0, sdi12_test, 6, meas);
+			}
+			else if(strcmp(token, "data") == 0)
+			{
+				if(sdi12.singleMeasure(0, sdi12_test, 6) != 0)
+					printf("Not ready yet\n");
+				else
+				{
+					printf("Data: %f\t%f\t%f\t%f\t%f\t%f\n", sdi12_test[0], sdi12_test[1], sdi12_test[2], sdi12_test[3], sdi12_test[4], sdi12_test[5]);
+				}
 			}
 			else if(strcmp(token, "fudge") == 0)
 			{
@@ -1383,6 +1402,19 @@ namespace FwLogger
 				else if(ebuf[2] == 1) Log::setLogLevel(Log::LogLevel::LevelWarning);
 				else if(ebuf[2] == 2) Log::setLogLevel(Log::LogLevel::LevelInfo);
 				else if(ebuf[2] == 3) Log::setLogLevel(Log::LogLevel::LevelVerbose);
+				else if(ebuf[2] == 'e')
+				{
+					if(Log::_fd_sink)
+						close(Log::_fd_sink);
+					Log::_fd_sink = fd;
+					return;
+				}
+				else if(ebuf[2] == 'd')
+				{
+					if(Log::_fd_sink != 0)
+						close(Log::_fd_sink);
+					Log::_fd_sink = 0;
+				}
 			}
 			else if(ebuf[1] == 'v') // version
 			{
@@ -1524,14 +1556,14 @@ namespace FwLogger
 			}
 			else if(ebuf[1] == 'l')
 			{
-				Task tsk;
+				/*Task tsk;
 				tsk.op = Operation::ListTables;
 				tsk.buf = new eTSDB::HeaderPage();
 				tsk.counter = 1;
 
 				etsdb.startGetNextHeader(*reinterpret_cast<eTSDB::HeaderPage*>(tsk.buf));
 
-				_ops.push_back(tsk);
+				_ops.push_back(tsk);*/
 			}
 		}
 		else if(ebuf[0] == 'p')
@@ -1550,9 +1582,10 @@ namespace FwLogger
 			}
 			else if(ebuf[1] == 'l') // load
 			{
-				char buf[32];
+				char buf[32] = {0};
 				strcpy(buf, "/file/");
-				strcpy(buf+6, reinterpret_cast<char*>(ebuf+2));
+				for(int i = 0; i < length-2; ++i) buf[i+6] = ebuf[i+2];
+
 				int fd = open(buf, O_RDONLY);
 
 				Task tsk;
@@ -1665,7 +1698,7 @@ namespace FwLogger
 		}
 		else if(strcmp(pch, "etsdb") == 0)
 		{
-			int fd = _createFD(FDType::TS);
+			/*int fd = _createFD(FDType::TS);
 			pch = strtok(NULL, "/");
 			eTSDB::PageAccessMode am;
 			if(oflag == O_RDONLY) am = eTSDB::PageAccessMode::PageRead;
@@ -1675,7 +1708,8 @@ namespace FwLogger
 				return -1;
 			}
 			if(oflag == O_UPDATE) am = eTSDB::PageAccessMode::PageWriteUpdate;
-			return fd;
+			return fd;*/
+			return -1;
 		}
 		errno = EUNSPEC;
 		return -1;
@@ -1686,7 +1720,7 @@ namespace FwLogger
 		uint8_t* _buf = static_cast<uint8_t*>(buf);
 		if(fd == 0)
 		{
-			int i;
+			std::size_t i;
 			for(i = 0; i < count && i < rx_buffer.idx; ++i) _buf[i] = rx_buffer.buf[i];
 			return i;
 		}
@@ -1703,7 +1737,7 @@ namespace FwLogger
 					return -1;
 				}
 				uint8_t* ui8b = reinterpret_cast<uint8_t*>(buf);
-				for(int i = 0; i < count; ++i)
+				for(std::size_t i = 0; i < count; ++i)
 				{
 					if(_fd.buf_idx > 0x7f)
 					{
@@ -1799,7 +1833,7 @@ namespace FwLogger
 				{
 					if(_fd.buf == nullptr)
 						_fd.buf = reinterpret_cast<uint8_t*>(_alloc.Allocate(128, reinterpret_cast<uintptr_t>(this)));
-                    for(int i = 0; i < count; ++i)
+                    for(std::size_t i = 0; i < count; ++i)
 						_fd.buf[_fd.buf_idx++] = reinterpret_cast<const uint8_t*>(buf)[i];
 				}
 				else //there is page				{
@@ -1810,7 +1844,7 @@ namespace FwLogger
 						for(int i = 0; i < _fd.buf_idx; ++i)
 							merge_buf[i] = _fd.buf[i];
 
-						for(int i = 0; i < count; ++i)
+						for(std::size_t i = 0; i < count; ++i)
 							merge_buf[i+_fd.buf_idx] = reinterpret_cast<const uint8_t*>(buf)[i];
 
 						etsdb.writeFile(*reinterpret_cast<eTSDB::FilePage*>(_fd.ptr), merge_buf, count+_fd.buf_idx);

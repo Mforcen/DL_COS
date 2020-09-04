@@ -59,12 +59,10 @@ namespace FwLogger
 	void Log::Write(const char* fmt, va_list args)
 	{
 		char buf[128];
-		int buflen = vsnprintf_(buf, 128, fmt, args);
+		buf[0] = 'l';
+		int buflen = vsnprintf_(buf+1, 127, fmt, args);
 		if(buflen < 0) return;
-		OS::get().write(0, buf, buflen);
-
-		if(_fd_sink != 0)
-			OS::get().write(_fd_sink, buf, buflen);
+		OS::get().write(_fd_sink, buf, buflen+1);
 	}
 
 	Log::Log()

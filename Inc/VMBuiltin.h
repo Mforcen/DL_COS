@@ -64,7 +64,7 @@ uint32_t _getAdc(uint32_t* rv, int port, int chan);
 
 uint32_t _setPin(void* rv, int pin, int level);
 
-uint32_t _SDI12_ReadSingleMeasurement(void* rv, int addr, float* dst, int count);
+uint32_t _SDI12_ReadSingleMeasurement(void* rv, int addr, float* dst, int count, int additional);
 
 
 extern BuiltinFunc builtinFuncs[18];

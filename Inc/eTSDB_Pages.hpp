@@ -60,6 +60,7 @@ namespace FwLogger
 		public:
 			DataPage();
 			Date getBlockDate();
+			virtual ~DataPage();
 
 			int getTypeSize();
 			int serialize(uint8_t* dst);
@@ -103,7 +104,7 @@ namespace FwLogger
 
 			HeaderPage();
 			HeaderPage(HeaderPage* hp);
-			~HeaderPage();
+			virtual ~HeaderPage();
 
 			uint8_t getNumColumn();
 			uint8_t* getColumnName(uint8_t colIdx);
@@ -144,7 +145,7 @@ namespace FwLogger
 		{
 			public:
 			FilePage();
-			~FilePage();
+			virtual ~FilePage();
 
 			int getTypeSize();
 			int serialize(uint8_t* dst);

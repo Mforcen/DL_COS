@@ -119,6 +119,8 @@ namespace FwLogger
 			_rowWidth = 0;
 		}
 
+		DataPage::~DataPage() {}
+
 		int DataPage::getTypeSize()
 		{
 			return 7;
@@ -193,7 +195,7 @@ namespace FwLogger
 
 		uint8_t HeaderPage::getNumColumn()
 		{
-			_cols.size();
+			return _cols.size();
 		}
 
 		uint8_t* HeaderPage::getColumnName(uint8_t colIdx)
@@ -209,7 +211,7 @@ namespace FwLogger
 		uint16_t HeaderPage::getColumnStride()
 		{
 			_data_stride = 0;
-			for(int i = 0; i < _cols.size(); ++i)
+			for(std::size_t i = 0; i < _cols.size(); ++i)
 				_data_stride += getFormatWidth(_cols[i].format);
 			_data_stride += 2; //num mágico inicial y final
 			return _data_stride;
@@ -238,7 +240,7 @@ namespace FwLogger
 		bool HeaderPage::checkFormat(Row& row)
 		{
 			if(row.vals.size() != _cols.size()) return false;
-			for(int i = 0; i < _cols.size(); ++i)
+			for(std::size_t i = 0; i < _cols.size(); ++i)
 			{
 				if(_cols[i].format != row.vals[i].format)
 					return false;
@@ -249,7 +251,7 @@ namespace FwLogger
 		void HeaderPage::getFormat(Row& row)
 		{
 			row.vals.resize(_cols.size());
-			for(int i = 0; i < _cols.size(); ++i)
+			for(std::size_t i = 0; i < _cols.size(); ++i)
 			{
 				row.vals[i].format = _cols[i].format;
 			}
@@ -258,7 +260,7 @@ namespace FwLogger
 		int HeaderPage::getTypeSize()
 		{
 			int size = 0;
-			int i;
+			std::size_t i;
 			for(i = 0; i < 16; ++i)
 			{
 				if(_name[i]!=0) ++size;
@@ -295,7 +297,7 @@ namespace FwLogger
 			dst[1] = getObjectIdx() & 0xff;
 			dst[2] = (getObjectIdx() >> 8) & 0xff;
 
-			int i;
+			std::size_t i;
 			for(i = 0; i < 16; ++i)
 			{
 				if(_name[i] != 0) dst[dst_idx++] = _name[i];
@@ -331,7 +333,7 @@ namespace FwLogger
 			int src_idx;
 
 			_type = static_cast<PageType>(src[0]);
-			_object_idx = (src[2] << 8) & 0xff00 | src[1] & 0xff;
+			_object_idx = ((src[2] << 8) & 0xff00) | (src[1] & 0xff);
 
 			int i;
 			for(i = 0; i < 16 && src[i+3] != 0; ++i)

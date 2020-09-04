@@ -129,9 +129,9 @@ uint32_t _setPin(void* rv, int pin, int level)
     return 0;
 }
 
-uint32_t _SDI12_ReadSingleMeasurement(void* rv, int addr, float* dst, int count)
+uint32_t _SDI12_ReadSingleMeasurement(void* rv, int addr, float* dst, int count, int additional)
 {
-	return SDI12_SingleMeasurementRead(addr, dst, count);
+	return SDI12_SingleMeasurementRead(addr, dst, count, additional);
 }
 
 BuiltinFunc builtinFuncs[18];
@@ -225,11 +225,12 @@ void init_builtinFuncs()
 	builtinFuncs[16].argTypes[1] = INT;
 	builtinFuncs[16].func_ptr = (intptr_t)_setPin;
 
-	builtinFuncs[17].nArgs = 3;
+	builtinFuncs[17].nArgs = 4;
 	builtinFuncs[17].retValue = VOID;
 	builtinFuncs[17].argTypes[0] = INT;
 	builtinFuncs[17].argTypes[1] = ARR;
 	builtinFuncs[17].argTypes[2] = INT;
+	builtinFuncs[17].argTypes[3] = INT;
 	builtinFuncs[17].func_ptr = (intptr_t)_SDI12_ReadSingleMeasurement;
 }
 
