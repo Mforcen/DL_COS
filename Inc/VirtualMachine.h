@@ -3,6 +3,7 @@
 
 #include "opcode.h"
 #include "VMBuiltin.h"
+#include "mem_structs.hpp"
 #include "Module.h"
 
 uint16_t getUS(); // funcion del timer
@@ -23,6 +24,34 @@ struct cFuncCall
 	intptr_t func_addr;
 };
 
+struct Symbol
+{
+	Symbol()
+	{
+		for(int i = 0; i < 16; ++i) name[i] = 0;
+		type = TypeVal::UNKNOWN;
+		ptr = reinterpret_cast<uintptr_t>(nullptr);
+	}
+
+	Symbol(uint8_t* name_val, TypeVal type_val, uintptr_t ptr_val)
+	{
+		for(int i = 0; i < 16; ++i) name[i] = name_val[i];
+		ptr = ptr_val;
+		type = type_val;
+	}
+
+	Symbol(const Symbol& s)
+	{
+		for(int i = 0; i < 16; ++i) name[i] = s.name[i];
+		ptr = s.ptr;
+		type = s.type;
+	}
+
+	uint8_t name[16];
+	TypeVal type;
+	uintptr_t ptr;
+};
+
 class VirtualMachine : public FwLogger::Module
 {
 	public:
@@ -39,6 +68,7 @@ class VirtualMachine : public FwLogger::Module
         bool loop();
         void reset();
         void resumeExec(); //wakes the machine up when the RTC alarm fires up
+        void clear();
 
         uint8_t* getPrgName();
 
@@ -56,8 +86,16 @@ class VirtualMachine : public FwLogger::Module
 
         int getStatus(uint8_t* buf);
 
-        int bin_eval(uint8_t* buf, int buflen, uint8_t* outbuf);
+        void addSymbol(uint8_t* name, uintptr_t addr, TypeVal type);
+        void setSymbol(int idx, uint8_t* name, uintptr_t addr, TypeVal type);
+        void setSymbolName(int idx, uint8_t* name);
+        void setSymbolAddr(int idx, uint32_t addr);
+        void setSymbolType(int idx, TypeVal type);
+        Symbol getSymbol(int idx);
+		void resizeSymbolTable(std::size_t entries);
+		std::size_t getSymbolTableSize();
 
+        int bin_eval(uint8_t* buf, int buflen, uint8_t* outbuf);
 	protected:
 
 	private:
@@ -91,6 +129,8 @@ class VirtualMachine : public FwLogger::Module
 
 		template<typename T>
 		void push(T val); // esto es pack, unpack pero solo en el stack y gestiona el stackpointer
+
+		vector<Symbol> m_symbolTable;
 
 		template<typename T>
 		T pop();

@@ -613,9 +613,51 @@ namespace FwLogger
 							pi->status = 3;
 							vm.setStackSize(pi->stack_size);
 							currTask->counter = 0;
+							pi->table_status = 0;
 						}
 					}
 					else if(pi->status == 3)
+					{
+						if(pi->table_status == 0)
+						{
+							if(file_buf[i] == 0)
+							{
+								pi->status = 4; // there is no external variables
+							}
+							else
+							{
+								vm.resizeSymbolTable(file_buf[i]);
+								pi->table_status = 1;
+								for(int i = 0; i < 16; ++i) pi->name[i] = 0;
+								pi->name_counter = 0;
+							}
+						}
+						else if(pi->table_status == 1)
+						{
+							vm.setSymbolType(currTask->counter, TypeVal(file_buf[i]));
+							pi->stack_size = 0; // reusing variable
+							pi->table_status = 2;
+						}
+						else if(pi->table_status < 6)
+						{
+							pi->stack_size |= file_buf[i] << ((pi->table_status-2)*8);
+							++pi->table_status;
+							if(pi->table_status == 6)
+								vm.setSymbolAddr(currTask->counter, pi->stack_size);
+						}
+						else if(pi->table_status == 6)
+						{
+							pi->name[pi->name_counter++] = file_buf[i];
+							if((file_buf[i] == 0) || (pi->name_counter == 16))
+							{
+								pi->table_status = 1;
+								currTask->counter++;
+								if(currTask->counter == vm.getSymbolTableSize())
+									pi->status = 4;
+							}
+						}
+					}
+					else if(pi->status == 4)
 					{
 						vm.setProgram(&file_buf[i], currTask->counter, bytes-i);
 						currTask->counter+= bytes-i;
@@ -906,7 +948,7 @@ namespace FwLogger
 			}
 			else if(strcmp(token, "ca") == 0)
 			{
-				sdi12.changeAddr('g', '0');
+				sdi12.changeAddr('9', '0');
 			}
 			else if(strcmp(token, "gd") == 0)
 			{

@@ -3,19 +3,7 @@
 VirtualMachine::VirtualMachine() : FwLogger::Module("CuleVM", VM_BINID, 0, 6)
 {
 	//ctor
-	for(int i= 0; i < 4096; ++i) m_ram[i] = 0;
-	m_stackPointer = 0;
-	m_stackSize = 0;
-	m_programCounter = 0;
-	m_returnAddr = 0;
-	m_argAddr = 0;
-	m_localVarAddr = 0;
-	m_execBuiltin = false;
-	m_enabled = false;
-	m_delayEnabled = false;
-	m_saveTable = false;
-	m_startTableWait = false;
-	m_waitTable = false;
+	clear();
 	init_builtinFuncs();
 }
 
@@ -91,14 +79,32 @@ bool VirtualMachine::loop()
 
 void VirtualMachine::reset()
 {
-	m_programCounter = m_stackSize;
 	m_stackPointer = 0;
+	m_stackSize = 0;
+	m_programCounter = 0;
+	m_returnAddr = 0;
+	m_argAddr = 0;
+	m_localVarAddr = 0;
 	m_execBuiltin = false;
+	m_enabled = false;
+	m_delayEnabled = false;
+	m_saveTable = false;
+	m_startTableWait = false;
+	m_waitTable = false;
+
 }
 
 void VirtualMachine::resumeExec()
 {
 	m_waitTable = false;
+}
+
+void VirtualMachine::clear()
+{
+	m_symbolTable.clear();
+	for(std::size_t i = 0; i < 16; ++i) m_prgName[i] = 0;
+	for(std::size_t i = 0; i < 4096; ++i) m_ram[i] = 0;
+	reset();
 }
 
 uint8_t* VirtualMachine::getPrgName()
@@ -601,6 +607,48 @@ int VirtualMachine::getStatus(uint8_t* buf)
 	buf[34+namelen] = 0;
 
 	return namelen+35; // 34+1
+}
+
+void VirtualMachine::addSymbol(uint8_t* name, uintptr_t addr, TypeVal type)
+{
+	m_symbolTable.push_back(Symbol(name, type, addr));
+}
+
+void VirtualMachine::setSymbol(int idx, uint8_t* name, uintptr_t addr, TypeVal type)
+{
+	for(int i = 0; i < 16; ++i) m_symbolTable[idx].name[i] = name[i];
+	m_symbolTable[idx].ptr = addr + reinterpret_cast<uintptr_t>(m_ram);
+	m_symbolTable[idx].type = type;
+}
+
+void VirtualMachine::setSymbolName(int idx, uint8_t* name)
+{
+	for(int i = 0; i < 16; ++i) m_symbolTable[idx].name[i] = name[i];
+}
+
+void VirtualMachine::setSymbolAddr(int idx, uint32_t addr)
+{
+	m_symbolTable[idx].ptr = addr + reinterpret_cast<uintptr_t>(m_ram);
+}
+
+void VirtualMachine::setSymbolType(int idx, TypeVal type)
+{
+	m_symbolTable[idx].type = type;
+}
+
+Symbol VirtualMachine::getSymbol(int idx)
+{
+	return m_symbolTable[idx];
+}
+
+void VirtualMachine::resizeSymbolTable(std::size_t entries)
+{
+	m_symbolTable.resize(entries);
+}
+
+std::size_t VirtualMachine::getSymbolTableSize()
+{
+	return m_symbolTable.size();
 }
 
 int VirtualMachine::bin_eval(uint8_t* buf, int buflen, uint8_t* outbuf)

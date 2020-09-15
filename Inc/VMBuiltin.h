@@ -11,6 +11,7 @@
 
 enum TypeVal : uint8_t
 {
+	UNKNOWN = 0,
 	CHAR,
 	INT,
 	UINT,
