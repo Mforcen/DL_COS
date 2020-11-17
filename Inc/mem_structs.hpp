@@ -23,6 +23,17 @@ struct fixed_string
 		buf[idx++]=val;
 		return 0;
 	}
+
+	void pop_back()
+	{
+		buf[--idx] = 0;
+	}
+
+	uint8_t& back()
+	{
+		return buf[idx-1];
+	}
+
 	void clear()
 	{
 		idx = 0;
@@ -30,6 +41,16 @@ struct fixed_string
 		{
 			buf[i] = 0;
 		}
+	}
+
+	size_t size()
+	{
+		return idx;
+	}
+
+	uint8_t& operator[](size_t idx)
+	{
+		return buf[idx];
 	}
 };
 template <std::size_t sizeval, typename T = uint8_t>
@@ -89,6 +110,16 @@ public:
 		if(read_ptr == write_ptr && !full)
 			return -1;
 		*ph = buffer[read_ptr];
+		return 0;
+	}
+
+	int8_t delete_back()
+	{
+		if((read_ptr == write_ptr) && !full)
+			return -1;
+		int new_write = write_ptr-1;
+		if(new_write < 0) new_write = sizeval-1;
+		write_ptr = new_write;
 		return 0;
 	}
 
@@ -493,6 +524,167 @@ class vector
 		{
 			return (D / d) + (D % d > 0 ? 1 : 0);
 		}
+};
+
+template <typename T>
+class list
+{
+	size_t m_size;
+
+public:
+	class iterator;
+
+private:
+	class node
+	{
+		public:
+		T data;
+		node* next;
+		node()
+		{
+			next = nullptr;
+		}
+		friend list;
+		friend iterator;
+	};
+
+public:
+	class iterator
+	{
+		node* p;
+	public:
+		iterator(node* node) : p(node) {}
+		void operator++(){ p = p->next; }
+		void operator++(int){ p = p->next; }
+		bool operator==(const iterator& o) { return o.p == p; }
+		bool operator!=(const iterator& o) { return o.p != p; }
+		T& operator*() const { return p->data;}
+
+		iterator operator+(int i)
+		{
+			iterator iter = *this;
+			while(i-- > 0 && iter.p)
+			{
+				++iter;
+			}
+			return iter;
+		}
+
+		friend list;
+	};
+
+	node *head, *tail;
+
+	node* _createNewNode()
+	{
+		node* nn = reinterpret_cast<node*>(_vectAllocator->Allocate(sizeof(node), reinterpret_cast<uintptr_t>(this)));
+		new(&nn->data) T();
+		return nn;
+	}
+
+	void _deleteNode(node* node)
+	{
+		node->next = nullptr;
+		node->data.~T();
+		_vectAllocator->Deallocate(node);
+	}
+
+public:
+	list()
+	{
+		m_size = 0;
+		head = nullptr;
+		tail = nullptr;
+	}
+	bool empty() { return head == nullptr; }
+	size_t size() { return m_size; }
+
+	void pop_back()
+	{
+		if(!tail) return;
+		if(m_size == 1)
+		{
+			_deleteNode(tail);
+			tail = nullptr;
+			head = nullptr;
+			return;
+		}
+		node* last_node = head;
+		while(last_node->next != tail)
+		{
+			last_node = last_node->next;
+		}
+		_deleteNode(tail);
+		tail = last_node;
+		m_size--;
+	}
+
+	void push_front(T value)
+	{
+		node* old_head = head;
+		head = _createNewNode();
+		head->next = old_head;
+		if(tail == nullptr)
+			tail = head;
+		head->data = value;
+		m_size++;
+	}
+
+	void push_back(T value)
+	{
+		node* old_tail = tail;
+		tail = _createNewNode();
+		tail->data = value;
+		if(old_tail != nullptr)
+			old_tail->next = tail;
+		if(head == nullptr)
+			head = tail;
+		m_size++;
+	}
+
+	iterator insert(iterator it, T value)
+	{
+		node* new_node = _createNewNode();
+		new_node->data = value;
+		new_node->next = it.p->next;
+		it.p->next = new_node;
+		it.p = new_node;
+		m_size++;
+		return it;
+	}
+
+	iterator erase(iterator it)
+	{
+		if(head == nullptr) return iterator(nullptr);
+		node* last_node = head;
+		while(last_node->next != it.p) last_node = last_node->next;
+		last_node->next = it.p->next;
+		_deleteNode(it.p);
+		it.p = last_node->next;
+		m_size--;
+		return it;
+	}
+
+	void clear()
+	{
+		node* now_node = head;
+		while(now_node != nullptr)
+		{
+			node* next_node = now_node->next;
+			_deleteNode(now_node);
+			now_node = next_node;
+		}
+	}
+
+	iterator begin() { return iterator(head); }
+	iterator end() { return iterator(nullptr); }
+
+	T& operator[](size_t idx)
+	{
+		iterator it = begin();
+		for(size_t i = 0; i < idx; ++i) it++;
+		return *it;
+	}
 };
 
 #endif // MEM_STRUCTS_HPP

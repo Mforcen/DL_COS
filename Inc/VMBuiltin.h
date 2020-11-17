@@ -16,7 +16,7 @@ enum TypeVal : uint8_t
 	INT,
 	UINT,
 	FLOAT,
-	ARR,
+	PTR,
 	VOID
 };
 
@@ -63,12 +63,13 @@ uint32_t _print(void* rv, char* fmt);
 
 uint32_t _getAdc(uint32_t* rv, int port, int chan);
 
-uint32_t _setPin(void* rv, int pin, int level);
-
 uint32_t _SDI12_ReadSingleMeasurement(void* rv, int addr, float* dst, int count, int additional);
+uint32_t _digitalRead(int* rv, int ch);
+uint32_t _digitalWrite(void* rv, int ch, int value);
+uint32_t _pulseRead(int* rv, int ch);
 
 
-extern BuiltinFunc builtinFuncs[18];
+extern BuiltinFunc builtinFuncs[23];
 void init_builtinFuncs();
 
 

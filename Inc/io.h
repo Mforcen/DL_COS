@@ -12,5 +12,9 @@ int poll(int fd);
 int write(int fd, const void* buf, size_t count);
 int close(int fd);
 int SDI12_SingleMeasurementRead(int addr, float* dst, int count, int additional);
+int DigitalRead(int ch);
+void DigitalWrite(int ch, int value);
+int PulseCount(int ch);
+uint64_t time();
 
 #endif // IO_H_INCLUDED

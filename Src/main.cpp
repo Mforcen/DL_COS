@@ -20,6 +20,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "usb_device.h"
 #include "FwLogger.h"
 
 /* Private includes ----------------------------------------------------------*/
@@ -72,11 +73,6 @@ DMA_HandleTypeDef hdma_usart1_tx;
 PCD_HandleTypeDef hpcd_USB_FS;
 
 /* USER CODE BEGIN PV */
-circular_buffer<256> tx_buffer;
-fixed_string<128> rx_buffer;
-
-uint8_t _UART_rx_char;
-uint8_t _UART_txing;
 
 int16_t adc_data[5];
 
@@ -99,8 +95,6 @@ static void MX_TIM6_Init(void);
 static void MX_TIM7_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_USART3_UART_Init(void);
-static void MX_USB_PCD_Init(void);
-
 /* USER CODE BEGIN PFP */
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart);
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart);
@@ -148,19 +142,30 @@ int main(void)
 	MX_I2C1_Init();
 	MX_I2C2_SMBUS_Init();
 	MX_RTC_Init();
-	MX_SDIO_SD_Init();
+	//MX_SDIO_SD_Init();
 	MX_SPI1_Init();
 	MX_SPI2_Init();
 	MX_TIM6_Init();
 	MX_TIM7_Init();
 	MX_USART1_UART_Init();
 	MX_USART3_UART_Init();
-	MX_USB_PCD_Init();
+	//MX_USB_PCD_Init();
+
+	//MX_USB_DEVICE_Init();
 	/* USER CODE BEGIN 2 */
-	HAL_UART_Receive_IT(&huart1, &_UART_rx_char, 1);
+	//HAL_UART_Receive_IT(&huart1, &_UART_rx_char, 1);
+	//HAL_NVIC_EnableIRQ(USART1_IRQn);
+	//HAL_NVIC_EnableIRQ(USART3_IRQn);
+
+	HAL_Delay(10);
+	/*uint8_t data[] = "hola caracola";
+	while(1)
+	{
+		HAL_UART_Transmit(&huart3, data, 13, 1000);
+		HAL_Delay(100);
+	}*/
 
 	uint32_t last_tick = 0;
-	_UART_txing = 0;
 
 	HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_data, 5);
 
@@ -192,45 +197,45 @@ int main(void)
 void SystemClock_Config(void)
 {
 	RCC_OscInitTypeDef RCC_OscInitStruct = {0};
-	RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
-	RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
+  RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+  RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
 
-	/** Initializes the CPU, AHB and APB busses clocks
-	*/
-	RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI|RCC_OSCILLATORTYPE_HSE;
-	RCC_OscInitStruct.HSEState = RCC_HSE_ON;
-	RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV1;
-	RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-	RCC_OscInitStruct.LSIState = RCC_LSI_ON;
-	RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-	RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-	RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL9;
-	if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
-	{
-		Error_Handler();
-	}
-	/** Initializes the CPU, AHB and APB busses clocks
-	*/
-	RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-								  |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
-	RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-	RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-	RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
-	RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+  /** Initializes the CPU, AHB and APB busses clocks
+  */
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE|RCC_OSCILLATORTYPE_LSE;
+  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+  RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV1;
+  RCC_OscInitStruct.LSEState = RCC_LSE_ON;
+  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+  RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL9;
+  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Initializes the CPU, AHB and APB busses clocks
+  */
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
+                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
+  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
-	if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
-	{
-		Error_Handler();
-	}
-	PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RTC|RCC_PERIPHCLK_ADC
-										 |RCC_PERIPHCLK_USB;
-	PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_LSI;
-	PeriphClkInit.AdcClockSelection = RCC_ADCPCLK2_DIV6;
-	PeriphClkInit.UsbClockSelection = RCC_USBCLKSOURCE_PLL_DIV1_5;
-	if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
-	{
-		Error_Handler();
-	}
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RTC|RCC_PERIPHCLK_ADC
+                              |RCC_PERIPHCLK_USB;
+  PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_LSE;
+  PeriphClkInit.AdcClockSelection = RCC_ADCPCLK2_DIV6;
+  PeriphClkInit.UsbClockSelection = RCC_USBCLKSOURCE_PLL_DIV1_5;
+  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
+  {
+    Error_Handler();
+  }
 }
 
 /**
@@ -418,42 +423,52 @@ static void MX_RTC_Init(void)
 	RTC_TimeTypeDef sTime = {0};
 	RTC_DateTypeDef DateToUpdate = {0};
 
-	/* USER CODE BEGIN RTC_Init 1 */
+	//uint32_t booted = HAL_RTCEx_BKUPRead(&hrtc, 0);
+	uint32_t booted = 0;
 
-	/* USER CODE END RTC_Init 1 */
-	/** Initialize RTC Only
-	*/
-	hrtc.Instance = RTC;
-	hrtc.Init.AsynchPrediv = RTC_AUTO_1_SECOND;
-	hrtc.Init.OutPut = RTC_OUTPUTSOURCE_ALARM;
-	if (HAL_RTC_Init(&hrtc) != HAL_OK)
+	if(booted != 0xaaaaaaaa)
 	{
-		Error_Handler();
+		/* USER CODE BEGIN RTC_Init 1 */
+
+		/* USER CODE END RTC_Init 1 */
+		/** Initialize RTC Only
+		*/
+		hrtc.Instance = RTC;
+		hrtc.Init.AsynchPrediv = RTC_AUTO_1_SECOND;
+		hrtc.Init.OutPut = RTC_OUTPUTSOURCE_ALARM;
+		if (HAL_RTC_Init(&hrtc) != HAL_OK)
+		{
+			Error_Handler();
+		}
+
+		/* USER CODE BEGIN Check_RTC_BKUP */
+
+		/* USER CODE END Check_RTC_BKUP */
+
+		/** Initialize RTC and set the Time and Date
+		*/
+		sTime.Hours = 0x0;
+		sTime.Minutes = 0x0;
+		sTime.Seconds = 0x0;
+
+		if (HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BCD) != HAL_OK)
+		{
+			Error_Handler();
+		}
+		DateToUpdate.WeekDay = RTC_WEEKDAY_MONDAY;
+		DateToUpdate.Month = RTC_MONTH_JANUARY;
+		DateToUpdate.Date = 0x1;
+		DateToUpdate.Year = 0x0;
+
+		if (HAL_RTC_SetDate(&hrtc, &DateToUpdate, RTC_FORMAT_BCD) != HAL_OK)
+		{
+			Error_Handler();
+		}
+
+		HAL_RTCEx_BKUPWrite(&hrtc, 0, 0xaaaaaaaa);
 	}
 
-	/* USER CODE BEGIN Check_RTC_BKUP */
 
-	/* USER CODE END Check_RTC_BKUP */
-
-	/** Initialize RTC and set the Time and Date
-	*/
-	sTime.Hours = 0x0;
-	sTime.Minutes = 0x0;
-	sTime.Seconds = 0x0;
-
-	if (HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BCD) != HAL_OK)
-	{
-		Error_Handler();
-	}
-	DateToUpdate.WeekDay = RTC_WEEKDAY_MONDAY;
-	DateToUpdate.Month = RTC_MONTH_JANUARY;
-	DateToUpdate.Date = 0x1;
-	DateToUpdate.Year = 0x0;
-
-	if (HAL_RTC_SetDate(&hrtc, &DateToUpdate, RTC_FORMAT_BCD) != HAL_OK)
-	{
-		Error_Handler();
-	}
 	/* USER CODE BEGIN RTC_Init 2 */
 
 	/* USER CODE END RTC_Init 2 */
@@ -839,30 +854,15 @@ static void MX_GPIO_Init(void)
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	HAL_GPIO_Init(SDIO_CD_GPIO_Port, &GPIO_InitStruct);
 
+	GPIO_InitStruct.Pin = (GPIO_PIN_11 | GPIO_PIN_12);
+	GPIO_InitStruct.Mode = GPIO_MODE_AF_INPUT;
+	GPIO_InitStruct.Pull = GPIO_PULLUP;
+	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+	HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
 }
 
 /* USER CODE BEGIN 4 */
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
-{
-	//tx_buffer.push_back(_UART_rx_char);
-	FwLogger::OS::get().push_rx(_UART_rx_char);
-
-	HAL_UART_Receive_IT(huart, &_UART_rx_char, 1);
-}
-
-void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
-{
-	uint8_t ph;
-	if(tx_buffer.pop_front(&ph) == 0)
-		HAL_UART_Transmit_IT(huart, &ph, 1);
-	else
-		_UART_txing = 0;
-}
-
-void outchar(int c)
-{
-	FwLogger::OS::get().write(0, (void*) (&c), 1);
-}
 
 void _putchar(char c)
 {
@@ -904,12 +904,10 @@ void sdi12_Isr()
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
-	if(GPIO_Pin == GPIO_PIN_6)
-		FwLogger::OS::get().sdi12.pin_isr();
-	else if(GPIO_Pin == GPIO_PIN_7)
-		FwLogger::OS::get().sdi12.pin_isr();
-	else if(GPIO_Pin == GPIO_PIN_0 || GPIO_Pin == GPIO_PIN_1)
-		FwLogger::OS::get().radio.isrDIO(GPIO_Pin);
+	if(GPIO_Pin == GPIO_PIN_0 || GPIO_Pin == GPIO_PIN_1) FwLogger::OS::get().radio.isrDIO(GPIO_Pin);
+	else if(GPIO_Pin < GPIO_PIN_4) FwLogger::OS::get().digital.ISR(GPIO_Pin);
+	else if(GPIO_Pin == GPIO_PIN_6) FwLogger::OS::get().sdi12.pin_isr();
+	else if(GPIO_Pin == GPIO_PIN_7) FwLogger::OS::get().sdi12.pin_isr();
 }
 /* USER CODE END 4 */
 

@@ -290,6 +290,30 @@ bool VirtualMachine::cycle()
 			}
 		}
 	}
+	else if(op == Opcode::POP1)
+	{
+		pop<uint8_t>();
+		++m_programCounter;
+	}
+	else if(op == Opcode::POP4)
+	{
+		pop<uint32_t>();
+		++m_programCounter;
+	}
+	else if(op == Opcode::CLONE1)
+	{
+		uint8_t val = pop<uint8_t>();
+		push<uint8_t>(val);
+		push<uint8_t>(val);
+		++m_programCounter;
+	}
+	else if(op == Opcode::CLONE4)
+	{
+		uint32_t val = pop<uint32_t>();
+		push<uint32_t>(val);
+		push<uint32_t>(val);
+		++m_programCounter;
+	}
 	/**
 	  *	Implementation of arithmetic operations
 	  */
@@ -684,7 +708,7 @@ void VirtualMachine::prepareBuiltin()
 		{
             m_currBuiltin.args[i].ival = pop<uint32_t>();
 		}
-		else if(currFunc.argTypes[i] == ARR)
+		else if(currFunc.argTypes[i] == PTR)
 		{
 			/*int arr_len = pop<uint32_t>();
 			m_currBuiltin.args[i].ptr_val = reinterpret_cast<intptr_t>(&m_ram[m_stackPointer-arr_len]);

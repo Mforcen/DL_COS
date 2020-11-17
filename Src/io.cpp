@@ -24,11 +24,6 @@ int read(int fd, void* buf, size_t count)
 	return OS::get().read(fd, buf, count);
 }
 
-int poll(int fd)
-{
-	return OS::get().poll(fd);
-}
-
 int write(int fd, const void* buf, size_t count)
 {
 	return OS::get().write(fd, buf, count);
@@ -42,4 +37,24 @@ int close(int fd)
 int SDI12_SingleMeasurementRead(int addr, float* dst, int count, int additional)
 {
 	return OS::get().sdi12.singleMeasure(addr, dst, count, additional);
+}
+
+int DigitalRead(int ch)
+{
+	return OS::get().digital.digitalRead(ch);
+}
+
+void DigitalWrite(int ch, int value)
+{
+	OS::get().digital.digitalWrite(ch, value);
+}
+
+int PulseCount(int ch)
+{
+	return OS::get().digital.pulseRead(ch);
+}
+
+uint64_t time()
+{
+	return OS::get().time();
 }

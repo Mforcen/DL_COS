@@ -9,6 +9,8 @@
 
 #include "mem_structs.hpp"
 #include "printf.h"
+#include "KernelMQ.h"
+#include "Connectivity.h"
 
 #include "stm32f1xx_hal.h"
 #include "pin_defs.h"
@@ -22,6 +24,7 @@
 #include "SDI12_Driver.h"
 #include "SSD1306.h"
 #include "LinkLayer.h"
+#include "Digital_Driver.h"
 
 #define O_RDONLY 1
 #define O_WRONLY 2
@@ -29,6 +32,8 @@
 
 #define FWVMAJOR 0
 #define FWVMINOR 1
+
+#define FD_BUILTINS 3
 
 
 extern ADC_HandleTypeDef hadc1;
@@ -75,38 +80,38 @@ namespace FwLogger
 			static void setOS(OS* os);
 
 			void init();
-			void push_rx(uint8_t c);
+			/*void push_rx(uint8_t c, SocketType sockType);
+			void push_rx(uint8_t* buf, uint16_t len, SocketType sockType);*/
 
 			void RTC_ISR();
 
 			void loop();
 			bool task_loop();
-			void eval();
+			void eval(uint8_t* buf, int fd);
 			void bin_eval(uint8_t* ebuf, int length, int fd);
 			void radio_eval();
 			int open(char* path, int oflag);
 			int read(int fd, void* buf, size_t count);
-			int poll(int fd);
 			int write(int fd, const void* buf, size_t count);
 			int close(int fd);
 
-			eTSDB::Date time();
+			uint64_t time();
+			eTSDB::Date timeETSDB();
 
 			int16_t get_adc_val(int channel);
 
 			void enablePower(int enable);
 
-			void ll_receive();
-
 			SPIFlash flash;
 			eTSDB::Driver etsdb;
 			SDI12_Driver sdi12;
 			VirtualMachine vm;
-			LinkLayer lluart;
+			Digital_Driver digital;
+
+			LoRa radio;
 
 			//SSD1306 disp;
 
-			LoRa radio;
 		protected:
 
 		private:
@@ -115,50 +120,16 @@ namespace FwLogger
 
 			static OS* ptr;
 
-			enum class Operation : uint8_t
-			{
-				None,
-				Eval,
-				BinEval,
-
-				OpenFile,
-				DownloadFile,
-				Upload,
-				Close,
-				ReadNext,
-				ListFiles,
-
-				OpenHeader,
-				ListTables,
-				ReadTable,
-
-				GetPage,
-				SaveRow,
-				//TestAppend,
-
-				LoadProgram
-			};
-
-			struct Task
-			{
-                Operation op;
-                int8_t fd;
-                uint16_t counter;
-                void* buf;
-                uint8_t name_buf[16];
-			};
-
 			enum class FDType : uint8_t
 			{
 				None,
 				File,
 				TS,
 				SPI,
-				UART,
-				LL_UART,
 				I2C,
 				SDI12,
-				Radio
+				//Port abstraction model
+				SOCKET
 			};
 
 			struct FileDescriptor
@@ -186,21 +157,10 @@ namespace FwLogger
 			};
 
 			int errno;
-			circular_buffer<16, Task> _ops;
+			//circular_buffer<16, Task> _ops;
 
-			fixed_string<128> rx_buffer;
 			bool m_rxBin, m_rtcFlag, m_pendingTask, m_lpEnabled;
-			enum class ParserStatus : uint8_t
-			{
-				Start,
-				AsciiCommand,
-				BinCommand,
-			};
 
-			ParserStatus m_pStatus;
-			int m_pIndex;
-			int m_pSize;
-			int m_pLastRecv;
 			float sdi12_test[6];
 
 			int8_t _createFD(FDType type);
@@ -209,9 +169,10 @@ namespace FwLogger
 			FileDescriptor _fds[16];
 
 			Allocator<128> _alloc;
-			uint8_t _alloc_buf[4096];
-			uint8_t _alloc_idx[32];
-			uintptr_t _alloc_ownership[32];
+			uint8_t _alloc_buf[8192];
+			uint8_t _alloc_idx[64];
+			uintptr_t _alloc_ownership[64];
+			int printf_out;
 
 			void saveConfig();
 			void loadConfig();

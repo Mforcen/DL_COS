@@ -66,62 +66,62 @@ namespace FwLogger
 {
 	LoRa::LoRa(SPI_HandleTypeDef* hspi, GPIO_TypeDef* gpio0, uint16_t dio0, GPIO_TypeDef* gpio1, uint16_t dio1, GPIO_TypeDef* gpiorx, uint16_t rxenpin,
 			   GPIO_TypeDef* gpiotx, uint16_t txenpin, GPIO_TypeDef* gpiocs, uint16_t cspin, GPIO_TypeDef* gpiorst, uint16_t rstpin) :
-			   SPI_Device(hspi), Module("LoRaModem", LORA_BINID, 0, 1)
+			   SPI_Device(hspi), Module("LoRaModem", LORA_BINID, 0, 1, 15, m_loraParams)
 	{
 		//ctor
-		_gpio0 = gpio0;
-		_dio0 = dio0;
-		_gpio1 = gpio1;
-		_dio1 = dio1;
+		m_gpio0 = gpio0;
+		m_dio0 = dio0;
+		m_gpio1 = gpio1;
+		m_dio1 = dio1;
 
-		_gpiorx = gpiorx;
-		_rxenpin = rxenpin;
-		_gpiotx = gpiotx;
-		_txenpin = txenpin;
-		_gpiocs = gpiocs;
-		_cspin = cspin;
-		_gpiorst = gpiorst;
-		_rstpin = rstpin;
+		m_gpiorx = gpiorx;
+		m_rxenpin = rxenpin;
+		m_gpiotx = gpiotx;
+		m_txenpin = txenpin;
+		m_gpiocs = gpiocs;
+		m_cspin = cspin;
+		m_gpiorst = gpiorst;
+		m_rstpin = rstpin;
+		m_isrFlag = false;
 
-		_bandwidth = 0x07;
-		_codingRate = 0x01;
-		_implicitHeader = 0x00;
-		_spreadingFactor = 0x07;
-		_rxPayloadCrc = 0;
-		_regSymbTimeout = 0x064;
-		_preambLength=0x0008;
-		_payloadLength = 0x01;
-		_payloadMaxLength = 0xff;
-		_freqHoppingPeriod = 0x00;
-		_syncWord = 0x12;
-		_txPowerReg = 0x4f;
-		_ocp = 0x2b;
-		_isrFlag = false;
-		_regPaDac = 0x84;
+		bandwidth = 0x07;
+		codingRate = 0x01;
+		implicitHeader = 0x00;
+		spreadingFactor = 0x07;
+		rxPayloadCrc = 0;
+		regSymbTimeout = 0x064;
+		preambLength=0x0008;
+		m_payloadLength = 0x01;
+		payloadMaxLength = 0xff;
+		freqHoppingPeriod = 0x00;
+		syncWord = 0x12;
+		txPowerReg = 0x4f;
+		ocp = 0x2b;
+		regPaDac = 0x84;
 
 		_tx_idx = 0;
 		_tx_size = 0;
 		for(int i = 0; i < 129; ++i) _tx_buf[i] = 0;
 	}
 
-	int LoRa::init(uint64_t workingFreq)
+	int LoRa::init(uint64_t init_freq)
 	{
 		if(try_lock() != 0) return EBUSY;
 
-		HAL_GPIO_WritePin(_gpiorst, _rstpin, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(m_gpiorst, m_rstpin, GPIO_PIN_RESET);
 		HAL_Delay(1);
-		HAL_GPIO_WritePin(_gpiorst, _rstpin, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(m_gpiorst, m_rstpin, GPIO_PIN_SET);
 
 		_tx_buf[0] = 0x42;
-		HAL_GPIO_WritePin(_gpiocs, _cspin, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(m_gpiocs, m_cspin, GPIO_PIN_RESET);
 		HAL_SPI_TransmitReceive(_hspi, _tx_buf, _rx_buf, 2, 1000);
-		HAL_GPIO_WritePin(_gpiocs, _cspin, GPIO_PIN_SET);
-		_chipVersion = _rx_buf[1];
+		HAL_GPIO_WritePin(m_gpiocs, m_cspin, GPIO_PIN_SET);
+		chipVersion = _rx_buf[1];
 
 		setOpMode(OpMode::Sleep);
 
-		uint64_t frf = (workingFreq << 19)/32000000;
-		_workingFreq = frf;
+		workingFreq = init_freq;
+		uint64_t frf = (static_cast<uint64_t>(workingFreq) << 19)/32000000;
 		_queueCommand(WriteReg | RegFrLsbAddr, frf & 0xff);
 		_queueCommand(WriteReg | RegFrMidAddr, (frf >> 8) & 0xff);
 		_queueCommand(WriteReg | RegFrMsbAddr, (frf >> 16) & 0xff);
@@ -134,69 +134,69 @@ namespace FwLogger
 
 		setOpMode(OpMode::Standby);
 
-		_isrFlag = true;
+		m_isrFlag = true;
 
 		return 0;
 	}
 
 	int LoRa::setImplicitHeader(uint8_t ih)
 	{
-		if(ih == 0) _implicitHeader = 0;
-		else _implicitHeader = 1;
-		_queueCommand(WriteReg | RegModemConfig1Addr, (_bandwidth<<4) | (_codingRate<<1) | _implicitHeader);
+		if(ih == 0) implicitHeader = 0;
+		else implicitHeader = 1;
+		_queueCommand(WriteReg | RegModemConfig1Addr, (bandwidth<<4) | (codingRate<<1) | implicitHeader);
 
 		return 0;
 	}
 
 	uint8_t LoRa::getImplicitHeader()
 	{
-		return _implicitHeader;
+		return implicitHeader;
 	}
 
 	int LoRa::setSpreadingFactor(uint8_t sf)
 	{
 		if(sf < 6 || sf > 12) return -1;
 
-		_spreadingFactor = sf;
-		_queueCommand(WriteReg | RegModemConfig2Addr, (_spreadingFactor << 4) | (_rxPayloadCrc << 2) | ((_regSymbTimeout >> 8) & 0x3));
+		spreadingFactor = sf;
+		_queueCommand(WriteReg | RegModemConfig2Addr, (spreadingFactor << 4) | (rxPayloadCrc << 2) | ((regSymbTimeout >> 8) & 0x3));
 
 		return 0;
 	}
 
 	uint8_t LoRa::getSpreadingFactor()
 	{
-		return _spreadingFactor;
+		return spreadingFactor;
 	}
 
 
 	int LoRa::setPreambleLength(uint16_t pl)
 	{
-		_preambLength = pl;
-		_queueCommand(WriteReg | RegPreambleMsbAddr, (_preambLength >> 8) & 0xff);
-		_queueCommand(WriteReg | RegPreambleLsbAddr, (_preambLength) & 0xff);
+		preambLength = pl;
+		_queueCommand(WriteReg | RegPreambleMsbAddr, (preambLength >> 8) & 0xff);
+		_queueCommand(WriteReg | RegPreambleLsbAddr, (preambLength) & 0xff);
 
 		return 0;
 	}
 
 	uint16_t LoRa::getPreambleLength()
 	{
-		return _preambLength;
+		return preambLength;
 	}
 
 	int LoRa::setRegSymbTimeout(uint16_t symbTimeout)
 	{
 		if(symbTimeout > 0x3ff) return -1;
 
-		_regSymbTimeout = symbTimeout;
-		_queueCommand(WriteReg | RegModemConfig2Addr, (_spreadingFactor << 4) | (_rxPayloadCrc << 2) | ((_regSymbTimeout >> 8) & 0x3));
-		_queueCommand(WriteReg | RegSymbTimeoutLsbAddr, _regSymbTimeout & 0xff);
+		regSymbTimeout = symbTimeout;
+		_queueCommand(WriteReg | RegModemConfig2Addr, (spreadingFactor << 4) | (rxPayloadCrc << 2) | ((regSymbTimeout >> 8) & 0x3));
+		_queueCommand(WriteReg | RegSymbTimeoutLsbAddr, regSymbTimeout & 0xff);
 
 		return 0;
 	}
 
 	uint16_t LoRa::getRegSymbTimeout()
 	{
-		return _regSymbTimeout;
+		return regSymbTimeout;
 	}
 
 
@@ -204,35 +204,35 @@ namespace FwLogger
 	{
 		if(bw>9) return -1;
 
-		_bandwidth = bw;
-		_queueCommand(WriteReg | RegModemConfig1Addr, (_bandwidth<<4) | (_codingRate<<1) | _implicitHeader);
+		bandwidth = bw;
+		_queueCommand(WriteReg | RegModemConfig1Addr, (bandwidth<<4) | (codingRate<<1) | implicitHeader);
 
 		return 0;
 	}
 
 	uint8_t LoRa::getBandwidth()
 	{
-		return _bandwidth;
+		return bandwidth;
 	}
 
 
 	int LoRa::setSyncWord(uint8_t sw)
 	{
 		if(sw == 0x34) return -1;
-		_syncWord = sw;
-		_queueCommand(WriteReg | RegSyncWordAddr, _syncWord);
+		syncWord = sw;
+		_queueCommand(WriteReg | RegSyncWordAddr, syncWord);
 
 		return 0;
 	}
 
 	uint8_t LoRa::getSyncWord()
 	{
-		return _syncWord;
+		return syncWord;
 	}
 
 	int LoRa::getWorkingFrequency()
 	{
-		return _workingFreq;
+		return workingFreq;
 	}
 
 	int LoRa::setTxPower(int txPower, uint8_t boostPin)
@@ -242,49 +242,49 @@ namespace FwLogger
 			if(txPower < 0) txPower = 0;
 			else if(txPower > 14) txPower = 14;
 			_queueCommand(WriteReg | RegPaConfigAddr, 0x70 | txPower);
-			_txPowerReg = txPower;
+			txPowerReg = txPower;
 		}
 		else
 		{
 			if(txPower > 18)
 			{
 				txPower = 0x7f; // full power
-				_regPaDac = 0x87;
+				regPaDac = 0x87;
 				_queueCommand(WriteReg | RegPaDacAddr, 0x87);
 			}
 			else
 			{
 				if(txPower < 2) txPower = 2;
 				txPower -= 2;
-				_regPaDac = 0x84;
+				regPaDac = 0x84;
 				_queueCommand(WriteReg | RegPaDacAddr, 0x84);
 			}
-			_txPowerReg = 0x80 | txPower;
-			_queueCommand(WriteReg | RegPaConfigAddr, _txPowerReg);
+			txPowerReg = 0x80 | txPower;
+			_queueCommand(WriteReg | RegPaConfigAddr, txPowerReg);
 		}
 		return 0;
 	}
 
 	uint8_t LoRa::getTxPower()
 	{
-		if(_txPowerReg & 0x80)
-			if(_regPaDac == 0x87)
+		if(txPowerReg & 0x80)
+			if(regPaDac == 0x87)
 			{
-				if((_txPowerReg & 0x0f) == 0xf) return 20;
+				if((txPowerReg & 0x0f) == 0xf) return 20;
 				else
-					return (_txPowerReg & 0x0f) + 2;
+					return (txPowerReg & 0x0f) + 2;
 			}
 			else
 			{
-				return (_txPowerReg & 0x0f) + 2;
+				return (txPowerReg & 0x0f) + 2;
 			}
 		else
-			return (_txPowerReg & 0x0f); // complex calculations including other registers
+			return (txPowerReg & 0x0f); // complex calculations including other registers
 	}
 
 	uint8_t LoRa::getOutputPin()
 	{
-		return (_txPowerReg & 0x80) != 0 ? 1 : 0;
+		return (txPowerReg & 0x80) != 0 ? 1 : 0;
 	}
 
 	int LoRa::setOCP(uint8_t ocpMA)
@@ -296,8 +296,8 @@ namespace FwLogger
 		else if(ocpMA <= 240)
 			ocpTrim = (ocpMA + 30) / 10;
 
-		_ocp = 0x20 | ocpTrim;
-		_queueCommand(WriteReg | RegOcpAddr, _ocp);
+		ocp = 0x20 | ocpTrim;
+		_queueCommand(WriteReg | RegOcpAddr, ocp);
 
 		return 0;
 	}
@@ -305,7 +305,7 @@ namespace FwLogger
 	uint8_t LoRa::getOCP()
 	{
 		uint8_t ocpMA = 0;
-		uint8_t ocpTrim = _ocp & 0x1f;
+		uint8_t ocpTrim = ocp & 0x1f;
 
 		if(ocpTrim <= 15)
 			ocpMA = 45+5*ocpTrim;
@@ -316,7 +316,7 @@ namespace FwLogger
 
 	uint8_t LoRa::getChipVersion()
 	{
-		return _chipVersion;
+		return chipVersion;
 	}
 
 	int LoRa::setOpMode(OpMode opmode)
@@ -325,21 +325,21 @@ namespace FwLogger
 
 		if(opmode == OpMode::Tx)
 		{
-			HAL_GPIO_WritePin(_gpiotx, _txenpin, GPIO_PIN_SET);
-			HAL_GPIO_WritePin(_gpiorx, _rxenpin, GPIO_PIN_RESET);
+			HAL_GPIO_WritePin(m_gpiotx, m_txenpin, GPIO_PIN_SET);
+			HAL_GPIO_WritePin(m_gpiorx, m_rxenpin, GPIO_PIN_RESET);
 		}
 		else if(opmode == OpMode::RxContinuous || opmode == OpMode::RxSingle)
 		{
-			HAL_GPIO_WritePin(_gpiorx, _rxenpin, GPIO_PIN_SET);
-			HAL_GPIO_WritePin(_gpiotx, _txenpin, GPIO_PIN_RESET);
+			HAL_GPIO_WritePin(m_gpiorx, m_rxenpin, GPIO_PIN_SET);
+			HAL_GPIO_WritePin(m_gpiotx, m_txenpin, GPIO_PIN_RESET);
 		}
 		else
 		{
-			HAL_GPIO_WritePin(_gpiotx, _txenpin, GPIO_PIN_RESET);
-			HAL_GPIO_WritePin(_gpiorx, _rxenpin, GPIO_PIN_RESET);
+			HAL_GPIO_WritePin(m_gpiotx, m_txenpin, GPIO_PIN_RESET);
+			HAL_GPIO_WritePin(m_gpiorx, m_rxenpin, GPIO_PIN_RESET);
 		}
 
-		_opmode = opmode;
+		m_opmode = opmode;
 		_queueCommand(WriteReg | RegOpModeAddr, 0x80 | static_cast<uint8_t>(opmode));
 
 		return 0;
@@ -352,22 +352,22 @@ namespace FwLogger
 
 	int LoRa::getConfig(uint8_t* buf)
 	{
-		buf[0] = _bandwidth;
-		buf[1] = _codingRate;
-		buf[2] = _implicitHeader;
-		buf[3] = _spreadingFactor;
-		buf[4] = _rxPayloadCrc;
-		buf[5] = _preambLength & 0xff;
-		buf[6] = (_preambLength >> 8) & 0xff;
-		buf[7] = _payloadMaxLength;
-		buf[8] = _freqHoppingPeriod;
-		buf[9] = _syncWord;
+		buf[0] = bandwidth;
+		buf[1] = codingRate;
+		buf[2] = implicitHeader;
+		buf[3] = spreadingFactor;
+		buf[4] = rxPayloadCrc;
+		buf[5] = preambLength & 0xff;
+		buf[6] = (preambLength >> 8) & 0xff;
+		buf[7] = payloadMaxLength;
+		buf[8] = freqHoppingPeriod;
+		buf[9] = syncWord;
 		buf[10] = getTxPower();
 		buf[11] = getOCP();
-		buf[12] = _chipVersion;
-		buf[13] = _workingFreq & 0xff;
-		buf[14] = (_workingFreq >> 8) & 0xff;
-		buf[15] = (_workingFreq >> 16) & 0xff;
+		buf[12] = chipVersion;
+		buf[13] = workingFreq & 0xff;
+		buf[14] = (workingFreq >> 8) & 0xff;
+		buf[15] = (workingFreq >> 16) & 0xff;
 		return getConfigSize();
 	}
 
@@ -392,10 +392,44 @@ namespace FwLogger
 		return 0;
 	}
 
+	int LoRa::setParam(const char* name, int value)
+	{
+		if(strcmp(name, "bandwidth") == 0) setBandwidth(value);
+		//else if(strcmp(name, "codingRate") == 0) setCodingRate(value);
+		else if(strcmp(name, "implicitHeader") == 0) setImplicitHeader(value);
+		else if(strcmp(name, "spreadingFactor") == 0) setSpreadingFactor(value);
+		//else if(strcmp(name, "rxPayloadCrc") == 0) setRxPayloadCrc(value);
+		else if(strcmp(name, "preambLength") == 0) setPreambleLength(value);
+		//else if(strcmp(name, "payloadMaxLen") == 0) setPayloadMaxLength(value);
+		//else if(strcmp(name, "freqHoppingPeriod") == 0) setFreqHoppingPeriod(value);
+		else if(strcmp(name, "syncWord") == 0) setSyncWord(value);
+		else if(strcmp(name, "txPower") == 0) setTxPower(value, 1);
+		else if(strcmp(name, "ocp") == 0) setOCP(value);
+		//else if(strcmp(name, "workingFreq") == 0) setWorkingFreq(value);
+		return 0;
+	}
+
+	int LoRa::getParam(const char* name, int* dst)
+	{
+		RetModuleParam(name, bandwidth, dst);
+		RetModuleParam(name, codingRate, dst);
+		RetModuleParam(name, implicitHeader, dst);
+		RetModuleParam(name, spreadingFactor, dst);
+		RetModuleParam(name, rxPayloadCrc, dst);
+		RetModuleParam(name, preambLength, dst);
+		RetModuleParam(name, payloadMaxLength, dst);
+		RetModuleParam(name, freqHoppingPeriod, dst);
+		RetModuleParam(name, syncWord, dst);
+		RetModuleParam(name, txPowerReg, dst);
+		RetModuleParam(name, ocp, dst);
+		RetModuleParam(name, workingFreq, dst);
+		return 0;
+	}
+
 	int LoRa::getStatus(uint8_t* buf)
 	{
-		buf[0] = _PcktRSSI;
-		buf[1] = _recv_flags;
+		buf[0] = m_PcktRSSI;
+		buf[1] = m_recvFlags;
 		buf[2] = m_pendingMsg ? _rx_size-_rx_idx : 0; //TODO known bug when rxsize = 0x100 and rxidx = 0
 		return 3;
 	}
@@ -419,7 +453,7 @@ namespace FwLogger
 			else if(buf[1] == 'c') // chip
 			{
 				outbuf[1] = 'c';
-				outbuf[2] = _chipVersion;
+				outbuf[2] = chipVersion;
 				return 3;
 			}
 			else if(buf[1] == 'b') // bandwidth
@@ -428,7 +462,7 @@ namespace FwLogger
 				if(buf[2] == 'g')
 				{
 					outbuf[2] = 'g';
-					outbuf[3] = _bandwidth;
+					outbuf[3] = bandwidth;
 					return 4;
 				}
 				else if(buf[2] == 's')
@@ -444,7 +478,7 @@ namespace FwLogger
 				if(buf[2] == 'g')
 				{
 					outbuf[2] = 'g';
-					outbuf[3] = _spreadingFactor;
+					outbuf[3] = spreadingFactor;
 					return 4;
 				}
 				else if(buf[2] == 's')
@@ -460,7 +494,7 @@ namespace FwLogger
 				if(buf[2] == 'g')
 				{
 					outbuf[2] = 'g';
-					outbuf[3] = _syncWord;
+					outbuf[3] = syncWord;
 					return 4;
 				}
 				else if(buf[2] == 's')
@@ -476,8 +510,8 @@ namespace FwLogger
 				if(buf[2] == 'g')
 				{
 					outbuf[2] = 'g';
-					outbuf[3] = _preambLength & 0xff;
-					outbuf[4] = (_preambLength >> 8) & 0xff;
+					outbuf[3] = preambLength & 0xff;
+					outbuf[4] = (preambLength >> 8) & 0xff;
 					return 5;
 				}
 				else if(buf[2] == 's')
@@ -493,8 +527,8 @@ namespace FwLogger
 				if(buf[2] == 'g')
 				{
 					outbuf[2] = 'g';
-					outbuf[3] = _regSymbTimeout & 0xff;
-					outbuf[4] = (_regSymbTimeout >> 8) & 0xff;
+					outbuf[3] = regSymbTimeout & 0xff;
+					outbuf[4] = (regSymbTimeout >> 8) & 0xff;
 					return 5;
 				}
 				else if(buf[2] == 's')
@@ -510,7 +544,7 @@ namespace FwLogger
 				if(buf[2] == 'g')
 				{
 					outbuf[2] = 'g';
-					outbuf[3] = _codingRate;
+					outbuf[3] = codingRate;
 					return 4;
 				}
 				else if(buf[2] == 's')
@@ -526,7 +560,7 @@ namespace FwLogger
 				if(buf[2] == 'g')
 				{
 					outbuf[2] = 'g';
-					outbuf[3] = _rxPayloadCrc;
+					outbuf[3] = rxPayloadCrc;
 					return 4;
 				}
 				else if(buf[2] == 's')
@@ -542,7 +576,7 @@ namespace FwLogger
 				if(buf[2] == 'g')
 				{
 					outbuf[2] = 'g';
-					outbuf[3] = _payloadMaxLength;
+					outbuf[3] = payloadMaxLength;
 					return 4;
 				}
 				else if(buf[2] == 's')
@@ -558,7 +592,7 @@ namespace FwLogger
 				if(buf[2] == 'g')
 				{
 					outbuf[2] = 'g';
-					outbuf[3] = _freqHoppingPeriod;
+					outbuf[3] = freqHoppingPeriod;
 					return 4;
 				}
 				else if(buf[2] == 's')
@@ -618,71 +652,71 @@ namespace FwLogger
 
 	int LoRa::getPacketRSSI()
 	{
-		return -157+_PcktRSSI;
+		return -157 + m_PcktRSSI;
 	}
 
 	int LoRa::getPacketIRQFlags()
 	{
-		return _recv_flags;
+		return m_recvFlags;
 	}
 
 	int LoRa::getModemStatus()
 	{
 		if(try_lock() != 0) return -1;
-		HAL_GPIO_WritePin(_gpiocs, _cspin, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(m_gpiocs, m_cspin, GPIO_PIN_RESET);
 		uint8_t tx_buf[2] = {RegModemStatAddr, 0};
 		uint8_t rx_buf[2] = {0};
 		HAL_SPI_TransmitReceive(_hspi, tx_buf, rx_buf, 2, 1000);
 		unlock();
-		HAL_GPIO_WritePin(_gpiocs, _cspin, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(m_gpiocs, m_cspin, GPIO_PIN_SET);
 		return rx_buf[1];
 	}
 
 	int LoRa::getIRQFlags()
 	{
 		if(try_lock() != 0) return -1;
-		HAL_GPIO_WritePin(_gpiocs, _cspin, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(m_gpiocs, m_cspin, GPIO_PIN_RESET);
 		uint8_t tx_buf[2] = {RegIrqFlagsAddr, 0};
 		uint8_t rx_buf[2] = {0};
 		HAL_SPI_TransmitReceive(_hspi, tx_buf, rx_buf, 2, 1000);
 		unlock();
-		HAL_GPIO_WritePin(_gpiocs, _cspin, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(m_gpiocs, m_cspin, GPIO_PIN_SET);
 		return rx_buf[1];
 	}
 
 	int LoRa::getIRQFlagMasks()
 	{
 		if(try_lock() != 0) return -1;
-		HAL_GPIO_WritePin(_gpiocs, _cspin, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(m_gpiocs, m_cspin, GPIO_PIN_RESET);
 		uint8_t tx_buf[2] = {RegIrqFlagsMaskAddr, 0};
 		uint8_t rx_buf[2] = {0};
 		HAL_SPI_TransmitReceive(_hspi, tx_buf, rx_buf, 2, 1000);
 		unlock();
-		HAL_GPIO_WritePin(_gpiocs, _cspin, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(m_gpiocs, m_cspin, GPIO_PIN_SET);
 		return rx_buf[1];
 	}
 
 	int LoRa::getRSSI()
 	{
 		if(try_lock() != 0) return 100;
-		HAL_GPIO_WritePin(_gpiocs, _cspin, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(m_gpiocs, m_cspin, GPIO_PIN_RESET);
 		uint8_t tx_buf[2] = {RegRssiValueAddr, 0};
 		uint8_t rx_buf[2] = {0};
 		HAL_SPI_TransmitReceive(_hspi, tx_buf, rx_buf, 2, 1000);
 		unlock();
-		HAL_GPIO_WritePin(_gpiocs, _cspin, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(m_gpiocs, m_cspin, GPIO_PIN_SET);
 		return rx_buf[1]-157;
 	}
 
 	int LoRa::getRxNbBytes()
 	{
 		if(try_lock() != 0) return -1;
-		HAL_GPIO_WritePin(_gpiocs, _cspin, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(m_gpiocs, m_cspin, GPIO_PIN_RESET);
 		uint8_t tx_buf[3] = {RegIrqFlagsMaskAddr, 0};
 		uint8_t rx_buf[3] = {0};
 		HAL_SPI_TransmitReceive(_hspi, tx_buf, rx_buf, 3, 1000);
 		unlock();
-		HAL_GPIO_WritePin(_gpiocs, _cspin, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(m_gpiocs, m_cspin, GPIO_PIN_SET);
 		uint16_t retval = rx_buf[1] | ((rx_buf[2] << 8) & 0xff);
 		return retval;
 	}
@@ -690,12 +724,12 @@ namespace FwLogger
 	int LoRa::getRxHeaderCnt()
 	{
 		if(try_lock() != 0) return -1;
-		HAL_GPIO_WritePin(_gpiocs, _cspin, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(m_gpiocs, m_cspin, GPIO_PIN_RESET);
 		uint8_t tx_buf[3] = {RegIrqFlagsMaskAddr, 0};
 		uint8_t rx_buf[3] = {0};
 		HAL_SPI_TransmitReceive(_hspi, tx_buf, rx_buf, 3, 1000);
 		unlock();
-		HAL_GPIO_WritePin(_gpiocs, _cspin, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(m_gpiocs, m_cspin, GPIO_PIN_SET);
 		uint16_t retval = rx_buf[1] | ((rx_buf[2] << 8) & 0xff);
 		return retval;
 	}
@@ -703,12 +737,12 @@ namespace FwLogger
 	int LoRa::getRxPacketCnt()
 	{
 		if(try_lock() != 0) return -1;
-		HAL_GPIO_WritePin(_gpiocs, _cspin, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(m_gpiocs, m_cspin, GPIO_PIN_RESET);
 		uint8_t tx_buf[3] = {RegIrqFlagsMaskAddr, 0};
 		uint8_t rx_buf[3] = {0};
 		HAL_SPI_TransmitReceive(_hspi, tx_buf, rx_buf, 3, 1000);
 		unlock();
-		HAL_GPIO_WritePin(_gpiocs, _cspin, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(m_gpiocs, m_cspin, GPIO_PIN_SET);
 		uint16_t retval = rx_buf[1] | ((rx_buf[2] << 8) & 0xff);
 		return retval;
 	}
@@ -717,19 +751,19 @@ namespace FwLogger
 	{
 		if(try_lock() != 0) return -1;
 
-		HAL_GPIO_WritePin(_gpiocs, _cspin, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(m_gpiocs, m_cspin, GPIO_PIN_RESET);
 		uint8_t tx_send[2] = {WriteReg | RegFifoAddrPtr, static_cast<uint8_t>(addr & 0xff)};
 		HAL_SPI_Transmit(_hspi, tx_send, 2, 1000);
-		HAL_GPIO_WritePin(_gpiocs, _cspin, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(m_gpiocs, m_cspin, GPIO_PIN_SET);
 
 		HAL_Delay(1);
 
-		HAL_GPIO_WritePin(_gpiocs, _cspin, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(m_gpiocs, m_cspin, GPIO_PIN_RESET);
 		tx_send[0] = RegFifoAddr;
 		HAL_SPI_Transmit(_hspi, tx_send, 1, 1000);
 		HAL_SPI_Receive(_hspi, buf, len, 1000);
 		unlock();
-		HAL_GPIO_WritePin(_gpiocs, _cspin, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(m_gpiocs, m_cspin, GPIO_PIN_SET);
 
 		return 0;
 	}
@@ -737,24 +771,24 @@ namespace FwLogger
 	int LoRa::readStatus()
 	{
 		if(try_lock() != 0) return -1;
-		HAL_GPIO_WritePin(_gpiocs, _cspin, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(m_gpiocs, m_cspin, GPIO_PIN_RESET);
 		uint8_t tx_buf[2] = {RegOpModeAddr, 0};
 		uint8_t rx_buf[2] = {0};
 		HAL_SPI_TransmitReceive(_hspi, tx_buf, rx_buf, 2, 1000);
 		unlock();
-		HAL_GPIO_WritePin(_gpiocs, _cspin, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(m_gpiocs, m_cspin, GPIO_PIN_SET);
 		return rx_buf[1];
 	}
 
 	int LoRa::getRegHopChannel()
 	{
 		if(try_lock() != 0) return -1;
-		HAL_GPIO_WritePin(_gpiocs, _cspin, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(m_gpiocs, m_cspin, GPIO_PIN_RESET);
 		uint8_t tx_buf[2] = { RegHopChannelAddr, 0};
 		uint8_t rx_buf[2];
 		HAL_SPI_TransmitReceive(_hspi, tx_buf, rx_buf, 2, 1000);
 		unlock();
-		HAL_GPIO_WritePin(_gpiocs, _cspin, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(m_gpiocs, m_cspin, GPIO_PIN_SET);
 		return rx_buf[1];
 	}
 
@@ -774,7 +808,7 @@ namespace FwLogger
 
 		setOpMode(OpMode::Tx);
 
-		_isrFlag = true;
+		m_isrFlag = true;
 		return 0;
 	}
 
@@ -791,7 +825,7 @@ namespace FwLogger
 
 		setOpMode(opm);
 
-		_isrFlag = true;
+		m_isrFlag = true;
 
 		return 0;
 	}
@@ -814,9 +848,9 @@ namespace FwLogger
 
 	void LoRa::isrDIO(uint32_t nPin)
 	{
-		if(nPin == _dio0)
+		if(nPin == m_dio0)
 		{
-			if(_opmode == OpMode::RxSingle || _opmode == OpMode::RxContinuous)
+			if(m_opmode == OpMode::RxSingle || m_opmode == OpMode::RxContinuous)
 			{
 				//rxDone isr
 				//_queueCommand(WriteReg | RegOpModeAddr, 0x80 | static_cast<uint8_t>(OpMode::Standby)); //block rx process
@@ -830,7 +864,7 @@ namespace FwLogger
 				//_queueCommand(WriteReg | RegOpModeAddr, 0x80 | static_cast<uint8_t>(_opmode));
 				Log::Verbose("Radio message received\n");
 			}
-			else if(_opmode == OpMode::Tx)
+			else if(m_opmode == OpMode::Tx)
 			{
 				//txDone isr
 				_queueCommand(WriteReg | RegIrqFlagsAddr, 0xc8);
@@ -838,7 +872,7 @@ namespace FwLogger
 				Log::Verbose("Radio message transmitted\n");
 			}
 		}
-		else if(nPin == _dio1)
+		else if(nPin == m_dio1)
 		{
 
 		}
@@ -846,10 +880,10 @@ namespace FwLogger
 
 	bool LoRa::loop()
 	{
-		if(static_cast<uint16_t>(getUS() - _lastUs) < 5) return true;
+		if(static_cast<uint16_t>(getUS() - m_lastUs) < 5) return true;
 
-		if(!_isrFlag) return m_waiting;
-		_isrFlag = false;
+		if(!m_isrFlag) return m_waiting;
+		m_isrFlag = false;
 		m_waiting = false;
 
 		if(_queueAvailable())
@@ -867,11 +901,11 @@ namespace FwLogger
 
 	void LoRa::ISR()
 	{
-		_isrFlag = true;
+		m_isrFlag = true;
 		if(_tx_queue[_tx_idx] == 2)
 		{
-			_payloadLength = _rx_buf[1];
-			_rx_size = _payloadLength+1;
+			m_payloadLength = _rx_buf[1];
+			_rx_size = m_payloadLength+1;
 		}
 		else if(_tx_queue[_tx_idx] == 4)
 		{
@@ -879,20 +913,20 @@ namespace FwLogger
 		}
 		else if (_tx_queue[_tx_idx] == 5)
 		{
-			_recv_flags = _rx_buf[1];
+			m_recvFlags = _rx_buf[1];
 		}
 		else if(_tx_queue[_tx_idx] == 6)
 		{
-			_PcktRSSI = _rx_buf[1];
+			m_PcktRSSI = _rx_buf[1];
 		}
 		else if(_tx_queue[_tx_idx] == 7)
 		{
-			_recvAddr = _rx_buf[1];
+			m_recvAddr = _rx_buf[1];
 		}
 
 		++_tx_idx;
-		HAL_GPIO_WritePin(_gpiocs, _cspin, GPIO_PIN_SET);
-		_lastUs = getUS();
+		HAL_GPIO_WritePin(m_gpiocs, m_cspin, GPIO_PIN_SET);
+		m_lastUs = getUS();
 	}
 
 	int LoRa::_queueAvailable()
@@ -915,15 +949,15 @@ namespace FwLogger
 	{
 		uint16_t val = addr | ((data << 8) & 0xff00);
 		_tx_queue[_tx_size++] = val;
-		_isrFlag = true;
+		m_isrFlag = true;
 	}
 
 	void LoRa::_popCommand() //  se utilizan las direcciones reservadas como instrucciones para la máquina de estados
 	{
-		HAL_GPIO_WritePin(_gpiocs, _cspin, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(m_gpiocs, m_cspin, GPIO_PIN_RESET);
 		if(_tx_queue[_tx_idx] == 0) // escribir mensaje y ale
 		{
-			HAL_GPIO_WritePin(_gpiotx, _txenpin, GPIO_PIN_SET);
+			HAL_GPIO_WritePin(m_gpiotx, m_txenpin, GPIO_PIN_SET);
 			_tx_buf[0] = WriteReg; // | 0
 			Log::Verbose("Sending radio message\n");
 			startWrite(_tx_buf, _tx_buf_len+1);
@@ -938,7 +972,7 @@ namespace FwLogger
 		else if(_tx_queue[_tx_idx] == 3) // configuracion de la pila fifo
 		{
 			_tx_buf[0] = WriteReg | RegFifoAddrPtr;
-			_tx_buf[1] = _recvAddr;
+			_tx_buf[1] = m_recvAddr;
 
 			Log::Verbose("Reading fifo addr\n");
 

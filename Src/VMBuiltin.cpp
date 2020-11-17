@@ -98,43 +98,49 @@ uint32_t _getAdc(uint32_t* rv, int port, int chan)
 	return 0;
 }
 
-uint32_t _setPin(void* rv, int pin, int level)
-{
-	GPIO_PinState pinlevel;
-	if(level)
-		pinlevel = GPIO_PIN_SET;
-	else
-		pinlevel = GPIO_PIN_RESET;
-    switch(pin)
-    {
-	case 0:
-		HAL_GPIO_WritePin(IO0, pinlevel);
-		break;
-	case 1:
-		HAL_GPIO_WritePin(IO1, pinlevel);
-		break;
-	case 2:
-		HAL_GPIO_WritePin(IO2, pinlevel);
-		break;
-	case 3:
-		HAL_GPIO_WritePin(IO3, pinlevel);
-		break;
-	case 4:
-		HAL_GPIO_WritePin(IO4, pinlevel);
-		break;
-	case 5:
-		HAL_GPIO_WritePin(IO5, pinlevel);
-		break;
-    }
-    return 0;
-}
-
 uint32_t _SDI12_ReadSingleMeasurement(void* rv, int addr, float* dst, int count, int additional)
 {
 	return SDI12_SingleMeasurementRead(addr, dst, count, additional);
 }
 
-BuiltinFunc builtinFuncs[18];
+uint32_t _digitalRead(int* rv, int ch)
+{
+	*rv = DigitalRead(ch);
+	return 0;
+}
+
+uint32_t _digitalWrite(void* rv, int ch, int value)
+{
+	DigitalWrite(ch, value);
+	return 0;
+}
+
+uint32_t _pulseRead(int* rv, int ch)
+{
+	*rv = PulseCount(ch);
+	return 0;
+}
+
+uint32_t _open(int* rv, char* uri)
+{
+	*rv = open(uri,0);
+	return 0;
+}
+
+uint32_t _read(int* rv, int fd, void* buf, int count)
+{
+	*rv = read(fd, buf, count);
+	if(*rv == -1) return 1; // not ready
+	return 0;
+}
+
+uint32_t _write(int* rv, int fd, const void* buf, int count)
+{
+	*rv = write(fd, buf, count);
+	return 0;
+}
+
+BuiltinFunc builtinFuncs[23];
 
 void init_builtinFuncs()
 {
@@ -210,7 +216,7 @@ void init_builtinFuncs()
 
 	builtinFuncs[14].nArgs = 1;
 	builtinFuncs[14].retValue = VOID;
-	builtinFuncs[14].argTypes[0] = ARR;
+	builtinFuncs[14].argTypes[0] = PTR;
 	builtinFuncs[14].func_ptr = (intptr_t)_print;
 
 	builtinFuncs[15].nArgs = 2;
@@ -219,19 +225,48 @@ void init_builtinFuncs()
 	builtinFuncs[15].argTypes[1] = INT;
 	builtinFuncs[15].func_ptr = (intptr_t)_getAdc;
 
-	builtinFuncs[16].nArgs = 2;
+	builtinFuncs[16].nArgs = 4;
 	builtinFuncs[16].retValue = VOID;
 	builtinFuncs[16].argTypes[0] = INT;
-	builtinFuncs[16].argTypes[1] = INT;
-	builtinFuncs[16].func_ptr = (intptr_t)_setPin;
+	builtinFuncs[16].argTypes[1] = PTR;
+	builtinFuncs[16].argTypes[2] = INT;
+	builtinFuncs[16].argTypes[3] = INT;
+	builtinFuncs[16].func_ptr = (intptr_t)_SDI12_ReadSingleMeasurement;
 
-	builtinFuncs[17].nArgs = 4;
-	builtinFuncs[17].retValue = VOID;
+	builtinFuncs[17].nArgs = 1;
+	builtinFuncs[17].retValue = INT;
 	builtinFuncs[17].argTypes[0] = INT;
-	builtinFuncs[17].argTypes[1] = ARR;
-	builtinFuncs[17].argTypes[2] = INT;
-	builtinFuncs[17].argTypes[3] = INT;
-	builtinFuncs[17].func_ptr = (intptr_t)_SDI12_ReadSingleMeasurement;
+	builtinFuncs[17].func_ptr = (intptr_t)_digitalRead;
+
+	builtinFuncs[18].nArgs = 2;
+	builtinFuncs[18].retValue = VOID;
+	builtinFuncs[18].argTypes[0] = INT;
+	builtinFuncs[18].argTypes[1] = INT;
+	builtinFuncs[18].func_ptr = (intptr_t)_digitalWrite;
+
+	builtinFuncs[19].nArgs = 1;
+	builtinFuncs[19].retValue = INT;
+	builtinFuncs[19].argTypes[0] = INT;
+	builtinFuncs[19].func_ptr = (intptr_t)_pulseRead;
+
+	builtinFuncs[20].nArgs = 1;
+	builtinFuncs[20].retValue = INT;
+	builtinFuncs[20].argTypes[0] = PTR;
+	builtinFuncs[20].func_ptr = (intptr_t)_open;
+
+	builtinFuncs[21].nArgs = 3;
+	builtinFuncs[21].retValue = INT;
+	builtinFuncs[21].argTypes[0] = INT;
+	builtinFuncs[21].argTypes[1] = PTR;
+	builtinFuncs[21].argTypes[2] = INT;
+	builtinFuncs[21].func_ptr = (intptr_t)_read;
+
+	builtinFuncs[22].nArgs = 3;
+	builtinFuncs[22].retValue = INT;
+	builtinFuncs[22].argTypes[0] = INT;
+	builtinFuncs[22].argTypes[1] = PTR;
+	builtinFuncs[22].argTypes[2] = INT;
+	builtinFuncs[22].func_ptr = (intptr_t)_write;
 }
 
 

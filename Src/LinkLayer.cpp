@@ -71,18 +71,16 @@ namespace FwLogger
 	LinkLayer::LinkLayer(Allocator<128>* alloc, uint16_t addr, void (*write)(uint8_t*, int), void (*cb)())
 	{
 		m_addr = addr;
-		m_state = State::Nop;
+		//m_state = State::Nop;
 		m_counter = 0;
 		_alloc = alloc;
 
-		m_write = write;
-		m_cb = cb;
 		m_txPacket = -1;
 
 		for(int i = 0; i < 16; ++i)
 		{
-			m_txData[i].version = LLVersion::Void;
-			m_rxData[i].id = i;
+			//m_txData[i].version = LLVersion::Void;
+			//m_rxData[i].id = i;
 		}
 	}
 
@@ -114,7 +112,7 @@ namespace FwLogger
 	void LinkLayer::receive(uint8_t* buf, uint8_t length)
 	{
 		m_lastRx = HAL_GetTick();
-		for(int i = 0; i < length; ++i)
+		/*for(int i = 0; i < length; ++i)
 		{
 			if(m_state == State::Nop)
 			{
@@ -147,7 +145,8 @@ namespace FwLogger
 				}
 				else if(m_counter == 7)
 				{
-					if(m_pkt.hdr_chksum() != buf[i])
+					if((m_pkt.hdr_chksum() != buf[i]) || (m_pkt.dstAddr != m_addr))
+					//if((m_pkt.hdr_chksum() != buf[i]))
 					{
 						m_state = State::Nop;
 						m_counter = 0;
@@ -195,7 +194,7 @@ namespace FwLogger
 					m_state = State::Nop; // fin de la recepción
 				}
 			}
-		}
+		}*/
 	}
 
 	int LinkLayer::send(uint16_t dstAddr, LLType type, const uint8_t* buf, uint16_t len)
@@ -204,12 +203,12 @@ namespace FwLogger
 		if(idx == -1) return -1;
 
 		LLPacket pkt;
-		pkt.version = LLVersion::Testing;
-		pkt.type = type;
-		pkt.srcAddr = m_addr;
-		pkt.dstAddr = dstAddr;
+		//pkt.version = LLVersion::Testing;
+		//pkt.type = type;
+		//pkt.srcAddr = m_addr;
+		//pkt.dstAddr = dstAddr;
 		pkt.len = len;
-		pkt.id = idx;
+		//pkt.id = idx;
 		pkt.seq = 0;
 		pkt.payload = reinterpret_cast<uint8_t*>(_alloc->Allocate(len, reinterpret_cast<uintptr_t>(this)));
 
@@ -223,7 +222,7 @@ namespace FwLogger
 
 	void LinkLayer::processRx()
 	{
-		if(m_pkt.type == LLType::Confirmable)
+		/*if(m_pkt.type == LLType::Confirmable)
 		{
 			uint8_t buf[8];
 			LLPacket pkt(LLType::Acknowledgement, m_addr, m_pkt.srcAddr, m_pkt.id);
@@ -252,7 +251,7 @@ namespace FwLogger
 		else if(m_pkt.type == LLType::PacketError)
 		{
 
-		}
+		}*/
 	}
 
 	int LinkLayer::getFreeTx()
@@ -260,7 +259,7 @@ namespace FwLogger
 		bool found;
 		for(int i = 0; i < 16; ++i)
 		{
-			int j; // add m_txPacket check
+			std::size_t j; // add m_txPacket check
 			if(i == m_txPacket) continue;
 			found = false;
 			for(j = 0; j < m_txIdx.size(); ++j)
@@ -278,9 +277,9 @@ namespace FwLogger
 
 	bool LinkLayer::loop()
 	{
-		if(m_state != State::Nop)
+		/*if(m_state != State::Nop)
 		{
-			if(HAL_GetTick()-m_lastRx > 1000)
+			if(HAL_GetTick()-m_lastRx > 500)
 			{
 				m_state = State::Nop; // timeout
 			}
@@ -305,12 +304,12 @@ namespace FwLogger
 				send_pkt();
 			}
 		}
-		return true;
+		return true;*/
 	}
 
 	void LinkLayer::send_pkt()
 	{
-		LLPacket& pkt = m_txData[m_txPacket];
+		/*LLPacket& pkt = m_txData[m_txPacket];
 		if(pkt.version == LLVersion::Void)
 		{
 			m_txPacket = -1;
@@ -329,6 +328,6 @@ namespace FwLogger
 			int packet_len = pkt.serialize(pkt_buf, 128);
 			m_write(pkt_buf, packet_len);
 		}
-		m_lastTx = HAL_GetTick();
+		m_lastTx = HAL_GetTick();*/
 	}
 }

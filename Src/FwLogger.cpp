@@ -4,31 +4,19 @@ Allocator<128>* _vectAllocator;
 
 namespace FwLogger
 {
+	circular_buffer<16, Task> msgQueue;
+
 	OS* OS::ptr = nullptr;
 	OS& OS::get()
 	{
 		return *ptr;
 	}
 
-	void uart_write(uint8_t* buf, int length)
-	{
-		OS::get().write(0, buf, length);
-	}
-
-	void llreceive()
-	{
-		OS::get().ll_receive();
-	}
-
-	OS::OS():_alloc(_alloc_buf, _alloc_idx, _alloc_ownership, 4096), flash(&hspi1, FLASH_CS), etsdb(0, 8192*1024, &hspi1, FLASH_CS, &_alloc), sdi12(SDI12_0),
-	radio(&hspi1, LORA_DIO0, LORA_DIO1, LORA_RXEN, LORA_TXEN, LORA_CS, LORA_RST), lluart(&_alloc, 1, uart_write, llreceive)
+	OS::OS():_alloc(_alloc_buf, _alloc_idx, _alloc_ownership, 8192), flash(&hspi1, FLASH_CS), etsdb(0, 8192*1024, &hspi1, FLASH_CS, &_alloc), sdi12(SDI12_0),
+	radio(&hspi1, LORA_DIO0, LORA_DIO1, LORA_RXEN, LORA_TXEN, LORA_CS, LORA_RST)
 	{
 		for(int i = 0; i < 32; ++i) m_name[i] = 0;
 		errno = 0;
-
-		m_pStatus = ParserStatus::Start;
-		m_pSize = 0;
-		m_pIndex = 0;
 
 		m_rtcFlag = false;
 		m_name[0] = 'h';
@@ -39,8 +27,10 @@ namespace FwLogger
 
 		Log::setLogLevel(Log::LevelError);
 
-
+		//loadConfig();
 		//ctor
+
+		PortManager::setAllocator(&_alloc);
 	}
 
 	void OS::setOS(OS* os)
@@ -52,64 +42,15 @@ namespace FwLogger
 	{
 		flash.readPage(10, 0);
 		HAL_Delay(10);
-		flash.loop(); // no preguntar
+		flash.loop(); // no preguntar, xd lol
 
 		radio.init(868000000);
-		/*disp.Init();
-		disp.setCursor(0,0);
-		disp.fill();
-		disp.writeString("hola");
-		disp.updateScreen();*/
 		radio.receive(1);
 
 		_vectAllocator = &_alloc;
+		PortUART::get();
 
 		m_lpEnabled = false;
-	}
-
-	void OS::push_rx(uint8_t c)
-	{
-		m_pLastRecv = HAL_GetTick();
-
-		if(m_pStatus == ParserStatus::Start)
-		{
-			if(std::isalnum(c))
-			{
-				if(c == '\b' || c == 127) return;
-				rx_buffer.idx = 0;
-				rx_buffer.push_back(c);
-				m_pStatus = ParserStatus::AsciiCommand;
-			}
-			else
-			{
-				lluart.receive(&c, 1);
-				m_pStatus = ParserStatus::BinCommand;
-			}
-		}
-		else if(m_pStatus == ParserStatus::AsciiCommand)
-		{
-			write(0, &c, 1);
-			if(c == '\b' || c == 127)
-			{
-
-				if(rx_buffer.idx > 0)
-					--rx_buffer.idx;
-
-				rx_buffer.buf[rx_buffer.idx] = 0;
-			}
-			else if(c == '\n')
-			{
-				Task tsk;
-				tsk.op = Operation::Eval;
-				_ops.push_front(tsk);
-			}
-			else
-				rx_buffer.push_back(c);
-		}
-		else if(m_pStatus == ParserStatus::BinCommand)
-		{
-			lluart.receive(&c, 1); // this will exit the status automatically
-		}
 	}
 
 	void OS::RTC_ISR()
@@ -144,21 +85,13 @@ namespace FwLogger
 			}
 		}
 
-		lluart.loop();
-
 		m_pendingTask = work_left;
+
+		PortGSM::get().loop();
 
 		if(m_lpEnabled && !m_pendingTask)
 		{
 			sleep();
-		}
-
-		if(m_pStatus != ParserStatus::Start && (HAL_GetTick()-m_pLastRecv) > 5000)
-		{
-			m_pStatus = ParserStatus::Start;
-			m_pIndex = 0;
-			m_pSize = 0;
-			rx_buffer.clear();
 		}
 
 		if(m_rtcFlag) // if it has to wake up from sleep
@@ -185,7 +118,7 @@ namespace FwLogger
 
 		if(vm.getSaveFlag()) //if it has to save data
 		{
-            eTSDB::HeaderPage* hp = reinterpret_cast<eTSDB::HeaderPage*>(_fds[vm.HeaderFD-1].ptr);
+            eTSDB::HeaderPage* hp = reinterpret_cast<eTSDB::HeaderPage*>(_fds[vm.HeaderFD-FD_BUILTINS].ptr);
             if(hp != nullptr)
 			{
 				eTSDB::Row* dataRow = new (_alloc.Allocate(sizeof(eTSDB::Row), reinterpret_cast<uintptr_t>(this))) eTSDB::Row();
@@ -210,43 +143,60 @@ namespace FwLogger
 				op.op = Operation::SaveRow;
 				op.fd = vm.HeaderFD;
 				op.buf = dataRow;
-				_ops.push_back(op);
+				msgQueue.push_back(op);
 
 				Log::Verbose("Saving row\n");
 
 				vm.ackSaveFlag();
 			}
 		}
-
-		if(radio.available())
-		{
-			radio_eval();
-		}
 	}
 
 	bool OS::task_loop()
 	{
-		Task* currTask = _ops.at_front();
+		Task* currTask = msgQueue.at_front();
 
 		if(currTask == nullptr)
 			return false;
 
 		if(currTask->op == Operation::Eval)
 		{
-			eval();
-			_ops.delete_front();
-			rx_buffer.clear();
+			printf_out = currTask->fd;
+			eval(reinterpret_cast<uint8_t*>(currTask->buf), currTask->fd);
+			_alloc.Deallocate(currTask->buf);
+
+			Socket* sock = PortManager::getSocket(currTask->fd);
+			if(sock != nullptr)
+			{
+				if(sock->self_managed) close(currTask->fd);
+			}
+
+			printf_out = 0;
+			msgQueue.delete_front();
 		}
 
 		else if(currTask->op == Operation::BinEval)
 		{
-			LLPacket* ptr = reinterpret_cast<LLPacket*>(_fds[currTask->fd-1].ptr);
-			if(ptr)
+			bin_eval(reinterpret_cast<uint8_t*>(currTask->buf), currTask->counter, currTask->fd);
+			_alloc.Deallocate(currTask->buf);
+			msgQueue.delete_front();
+		}
+
+		else if(currTask->op == Operation::ModemEval)
+		{
+			PortGSM::get().eval(reinterpret_cast<uint8_t*>(currTask->buf), currTask->counter);
+			printf("Modem: ");
+			PortUART::get().write_type(nullptr, currTask->buf, currTask->counter);
+			printf("\n");
+			_alloc.Deallocate(currTask->buf);
+
+			Socket* sock = PortManager::getSocket(currTask->fd);
+			if(sock != nullptr)
 			{
-				bin_eval(ptr->payload, ptr->len, currTask->fd);
-				_alloc.Deallocate(ptr->payload);
+				if(sock->self_managed) close(currTask->fd);
 			}
-			_ops.delete_front();
+
+			msgQueue.delete_front();
 		}
 
 		else if(currTask->op == Operation::OpenFile)
@@ -289,7 +239,7 @@ namespace FwLogger
 				else
 				{
 					close(currTask->fd);
-					_ops.delete_front();
+					msgQueue.delete_front();
 				}
 				etsdb.startGetNextHeader(*hp);
 			}
@@ -306,13 +256,13 @@ namespace FwLogger
 					write(0, outbuf, 6);
 				}
 				etsdb.unlock();
-				_ops.delete_front();
+				msgQueue.delete_front();
 			}
 		}
 
 		else if(currTask->op == Operation::ReadTable)
 		{
-			eTSDB::HeaderPage* hp = reinterpret_cast<eTSDB::HeaderPage*>(_fds[currTask->fd-1].ptr);
+			eTSDB::HeaderPage* hp = reinterpret_cast<eTSDB::HeaderPage*>(_fds[currTask->fd-FD_BUILTINS].ptr);
 			if((currTask->counter & 1) == 0)
 			{
 				if(etsdb.readNextValue(*hp) == eTSDB::Ok) currTask->counter |= 1;
@@ -335,7 +285,7 @@ namespace FwLogger
 							printf("Done\n");
 						}
 						etsdb.unlock();
-						_ops.delete_front();
+						msgQueue.delete_front();
 					}
 					else
 					{
@@ -394,32 +344,32 @@ namespace FwLogger
 				if(page->getType() == eTSDB::PageType::FileType)
 				{
 					eTSDB::FilePage* fp = new eTSDB::FilePage();
-					_fds[currTask->fd-1].ptr = fp;
+					_fds[currTask->fd-FD_BUILTINS].ptr = fp;
 					fp->copy(reinterpret_cast<eTSDB::FilePage*>(page));
 					if(fp->getAccessMode() == eTSDB::PageAccessMode::PageRead)
-						_fds[currTask->fd-1].buf_idx = 0x80; // el buf está lleno, para obtener página
+						_fds[currTask->fd-FD_BUILTINS].buf_idx = 0x80; // el buf está lleno, para obtener página
 				}
 				else if(page->getType() == eTSDB::PageType::HeaderType)
 				{
 					eTSDB::HeaderPage* hp = new eTSDB::HeaderPage();
-					_fds[currTask->fd-1].ptr = hp;
+					_fds[currTask->fd-FD_BUILTINS].ptr = hp;
 					hp->copy(reinterpret_cast<eTSDB::HeaderPage*>(page));
 				}
-				_ops.delete_front();
+				msgQueue.delete_front();
 			}
 		}
 
 		else if(currTask->op == Operation::ReadNext)
 		{
-			eTSDB::FilePage* fp = reinterpret_cast<eTSDB::FilePage*>(_fds[currTask->fd-1].ptr);
+			eTSDB::FilePage* fp = reinterpret_cast<eTSDB::FilePage*>(_fds[currTask->fd-FD_BUILTINS].ptr);
 			eTSDB::RetValue retval = etsdb.readNextBlockFile(*fp);
             if(retval == eTSDB::Ok)
 			{
-				_ops.delete_front();
+				msgQueue.delete_front();
 			}
 			else if(retval == eTSDB::FileEnded)
 			{
-				_ops.delete_front();
+				msgQueue.delete_front();
 			}
 		}
 
@@ -463,7 +413,7 @@ namespace FwLogger
 				}
 				delete fp;
 				etsdb.unlock();
-				_ops.delete_front();
+				msgQueue.delete_front();
 			}
 		}
 		else if(currTask->op == Operation::DownloadFile)
@@ -475,7 +425,7 @@ namespace FwLogger
 			int obuflen;
 			if(currTask->counter == 0)
 			{
-				eTSDB::FilePage* fp = reinterpret_cast<eTSDB::FilePage*>(_fds[currTask->fd-1].ptr);
+				eTSDB::FilePage* fp = reinterpret_cast<eTSDB::FilePage*>(_fds[currTask->fd-FD_BUILTINS].ptr);
 				obuf[5] = 's';
 				obuflen = strlen(fp->getName()) + 6;
 				strcpy(reinterpret_cast<char*>(obuf+5), reinterpret_cast<char*>(fp->getName()));
@@ -499,14 +449,14 @@ namespace FwLogger
 			obuf[2] = (obuflen >> 8)& 0xff;*/
 
 			//TODO implement
-			_ops.delete_front();
+			msgQueue.delete_front();
 		}
 
 		else if(currTask->op == Operation::Close)
 		{
 			HAL_Delay(10);
 			if(close(currTask->fd) == 0)
-				_ops.delete_front();
+				msgQueue.delete_front();
 		}
 		else if(currTask->op == Operation::LoadProgram)
 		{
@@ -590,7 +540,7 @@ namespace FwLogger
 							open_tsk.fd = _createFD(FDType::TS);
 							open_tsk.buf = currTask->buf;
 							open_tsk.op = Operation::OpenHeader;
-							_ops.push_back(open_tsk);
+							msgQueue.push_back(open_tsk);
 
 							vm.HeaderFD = open_tsk.fd;
 
@@ -677,13 +627,13 @@ namespace FwLogger
 					close(currTask->fd); // close file, cleaning buffers (file page and file buffer)
 					//vm.enable(true);
 					//printf("running\n");
-					_ops.delete_front();
+					msgQueue.delete_front();
 				}
 			}
 		}
 		else if(currTask->op == Operation::SaveRow)
 		{
-			eTSDB::HeaderPage* hp = reinterpret_cast<eTSDB::HeaderPage*>(_fds[currTask->fd-1].ptr);
+			eTSDB::HeaderPage* hp = reinterpret_cast<eTSDB::HeaderPage*>(_fds[currTask->fd-FD_BUILTINS].ptr);
 			if(hp == nullptr) return true;
 			eTSDB::RetValue retval = etsdb.appendValue(*hp, std::move(*reinterpret_cast<eTSDB::Row*>(currTask->buf)));
 			if(retval == eTSDB::Ok)
@@ -691,23 +641,121 @@ namespace FwLogger
 				Log::Verbose("Row saved\n");
 				reinterpret_cast<eTSDB::Row*>(currTask->buf)->~Row();
 				_alloc.Deallocate(currTask->buf);
-				_ops.delete_front();
+				msgQueue.delete_front();
 			}
 		}
 		else if(currTask->op != Operation::Upload)
 		{
 			printf_("Invalid task with opcode: %d\n", currTask->op);
-			_ops.delete_front();
+			msgQueue.delete_front();
 		}
 		return true;
 	}
 
-	void OS::eval()
+	void OS::eval(uint8_t* buf, int fd)
 	{
-		char* str = reinterpret_cast<char*>(rx_buffer.buf);
-		char* token =  strtok(str, " ");
+		char* token =  strtok(reinterpret_cast<char*>(buf), " ");
+		if(strcmp(token, "ack") == 0)
+		{
+			printf("echo\n");
+			return;
+		}
+		else if(strcmp(token, "modem") == 0)
+		{
+			token = strtok(NULL, " ");
+			if(strcmp(token, "AT") == 0)
+			{
+				printf("Sending AT\n");
+				PortGSM::get().write_type(0, "AT\r", 3);
+			}
+			else if(strcmp(token, "comerror") == 0)
+			{
+				if(HAL_UART_GetError(&huart3) != HAL_OK)
+				{
+					printf("There is error in huart3\n");
+				}
+				else
+				{
+					printf("No error in huart3\n");
+				}
+			}
+			else if(strcmp(token, "open") == 0)
+			{
+				int p_sd = PortManager::open("sms:609177644");
+			}
+			else if(strcmp(token, "test") == 0)
+			{
+				int p = PortManager::open("sms:687381497");
+				PortManager::write(p, "hola", 4);
+			}
+			else if(strcmp(token, "SCSC") == 0)
+			{
+				PortGSM::get().write_type(0, "", 0);
+			}
+			else if(strcmp(token, "error") == 0)
+			{
+				PortGSM::get().write_type(0, "AT+CEER\r", 8);
+			}
+			else if(strcmp(token, "signal") == 0)
+			{
+				PortGSM::get().write_type(0, "AT+CSQ\r", 7);
+			}
+			else if(strcmp(token, "info") == 0)
+			{
+				PortGSM::get().write_type(0, "ATI\r", 4);
+			}
+			else if(strcmp(token, "debug") == 0)
+			{
+				PortGSM::get().write_type(0, "ATI+CMEE=2\r", 11);
+			}
+			else if(strcmp(token, "ccid") == 0)
+			{
+				PortGSM::get().write_type(0, "AT+CCID\r", strlen("AT+CCID\r"));
+			}
+			else if(strcmp(token, "reg") == 0)
+			{
+				PortGSM::get().write_type(0, "AT+CREG?\r", strlen("AT+CREG?\r"));
+			}
+			else if(strcmp(token, "pin") == 0)
+			{
+				PortGSM::get().write_type(0, "AT+CPIN?\r", strlen("AT+CPIN?\r"));
+			}
+			else if(strcmp(token, "cops") == 0)
+			{
+				PortGSM::get().write_type(0, "AT+COPS=?\r", strlen("AT+COPS=?\r"));
+			}
+			else if(strcmp(token, "cbc") == 0)
+			{
+				PortGSM::get().write_type(0, "AT+CBC\r", strlen("AT+CBC\r"));
+			}
+			else if(strcmp(token, "fun") == 0)
+			{
+				token = strtok(NULL, " ");
+				if(token == NULL)
+				{
+					PortGSM::get().write_type(0, "AT+CFUN?\r", strlen("AT+CFUN?\r"));
+				}
+				else
+				{
 
-		if(strcmp(token, "file") == 0)
+					uint8_t funlevel = static_cast<uint8_t>(std::atoi(token))+'0';
+					PortGSM::get().write_type(0, "AT+CFUN=", 8);
+					PortGSM::get().write_type(0, &funlevel, 1);
+					PortGSM::get().write_type(0, "\r",1);
+				}
+			}
+			else if(strcmp(token, "ipshut") == 0)
+			{
+				PortGSM::get().write_type(nullptr, "AT+CIPSHUT\r", strlen("AT+CIPSHUT\r"));
+			}
+			else if(strcmp(token, "http") == 0)
+			{
+				int sockd = PortManager::open("http:labsap.upct.es:8080/api/v1/IyW4TYJVYN9hJfAydFkx/telemetry");
+				PortManager::write(sockd, "{\"meas\":\"4321\"}", strlen("{\"meas\":\"4321\"}"));
+			}
+		}
+
+		else if(strcmp(token, "file") == 0)
 		{
 			token = strtok(NULL, " ");
 			if(strcmp(token, "upload") == 0)
@@ -721,7 +769,7 @@ namespace FwLogger
 				int remaining_file = std::atoi(token);
 				if(remaining_file == 0)
 				{
-					write(0, "Error in file format\n", 21);
+					write(fd, "Error in file format\n", 21);
 				}
 
 				int fd = open(path, O_WRONLY);
@@ -731,7 +779,7 @@ namespace FwLogger
 				tsk.fd = fd;
 				tsk.counter = remaining_file;
 
-				_ops.push_back(tsk);
+				msgQueue.push_back(tsk);
 			}
 			else if(strcmp(token, "list") == 0)
 			{
@@ -742,7 +790,7 @@ namespace FwLogger
 
 				etsdb.startGetNextFile(*reinterpret_cast<eTSDB::FilePage*>(tsk.buf));
 
-				_ops.push_back(tsk);
+				msgQueue.push_back(tsk);
 			}
 			else if(strcmp(token, "unlock") == 0)
 			{
@@ -762,7 +810,7 @@ namespace FwLogger
 
 				etsdb.startGetNextHeader(*reinterpret_cast<eTSDB::HeaderPage*>(tsk.buf));
 
-				_ops.push_back(tsk);
+				msgQueue.push_back(tsk);
 			}
 
 			else if(strcmp(token, "get") == 0)
@@ -775,13 +823,13 @@ namespace FwLogger
 				open_tsk.buf = nullptr;
 				for(int i = 0; i < 16; ++i) open_tsk.name_buf[i] = 0;
 				for(int i = 0; i < 16 && token[i] != 0; ++i) open_tsk.name_buf[i] = token[i];
-				_ops.push_back(open_tsk);
+				msgQueue.push_back(open_tsk);
 
 				Task readTable_tsk;
 				readTable_tsk.op = Operation::ReadTable;
 				readTable_tsk.fd = open_tsk.fd;
 				readTable_tsk.counter = 0;
-				_ops.push_back(readTable_tsk);
+				msgQueue.push_back(readTable_tsk);
 			}
 			else if(strcmp(token, "test") == 0)
 			{
@@ -821,16 +869,41 @@ namespace FwLogger
 				hi->cols[1].name[1] = 'e';
 				hi->cols[1].name[2] = 'm';
 				hi->cols[1].name[3] = 'p';
-				hi->cols[1].name[4] = '0';
+				hi->cols[1].name[4] = 0;
 				hi->period = 10;
 
-				_ops.push_back(open_tsk);
+				msgQueue.push_back(open_tsk);
 
 				Task append_tsk;
 				append_tsk.op = Operation::SaveRow;
 				append_tsk.fd = open_tsk.fd;
 				append_tsk.buf = test;
-				_ops.push_back(append_tsk);
+				msgQueue.push_back(append_tsk);
+			}
+		}
+
+		else if(strcmp(token, "test") == 0)
+		{
+			token = strtok(NULL, " ");
+			if(strcmp(token, "read") == 0)
+			{
+				token = strtok(NULL, " ");
+				int pin = atoi(token);
+				printf("%d\n",digital.digitalRead(pin));
+			}
+			else if(strcmp(token, "write") == 0)
+			{
+				token = strtok(NULL, " ");
+				int pin = atoi(token);
+				token = strtok(NULL, " ");
+				int value = atoi(token);
+				digital.digitalWrite(pin, value);
+			}
+			else if(strcmp(token, "pulse") == 0)
+			{
+				token = strtok(NULL, " ");
+				int pin = atoi(token);
+				printf("%d\n",digital.pulseRead(pin));
 			}
 		}
 
@@ -840,7 +913,7 @@ namespace FwLogger
 			if(strcmp(token, "erase") == 0)
 			{
 				flash.eraseChip();
-				write(0, "Erasing flash\n", 14);
+				write(fd, "Erasing flash\n", 14);
 			}
 			else if(strcmp(token, "unlock") == 0)
 			{
@@ -853,7 +926,7 @@ namespace FwLogger
                 token = strtok(NULL, " ");
                 int len = std::atoi(token);
 
-                if(len == 0) write(0, "invalid value\n", 14);
+                if(len == 0) write(fd, "invalid value\n", 14);
                 else
 				{
 					flash.readPage(len, addr);
@@ -875,7 +948,7 @@ namespace FwLogger
                 token = strtok(NULL, " ");
                 int len = std::atoi(token);
 
-                if(len == 0) write(0, "invalid value\n", 14);
+                if(len == 0) write(fd, "invalid value\n", 14);
                 else
 				{
 					flash.readPage(len, addr);
@@ -883,7 +956,7 @@ namespace FwLogger
 					flash.loop();
 					for(int i = 0; i < len; ++i)
 					{
-						tx_buffer.push_back(flash.pop());
+						//tx_buffer.push_back(flash.pop());
 						if(i%50 == 0) HAL_Delay(1);
 					}
 					printf_("\n");
@@ -914,7 +987,7 @@ namespace FwLogger
 				tsk.buf = nullptr;
 				tsk.counter = 0;
 
-				_ops.push_back(tsk);
+				msgQueue.push_back(tsk);
 			}
 			else if(strcmp(token, "name") == 0)
 			{
@@ -1075,7 +1148,7 @@ namespace FwLogger
 				}
 				else if(strcmp(token, "test") == 0)
 				{
-					uint64_t secs = time().timestamp();
+					uint64_t secs = time();
 					secs += 5;
 
 					RTC_AlarmTypeDef sAlarm;
@@ -1260,6 +1333,10 @@ namespace FwLogger
 						printf("Invalid value for TxPower: %d\n", txpower);
 					else
 						printf("TxPower with %ddB and %d pin\n", txpower, tx_pin);
+				}
+				else if(strcmp(token, "recvtest") == 0)
+				{
+					radio.receive(1);
 				}
 			}
 			else if(strcmp(token, "send") == 0)
@@ -1492,7 +1569,7 @@ namespace FwLogger
 					outbuf[0] = 's';
 					outbuf[1] = 'C';
 					outbuf[2] = 'g';
-					time().serialize(outbuf+3);
+					timeETSDB().serialize(outbuf+3);
 					write(fd, outbuf, 8);
 				}
 				else if(ebuf[2] == 's')
@@ -1543,7 +1620,7 @@ namespace FwLogger
 				tsk.counter = ebuf[2] | (ebuf[3] << 8);
 				tsk.name_buf[0] = file_fd;
 
-				_ops.push_back(tsk);
+				msgQueue.push_back(tsk);
 			}
 			else if(ebuf[1] == 'd')
 			{
@@ -1555,7 +1632,7 @@ namespace FwLogger
 				tsk.op = Operation::DownloadFile;
 				tsk.counter = 0;
 				tsk.fd = open(path, O_RDONLY);
-				_ops.push_back(tsk);
+				msgQueue.push_back(tsk);
 			}
 			else if(ebuf[1] == 'l')
 			{
@@ -1567,7 +1644,7 @@ namespace FwLogger
 
 				etsdb.startGetNextFile(*reinterpret_cast<eTSDB::FilePage*>(tsk.buf));
 
-				_ops.push_back(tsk);
+				msgQueue.push_back(tsk);
 			}
 			else if(ebuf[1] == 'e')
 			{
@@ -1588,13 +1665,13 @@ namespace FwLogger
 				open_tsk.buf = nullptr;
 				for(int i = 0; i < 16; ++i) open_tsk.name_buf[i] = 0;
 				for(int i = 0; i < 16 && ebuf[i+2] != 0; ++i) open_tsk.name_buf[i] = ebuf[i+2];
-				_ops.push_back(open_tsk);
+				msgQueue.push_back(open_tsk);
 
 				Task readTable_tsk;
 				readTable_tsk.op = Operation::ReadTable;
 				readTable_tsk.fd = open_tsk.fd;
 				readTable_tsk.counter = 2;
-				_ops.push_back(readTable_tsk);
+				msgQueue.push_back(readTable_tsk);
 			}
 			else if(ebuf[1] == 'l')
 			{
@@ -1605,7 +1682,7 @@ namespace FwLogger
 
 				etsdb.startGetNextHeader(*reinterpret_cast<eTSDB::HeaderPage*>(tsk.buf));
 
-				_ops.push_back(tsk);*/
+				msgQueue.push_back(tsk);*/
 			}
 		}
 		else if(ebuf[0] == 'p')
@@ -1636,7 +1713,7 @@ namespace FwLogger
 				tsk.buf = nullptr;
 				tsk.counter = 0;
 
-				_ops.push_back(tsk);
+				msgQueue.push_back(tsk);
 
 				uint8_t outbuf[] = {'p', 'l'};
 				write(fd, outbuf, 2);
@@ -1735,7 +1812,7 @@ namespace FwLogger
 			tsk_creat.fd = fd;
 			strcpy(reinterpret_cast<char*>(tsk_creat.name_buf), pch);
 			tsk_creat.counter = static_cast<uint16_t>(am);
-			_ops.push_back(tsk_creat);
+			msgQueue.push_back(tsk_creat);
             return fd;
 		}
 		else if(strcmp(pch, "etsdb") == 0)
@@ -1762,13 +1839,13 @@ namespace FwLogger
 		uint8_t* _buf = static_cast<uint8_t*>(buf);
 		if(fd == 0)
 		{
-			std::size_t i;
-			for(i = 0; i < count && i < rx_buffer.idx; ++i) _buf[i] = rx_buffer.buf[i];
-			return i;
+			//std::size_t i;
+			//for(i = 0; i < count && i < rx_buffer.idx; ++i) _buf[i] = rx_buffer.buf[i];
+			return 0;
 		}
 		else
 		{
-			FileDescriptor& _fd = _fds[fd-1];
+			FileDescriptor& _fd = _fds[fd-FD_BUILTINS];
 			if(_fd.type == FDType::File)
 			{
 				if(_fd.buf == nullptr) _fd.buf = reinterpret_cast<uint8_t*>(_alloc.Allocate(128, reinterpret_cast<uintptr_t>(this)));
@@ -1799,7 +1876,7 @@ namespace FwLogger
 							Task tsk;
 							tsk.fd = fd;
 							tsk.op = Operation::ReadNext;
-							_ops.push_front(tsk);
+							msgQueue.push_front(tsk);
 						}
 					}
 					ui8b[i] = _fd.buf[_fd.buf_idx++];
@@ -1812,62 +1889,24 @@ namespace FwLogger
 
 		}
 		errno = EUNSPEC;
-		return -1;
-	}
-
-	int OS::poll(int fd)
-	{
-        if(fd == 0)
-		{
-            return rx_buffer.idx > 0;
-		}
-		else
-		{
-			FileDescriptor& _fd = _fds[fd-1];
-			if(_fd.type == FDType::File)
-			{
-                eTSDB::FilePage* fp = reinterpret_cast<eTSDB::FilePage*>(_fd.ptr);
-                return fp->getDataReady();
-			}
-		}
-
-		errno = EUNSPEC;
-		return -1;
+		return -2;
 	}
 
 	int OS::write(int fd, const void* buf, size_t count)
 	{
 		if(fd == 0)
 		{
-			uint8_t* ui8_buf = (uint8_t*) buf;
-			for(unsigned int i = 0; i < count; ++i)
-			{
-				if(tx_buffer.push_back(ui8_buf[i]) != 0)
-				{
-					errno = EBADF;
-					return -1;
-				}
-			}
-
-			uint8_t ph;
-			if(!_UART_txing) // esto se podría ver como un flush
-			{
-				if(tx_buffer.pop_front(&ph) == 0)
-				{
-					HAL_UART_Transmit_IT(&huart1, &ph, 1);
-					_UART_txing = 1;
-				}
-			}
+			PortUART::get().write_type(0, buf, count);
 
 			return count;
 		}
-		else
+		else if(fd < SOCKET_DESCRIPTOR_OFFSET)
 		{
-			FileDescriptor& _fd = _fds[fd-1];
+			FileDescriptor& _fd = _fds[fd-FD_BUILTINS];
             if(_fd.type == FDType::None)
 			{
 				errno = EBADF;
-				return -1;
+				return -2;
 			}
 			if(_fd.type == FDType::File)
 			{
@@ -1900,23 +1939,21 @@ namespace FwLogger
 					return count;
 				}
 			}
-			else if(_fd.type == FDType::LL_UART)
-			{
-				if(_fd.ptr != nullptr)
-				{
-					LLPacket* pkt = reinterpret_cast<LLPacket*>(_fd.ptr);
-					lluart.send(pkt->srcAddr, LLType::Confirmable, reinterpret_cast<const uint8_t*>(buf), count);
-				}
-			}
+		}
+		else
+		{
+			fd -= SOCKET_DESCRIPTOR_OFFSET;
+			PortManager::write(fd, buf, count); // it frees sockets if self managed
 		}
 		errno = EUNSPEC;
-		return -1;
+		return -2;
 	}
 
 	int OS::close(int fd) // this return 0 if there is no operation pending
 	{
 		if(fd == 0) return EBADF;
-		FileDescriptor& _fd = _fds[fd-1];
+		if(fd > SOCKET_DESCRIPTOR_OFFSET) PortManager::close(fd);
+		FileDescriptor& _fd = _fds[fd-FD_BUILTINS];
 		if(_fd.type == FDType::None) return EBADF;
 		if(_fd.type == FDType::File)
 		{
@@ -1934,18 +1971,20 @@ namespace FwLogger
 		{
 			_alloc.Deallocate(_fd.ptr);
 		}
-		else if(_fd.type == FDType::LL_UART)
+		else if(_fd.type == FDType::SOCKET)
 		{
-			if(_fd.ptr != nullptr)
-			{
-				_alloc.Deallocate(_fd.ptr);
-			}
+			0;
 		}
 		_fd.type = FDType::None;
 		return 0;
 	}
 
-	eTSDB::Date OS::time()
+	uint64_t OS::time()
+	{
+		return timeETSDB().timestamp();
+	}
+
+	eTSDB::Date OS::timeETSDB()
 	{
 		eTSDB::Date retDate;
 
@@ -1992,52 +2031,6 @@ namespace FwLogger
 
 	}
 
-	void OS::ll_receive()
-	{
-		m_pStatus = ParserStatus::Start;
-
-		Task* currTask = _ops.at_front();
-		if(currTask != nullptr)
-		{
-			if(currTask->op == Operation::Upload)
-			{
-				LLPacket* ptr = lluart.pop();
-				if(ptr == nullptr) return;
-
-				write(currTask->name_buf[0], ptr->payload, ptr->chunkSize());
-
-				int rem_len = currTask->counter;
-				rem_len-= ptr->chunkSize();
-				if(rem_len <= 0)
-				{
-					Task close_tsk;
-					close_tsk.op = Operation::Close;
-					close_tsk.fd = currTask->name_buf[0];
-					_ops.push_back(close_tsk);
-					_ops.delete_front();
-				}
-				else
-					currTask->counter = rem_len;
-
-				_alloc.Deallocate(ptr->payload);
-			}
-		}
-
-		Task tsk;
-		tsk.op = Operation::BinEval;
-		tsk.fd = _createFD(FDType::LL_UART);
-
-		LLPacket* ptr = lluart.pop();
-		if(ptr == nullptr)
-		{
-			_fds[tsk.fd-1].type = FDType::None;
-			return;
-		}
-
-		_fds[tsk.fd-1].ptr = ptr;
-		_ops.push_back(tsk);
-	}
-
 	int8_t OS::_createFD(FDType type)
 	{
 		for(int i = 0; i < 16; ++i)
@@ -2047,7 +2040,7 @@ namespace FwLogger
 				_fds[i].type = type;
 				_fds[i].buf_idx = 0;
 				_fds[i].ptr = nullptr;
-				return i+1;
+				return i+FD_BUILTINS;
 			}
 		}
 		return -1; // full file descriptor table
@@ -2055,21 +2048,19 @@ namespace FwLogger
 
 	void OS::_deleteFD(int fd)
 	{
+		if(fd < FD_BUILTINS) return;
+		fd -= FD_BUILTINS;
         if(_fds[fd].type == FDType::File)
 		{
             if(_fds[fd].ptr != nullptr) _alloc.Deallocate(_fds[fd].ptr);
             if(_fds[fd].buf != nullptr) _alloc.Deallocate(_fds[fd].buf);
-		}
-		else if(_fds[fd].type  == FDType::LL_UART)
-		{
-			if(_fds[fd].ptr != nullptr) _alloc.Deallocate(_fds[fd].ptr);
 		}
 	}
 
 	void OS::sleep()
 	{
 		Log::Verbose("Going to sleep\n");
-		HAL_PWR_EnterSTOPMode(PWR_LOWPOWERREGULATOR_ON, PWR_STOPENTRY_WFI);
+		//HAL_PWR_EnterSTOPMode(PWR_LOWPOWERREGULATOR_ON, PWR_STOPENTRY_WFI);
 	}
 
 	void OS::saveConfig()
@@ -2090,11 +2081,14 @@ namespace FwLogger
 
 		FLASH_WaitForLastOperation(1000);
 
-		if(flashError != 0xffffffff) {}
+		if(flashError != 0xffffffff)
+		{
+			return;
+		}
 
 		for(int i = 0; i < 32; i = i+4) // store name
 		{
-			uint64_t flash_val = 0;
+			uint32_t flash_val = 0;
 			for(int j = 0; j < 4; ++j)
 			{
 				if(m_name[i+j] == 0)
@@ -2108,26 +2102,58 @@ namespace FwLogger
 				}
 			}
 
-			HAL_FLASH_Program(FLASH_TYPEPROGRAM_DOUBLEWORD, flashaddr, flash_val);
+			HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, flashaddr, flash_val);
 			flashaddr += 4;
 			FLASH_WaitForLastOperation(1000);
 		}
 
+		HAL_FLASH_Program(FLASH_TYPEPROGRAM_HALFWORD, flashaddr, /*lluart.getAddr()*/0);
+
+		flashaddr += 4;
+
 		for(int i = 0; i < Module::getModuleNumber(); ++i)
 		{
 			Module* mod = Module::getModule(i);
-			uint8_t buf[64];
-			mod->getConfig(buf);
-			for(int j = 0; j < mod->getConfigSize(); j=j+4)
+			char buf[64] = {0};
+			buf[0] = mod->bin_id;
+			const char** params = mod->getParamList();
+			for(int j = 0; j < mod->getNumParam(); j++)
 			{
-				uint64_t flash_val = 0;
-				for(int k = 0; k < 4; ++k)
+				int buf_idx = 2;
+				strcpy(buf+1, params[j]);
+				buf_idx += strlen(params[j]); // dejar el 0
+				uint8_t paramSize = mod->getParamSizes()[j];
+				int dst;
+				if(paramSize == 1)
 				{
-					flash_val |= buf[j+k] << 8*k;
+					mod->getParam(params[j], &dst);
+					buf[buf_idx++] = dst & 0xff;
 				}
-				HAL_FLASH_Program(FLASH_TYPEPROGRAM_DOUBLEWORD, flashaddr, flash_val);
-				flashaddr += 4;
-				FLASH_WaitForLastOperation(1000);
+				else if(paramSize == 2)
+				{
+					mod->getParam(params[j], &dst);
+					buf[buf_idx++] = dst & 0xff;
+					buf[buf_idx++] = (dst >> 8) & 0xff;
+				}
+				else if(paramSize == 4)
+				{
+					mod->getParam(params[j], &dst);
+					buf[buf_idx++] = dst & 0xff;
+					buf[buf_idx++] = (dst >> 8) & 0xff;
+					buf[buf_idx++] = (dst >> 16) & 0xff;
+					buf[buf_idx++] = (dst >> 24) & 0xff;
+				}
+				uint32_t flash_val;
+				for(int k = 0; k < buf_idx; k += 4)
+				{
+					flash_val = buf[k];
+					flash_val |= buf[k+1] << 8;
+					flash_val |= buf[k+2] << 16;
+					flash_val |= buf[k+3] << 24;
+					HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, flashaddr, flash_val);
+					flashaddr += 4;
+					FLASH_WaitForLastOperation(1000);
+				}
 			}
 		}
 
@@ -2147,12 +2173,39 @@ namespace FwLogger
 		//align 4
 		flash_ptr = (flash_ptr+3) & ~(3);
 
-		for(int i = 0; i < Module::getModuleNumber(); ++i)
+		uint16_t addr = *reinterpret_cast<uint16_t*>(flash_ptr);
+
+		flash_ptr += 4;
+
+		while(*reinterpret_cast<uint8_t*>(flash_ptr) != 0)
 		{
-			Module* mod = Module::getModule(i);
-			mod->setConfig(reinterpret_cast<uint8_t*>(flash_ptr));
-			flash_ptr += mod->getConfigSize();
-			flash_ptr = (flash_ptr+3) & (~3);
+			uint8_t module_bin_id = *reinterpret_cast<uint8_t*>(flash_ptr++);
+
+			Module* mod = Module::getModuleById(module_bin_id);
+			if(mod == nullptr) return;
+
+			char* param = reinterpret_cast<char*>(flash_ptr);
+			int namelength = strlen(param);
+
+			int paramlength = 0;
+			for(int i = 0; i < mod->getNumParam(); ++i)
+			{
+				if(strcmp(param, mod->getParamList()[i]) == 0)
+				{
+					paramlength = mod->getParamSizes()[i];
+					break;
+				}
+			}
+			if(paramlength == 0) return;
+
+			flash_ptr += namelength+1;
+
+			int paramValue = *reinterpret_cast<int*>(flash_ptr);
+
+			flash_ptr += paramlength;
+			flash_ptr = (flash_ptr+3) & ~(3);
+
+			mod->setParam(param, paramValue);
 		}
 
 	}

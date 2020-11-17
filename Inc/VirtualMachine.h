@@ -130,11 +130,10 @@ class VirtualMachine : public FwLogger::Module
 		template<typename T>
 		void push(T val); // esto es pack, unpack pero solo en el stack y gestiona el stackpointer
 
-		vector<Symbol> m_symbolTable;
-
 		template<typename T>
 		T pop();
 
+		vector<Symbol> m_symbolTable;
 		//void cycle(); // ejecuta una instrucción de la máquina virtual
 };
 

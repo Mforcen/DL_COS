@@ -1,0 +1,3 @@
+[submodule "components/eTSDBWrapper/eTSDB"]
+	path = components/eTSDBWrapper/eTSDB
+	url = ssh://gitea@pcasocieee.upct.es:5022/LaOrganizacion/eTSDB.git
