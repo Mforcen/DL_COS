@@ -54,6 +54,11 @@ int PulseCount(int ch)
 	return OS::get().digital.pulseRead(ch);
 }
 
+void sleepFor(int s)
+{
+	OS::get().sleepFor(s);
+}
+
 uint64_t time()
 {
 	return OS::get().time();

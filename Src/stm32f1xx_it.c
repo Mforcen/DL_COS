@@ -63,6 +63,7 @@ extern DMA_HandleTypeDef hdma_i2c1_tx;
 extern I2C_HandleTypeDef hi2c1;
 extern RTC_HandleTypeDef hrtc;
 extern DMA_HandleTypeDef hdma_sdio;
+extern SPI_HandleTypeDef hspi1;
 extern DMA_HandleTypeDef hdma_spi1_rx;
 extern DMA_HandleTypeDef hdma_spi1_tx;
 extern TIM_HandleTypeDef htim6;
@@ -219,10 +220,36 @@ void RTC_IRQHandler(void)
   /* USER CODE BEGIN RTC_IRQn 0 */
 
   /* USER CODE END RTC_IRQn 0 */
+  //HAL_RTC_AlarmIRQHandler(&hrtc);
   HAL_RTCEx_RTCIRQHandler(&hrtc);
   /* USER CODE BEGIN RTC_IRQn 1 */
 
   /* USER CODE END RTC_IRQn 1 */
+}
+
+void EXTI0_IRQHandler(void)
+{
+	HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_0);
+}
+
+void EXTI1_IRQHandler(void)
+{
+	HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_1);
+}
+
+void EXTI2_IRQHandler(void)
+{
+	HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_2);
+}
+
+void EXTI3_IRQHandler(void)
+{
+	HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_3);
+}
+
+void EXTI4_IRQHandler(void)
+{
+	HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_4);
 }
 
 /**
@@ -337,6 +364,11 @@ void USB_LP_CAN1_RX0_IRQHandler(void)
   /* USER CODE END USB_LP_CAN1_RX0_IRQn 1 */
 }
 
+void EXTI9_5_IRQHandler(void)
+{
+	HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_6);
+}
+
 /**
   * @brief This function handles I2C1 event interrupt.
   */
@@ -365,6 +397,11 @@ void I2C1_ER_IRQHandler(void)
   /* USER CODE END I2C1_ER_IRQn 1 */
 }
 
+void SPI1_IRQHandler(void)
+{
+	HAL_SPI_IRQHandler(&hspi1);
+}
+
 /**
   * @brief This function handles USART1 global interrupt.
   */
@@ -391,6 +428,16 @@ void USART3_IRQHandler(void)
   /* USER CODE BEGIN USART1_IRQn 1 */
 
   /* USER CODE END USART1_IRQn 1 */
+}
+
+void EXTI15_10_IRQHandler(void)
+{
+
+}
+
+void RTC_Alarm_IRQHandler(void)
+{
+	HAL_RTC_AlarmIRQHandler(&hrtc);
 }
 
 /**

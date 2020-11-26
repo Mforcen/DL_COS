@@ -12,7 +12,7 @@ namespace FwLogger
 		return *ptr;
 	}
 
-	OS::OS():_alloc(_alloc_buf, _alloc_idx, _alloc_ownership, 8192), flash(&hspi1, FLASH_CS), etsdb(0, 8192*1024, &hspi1, FLASH_CS, &_alloc), sdi12(SDI12_0),
+	OS::OS():_alloc(_alloc_buf, _alloc_idx, _alloc_ownership, 8192), flash(&hspi1, FLASH_CS), /*etsdb(0, 8192*1024, &hspi1, FLASH_CS, &_alloc),*/ sdi12(SDI12_0),
 	radio(&hspi1, LORA_DIO0, LORA_DIO1, LORA_RXEN, LORA_TXEN, LORA_CS, LORA_RST)
 	{
 		for(int i = 0; i < 32; ++i) m_name[i] = 0;
@@ -31,6 +31,7 @@ namespace FwLogger
 		//ctor
 
 		PortManager::setAllocator(&_alloc);
+		//do not call hardware settings
 	}
 
 	void OS::setOS(OS* os)
@@ -40,22 +41,28 @@ namespace FwLogger
 
 	void OS::init()
 	{
-		flash.readPage(10, 0);
+		//flash.readPage(10, 0);
 		HAL_Delay(10);
-		flash.loop(); // no preguntar, xd lol
+		//flash.loop(); // no preguntar, xd lol
 
 		radio.init(868000000);
 		radio.receive(1);
 
 		_vectAllocator = &_alloc;
 		PortUART::get();
+		PortGSM::get();
 
 		m_lpEnabled = false;
+
+		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11 | GPIO_PIN_12, GPIO_PIN_SET);
 	}
 
 	void OS::RTC_ISR()
 	{
 		m_rtcFlag = true;
+		HAL_PWR_DisableSleepOnExit();
+		HAL_RTC_DeactivateAlarm(&hrtc, RTC_ALARM_A);
+		vm.resumeExec();
 	}
 
 	void OS::loop()
@@ -68,35 +75,21 @@ namespace FwLogger
 
 		work_left = task_loop() | work_left;
 
-		if(work_left == false)
-		{
-			if(m_pendingTask == true) // there was a pending task in the previous loop
-			{
-				//hacer cosas
-				_lastTaskTime = HAL_GetTick();
-			}
-			else
-			{
-				if((HAL_GetTick()-_lastTaskTime) > 5000)
-				{
-					_lastTaskTime = HAL_GetTick();
-					sleep();
-				}
-			}
-		}
-
 		m_pendingTask = work_left;
 
-		PortGSM::get().loop();
+		m_pendingTask |= PortManager::loop();
 
 		if(m_lpEnabled && !m_pendingTask)
 		{
 			sleep();
+			wakeUp();
+			printf("hola\n");
 		}
 
 		if(m_rtcFlag) // if it has to wake up from sleep
 		{
-			m_rtcFlag = 0;
+			m_rtcFlag = false;
+			m_lpEnabled = false;
 			vm.resumeExec(); // this will resume VM execution if WAIT_TABLE is called
 		}
 		else if(vm.getWaitFlag()) // else if has to go to sleep, configure alarm
@@ -152,6 +145,11 @@ namespace FwLogger
 		}
 	}
 
+	int twodecparse(uint8_t* num)
+	{
+		return (num[0]-'0')*10 + num[1]-'0';
+	}
+
 	bool OS::task_loop()
 	{
 		Task* currTask = msgQueue.at_front();
@@ -184,10 +182,65 @@ namespace FwLogger
 
 		else if(currTask->op == Operation::ModemEval)
 		{
+			//reinterpret_cast<char*>(currTask->buf)[currTask->counter] = 0;
+			//printf("Modem[%s]:%s\n", PortGSM::get().getStatusStr(), reinterpret_cast<char*>(currTask->buf));
 			PortGSM::get().eval(reinterpret_cast<uint8_t*>(currTask->buf), currTask->counter);
-			printf("Modem: ");
-			PortUART::get().write_type(nullptr, currTask->buf, currTask->counter);
-			printf("\n");
+
+			if(strncmp(reinterpret_cast<char*>(currTask->buf), "OK",2) != 0)
+			{
+				printf("Modem[%s]:%s\n", PortGSM::get().getStatusStr(), reinterpret_cast<char*>(currTask->buf));
+				//PortUART::get().write_type(nullptr, currTask->buf, currTask->counter);
+				//printf("\n");
+			}
+
+
+			uint8_t* uib = reinterpret_cast<uint8_t*>(currTask->buf);
+			if(uib[0] == '+')
+			{
+				std::size_t space_loc;
+				for(space_loc = 0; space_loc < currTask->counter; ++space_loc)
+				{
+					if(uib[space_loc] == ' ')
+					{
+						uib[space_loc] = 0;
+						break;
+					}
+				}
+				if(space_loc < currTask->counter)
+				{
+					uib += 1;
+					if(strcmp(reinterpret_cast<char*>(uib), "CCLK:") == 0)
+					{
+						uib += space_loc;
+
+						eTSDB::Date date;
+						date.year = twodecparse(uib+1)+2000;
+						date.month = twodecparse(uib+4);
+						date.day = twodecparse(uib+7);
+						date.hour = twodecparse(uib+10);
+						date.minute = twodecparse(uib+13);
+						date.second = twodecparse(uib+16);
+
+						uint64_t timestamp = date.timestamp();
+						date.fromTimestamp(timestamp-3600);
+
+						RTC_DateTypeDef sDate;
+						sDate.Year = date.year-2000;
+						sDate.Month = date.month;
+						sDate.Date = date.day;
+
+						RTC_TimeTypeDef sTime;
+						sTime.Hours = date.hour;
+						sTime.Minutes = date.minute;
+						sTime.Seconds = date.second;
+
+						HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BIN);
+						HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
+
+					}
+				}
+			}
+
 			_alloc.Deallocate(currTask->buf);
 
 			Socket* sock = PortManager::getSocket(currTask->fd);
@@ -201,13 +254,15 @@ namespace FwLogger
 
 		else if(currTask->op == Operation::OpenFile)
 		{
-			if(etsdb.openFile(currTask->name_buf, static_cast<eTSDB::PageAccessMode>(currTask->counter)) == eTSDB::Ok)
-				currTask->op = Operation::GetPage;
+			/*if(etsdb.openFile(currTask->name_buf, static_cast<eTSDB::PageAccessMode>(currTask->counter)) == eTSDB::Ok)
+				currTask->op = Operation::GetPage;*/
+			//TODO reimplement
+			msgQueue.delete_front();
 		}
 
 		else if(currTask->op == Operation::OpenHeader)
 		{
-			eTSDB::RetValue retval;
+			/*eTSDB::RetValue retval;
 			if(currTask->buf == nullptr)
 			{
 				retval = etsdb.openHeader(currTask->name_buf, eTSDB::PageAccessMode::PageRead);
@@ -225,12 +280,14 @@ namespace FwLogger
 					currTask->buf = nullptr;
 				}
 				currTask->op = Operation::GetPage;
-			}
+			}*/
+			//TODO reimplement
+			msgQueue.delete_front();
 		}
 
 		else if(currTask->op == Operation::ListTables) // TODO (forcen#1#): Add binary mode for these functions
 		{
-			eTSDB::RetValue retval = etsdb.checkGetNextHeader();
+			/*eTSDB::RetValue retval = etsdb.checkGetNextHeader();
 			eTSDB::HeaderPage* hp = reinterpret_cast<eTSDB::HeaderPage*>(currTask->buf);
 			if(retval == eTSDB::Ok)
 			{
@@ -257,12 +314,14 @@ namespace FwLogger
 				}
 				etsdb.unlock();
 				msgQueue.delete_front();
-			}
+			}*/
+			//TODO reimplement
+			msgQueue.delete_front();
 		}
 
 		else if(currTask->op == Operation::ReadTable)
 		{
-			eTSDB::HeaderPage* hp = reinterpret_cast<eTSDB::HeaderPage*>(_fds[currTask->fd-FD_BUILTINS].ptr);
+			/*eTSDB::HeaderPage* hp = reinterpret_cast<eTSDB::HeaderPage*>(_fds[currTask->fd-FD_BUILTINS].ptr);
 			if((currTask->counter & 1) == 0)
 			{
 				if(etsdb.readNextValue(*hp) == eTSDB::Ok) currTask->counter |= 1;
@@ -333,12 +392,14 @@ namespace FwLogger
 						etsdb.readNextValue(*hp);
 					}
 				}
-			}
+			}*/
+			//TODO reimplement
+			msgQueue.delete_front();
 		}
 
 		else if(currTask->op == Operation::GetPage)
 		{
-			eTSDB::Page* page = etsdb.getPage();
+			/*eTSDB::Page* page = etsdb.getPage();
 			if(page != nullptr)
 			{
 				if(page->getType() == eTSDB::PageType::FileType)
@@ -356,12 +417,14 @@ namespace FwLogger
 					hp->copy(reinterpret_cast<eTSDB::HeaderPage*>(page));
 				}
 				msgQueue.delete_front();
-			}
+			}*/
+			//TODO reimplement
+			msgQueue.delete_front();
 		}
 
 		else if(currTask->op == Operation::ReadNext)
 		{
-			eTSDB::FilePage* fp = reinterpret_cast<eTSDB::FilePage*>(_fds[currTask->fd-FD_BUILTINS].ptr);
+			/*eTSDB::FilePage* fp = reinterpret_cast<eTSDB::FilePage*>(_fds[currTask->fd-FD_BUILTINS].ptr);
 			eTSDB::RetValue retval = etsdb.readNextBlockFile(*fp);
             if(retval == eTSDB::Ok)
 			{
@@ -370,11 +433,13 @@ namespace FwLogger
 			else if(retval == eTSDB::FileEnded)
 			{
 				msgQueue.delete_front();
-			}
+			}*/
+			//TODO reimplement
+			msgQueue.delete_front();
 		}
 
 		else if(currTask->op == Operation::ListFiles)
-		{
+		{/*
 			eTSDB::RetValue retval = etsdb.checkGetNextFile();
 			if(retval == eTSDB::Ok)
 			{
@@ -414,7 +479,9 @@ namespace FwLogger
 				delete fp;
 				etsdb.unlock();
 				msgQueue.delete_front();
-			}
+			}*/
+			//TODO reimplement
+			msgQueue.delete_front();
 		}
 		else if(currTask->op == Operation::DownloadFile)
 		{
@@ -633,7 +700,7 @@ namespace FwLogger
 		}
 		else if(currTask->op == Operation::SaveRow)
 		{
-			eTSDB::HeaderPage* hp = reinterpret_cast<eTSDB::HeaderPage*>(_fds[currTask->fd-FD_BUILTINS].ptr);
+			/*eTSDB::HeaderPage* hp = reinterpret_cast<eTSDB::HeaderPage*>(_fds[currTask->fd-FD_BUILTINS].ptr);
 			if(hp == nullptr) return true;
 			eTSDB::RetValue retval = etsdb.appendValue(*hp, std::move(*reinterpret_cast<eTSDB::Row*>(currTask->buf)));
 			if(retval == eTSDB::Ok)
@@ -642,7 +709,7 @@ namespace FwLogger
 				reinterpret_cast<eTSDB::Row*>(currTask->buf)->~Row();
 				_alloc.Deallocate(currTask->buf);
 				msgQueue.delete_front();
-			}
+			}*/
 		}
 		else if(currTask->op != Operation::Upload)
 		{
@@ -679,83 +746,40 @@ namespace FwLogger
 					printf("No error in huart3\n");
 				}
 			}
-			else if(strcmp(token, "open") == 0)
-			{
-				int p_sd = PortManager::open("sms:609177644");
-			}
-			else if(strcmp(token, "test") == 0)
-			{
-				int p = PortManager::open("sms:687381497");
-				PortManager::write(p, "hola", 4);
-			}
-			else if(strcmp(token, "SCSC") == 0)
-			{
-				PortGSM::get().write_type(0, "", 0);
-			}
-			else if(strcmp(token, "error") == 0)
-			{
-				PortGSM::get().write_type(0, "AT+CEER\r", 8);
-			}
-			else if(strcmp(token, "signal") == 0)
-			{
-				PortGSM::get().write_type(0, "AT+CSQ\r", 7);
-			}
-			else if(strcmp(token, "info") == 0)
-			{
-				PortGSM::get().write_type(0, "ATI\r", 4);
-			}
-			else if(strcmp(token, "debug") == 0)
-			{
-				PortGSM::get().write_type(0, "ATI+CMEE=2\r", 11);
-			}
-			else if(strcmp(token, "ccid") == 0)
-			{
-				PortGSM::get().write_type(0, "AT+CCID\r", strlen("AT+CCID\r"));
-			}
-			else if(strcmp(token, "reg") == 0)
-			{
-				PortGSM::get().write_type(0, "AT+CREG?\r", strlen("AT+CREG?\r"));
-			}
-			else if(strcmp(token, "pin") == 0)
-			{
-				PortGSM::get().write_type(0, "AT+CPIN?\r", strlen("AT+CPIN?\r"));
-			}
-			else if(strcmp(token, "cops") == 0)
-			{
-				PortGSM::get().write_type(0, "AT+COPS=?\r", strlen("AT+COPS=?\r"));
-			}
-			else if(strcmp(token, "cbc") == 0)
-			{
-				PortGSM::get().write_type(0, "AT+CBC\r", strlen("AT+CBC\r"));
-			}
-			else if(strcmp(token, "fun") == 0)
-			{
-				token = strtok(NULL, " ");
-				if(token == NULL)
-				{
-					PortGSM::get().write_type(0, "AT+CFUN?\r", strlen("AT+CFUN?\r"));
-				}
-				else
-				{
-
-					uint8_t funlevel = static_cast<uint8_t>(std::atoi(token))+'0';
-					PortGSM::get().write_type(0, "AT+CFUN=", 8);
-					PortGSM::get().write_type(0, &funlevel, 1);
-					PortGSM::get().write_type(0, "\r",1);
-				}
-			}
-			else if(strcmp(token, "ipshut") == 0)
-			{
-				PortGSM::get().write_type(nullptr, "AT+CIPSHUT\r", strlen("AT+CIPSHUT\r"));
-			}
 			else if(strcmp(token, "http") == 0)
 			{
 				int sockd = PortManager::open("http:labsap.upct.es:8080/api/v1/IyW4TYJVYN9hJfAydFkx/telemetry");
 				PortManager::write(sockd, "{\"meas\":\"4321\"}", strlen("{\"meas\":\"4321\"}"));
 			}
+			else if(strcmp(token, "time") == 0)
+			{
+				PortGSM::get().write_type(nullptr, "AT+CCLK?\r", strlen("AT+CCLK?\r"));
+			}
+			else if(strcmp(token, "disable") == 0)
+				PortGSM::get().powerOff();
+			else if(strcmp(token, "enable") == 0)
+				PortGSM::get().reset();
+			else
+			{
+				if(token[0] == 'A')
+				{
+					uint8_t buf[64] = {0};
+					int len = sprintf(reinterpret_cast<char*>(buf), "%s\r", token);
+					PortGSM::get().write_type(nullptr, buf, len);
+				}
+			}
 		}
 
-		else if(strcmp(token, "file") == 0)
+		else if(strcmp(token, "uart") == 0)
+		{
+			token = strtok(NULL, " ");
+			if(strcmp(token, "state") == 0)
+			{
+				printf("UART state: %d\n", HAL_UART_GetState(&huart3));
+			}
+		}
+
+		/*else if(strcmp(token, "file") == 0)
 		{
 			token = strtok(NULL, " ");
 			if(strcmp(token, "upload") == 0)
@@ -880,7 +904,7 @@ namespace FwLogger
 				append_tsk.buf = test;
 				msgQueue.push_back(append_tsk);
 			}
-		}
+		}*/
 
 		else if(strcmp(token, "test") == 0)
 		{
@@ -904,6 +928,71 @@ namespace FwLogger
 				token = strtok(NULL, " ");
 				int pin = atoi(token);
 				printf("%d\n",digital.pulseRead(pin));
+			}
+			else if(strcmp(token, "vm") == 0)
+			{
+				const uint8_t prg[] = {2,	63,	0,	0,	0,	104,	116,	116,	112,	58,	108,	97,	98,	115,	97,	112,	46,	117,	112,	99,	116,	46,	101,	115,	58,	56,	48,	56,	48,	47,	97,	112,
+						105,	47,	118,	49,	47,	73,	121,	87,	52,	84,	89,	74,	86,	89,	78,	57,	104,	74,	102,	65,	121,	100,	70,	107,	120,	47,	116,	101,	108,	101,	109,	101,
+						116,	114,	121,	0,	1,	69,	4,	0,	0,	10,	2,	4,	0,	0,	0,	34,	44,	34,	0,	1,	198,	4,	0,	0,	10,	1,	69,	4,	0,	0,	1,	20,
+						0,	1,	0,	64,	1,	238,	8,	0,	0,	9,	1,	0,	0,	0,	0,	1,	242,	8,	0,	0,	9,	1,	59,	1,	0,	0,	61,	4,	0,	0,	0,	4,
+						0,	0,	0,	1,	134,	4,	0,	0,	1,	0,	0,	0,	0,	5,	1,	27,	0,	1,	0,	64,	1,	134,	4,	0,	0,	1,	202,	4,	0,	0,	1,	24,
+						0,	1,	0,	64,	65,	1,	68,	4,	0,	0,	0,	1,	47,	62,	2,	7,	0,	0,	0,	123,	34,	116,	115,	34,	58,	0,	1,	202,	4,	0,	0,	10,
+						1,	28,	0,	1,	0,	64,	1,	246,	8,	0,	0,	9,	1,	134,	4,	0,	0,	1,	246,	8,	0,	0,	5,	1,	26,	0,	1,	0,	64,	1,	134,	4,
+						0,	0,	1,	202,	4,	0,	0,	1,	24,	0,	1,	0,	64,	1,	0,	0,	0,	0,	1,	9,	0,	0,	0,	1,	202,	8,	0,	0,	1,	0,	0,	0,
+						0,	1,	16,	0,	1,	0,	64,	2,	24,	0,	0,	0,	48,	48,	48,	44,	34,	118,	97,	108,	117,	101,	115,	34,	58,	123,	34,	109,	111,	105,	115,	49,
+						34,	58,	34,	0,	1,	134,	4,	0,	0,	10,	1,	134,	4,	0,	0,	1,	202,	4,	0,	0,	1,	24,	0,	1,	0,	64,	1,	202,	8,	0,	0,	1,
+						0,	0,	0,	0,	1,	4,	0,	0,	0,	36,	34,	5,	1,	17,	1,	0,	0,	64,	2,	12,	0,	0,	0,	34,	44,	34,	109,	111,	105,	115,	50,	34,
+						58,	34,	0,	1,	134,	4,	0,	0,	10,	1,	134,	4,	0,	0,	1,	202,	4,	0,	0,	1,	24,	0,	1,	0,	64,	1,	202,	8,	0,	0,	1,	1,
+						0,	0,	0,	1,	4,	0,	0,	0,	36,	34,	5,	1,	17,	1,	0,	0,	64,	2,	12,	0,	0,	0,	34,	44,	34,	109,	111,	105,	115,	51,	34,	58,
+						34,	0,	1,	134,	4,	0,	0,	10,	1,	134,	4,	0,	0,	1,	202,	4,	0,	0,	1,	24,	0,	1,	0,	64,	1,	202,	8,	0,	0,	1,	2,	0,
+						0,	0,	1,	4,	0,	0,	0,	36,	34,	5,	1,	17,	1,	0,	0,	64,	2,	12,	0,	0,	0,	34,	44,	34,	109,	111,	105,	115,	52,	34,	58,	34,
+						0,	1,	134,	4,	0,	0,	10,	1,	134,	4,	0,	0,	1,	202,	4,	0,	0,	1,	24,	0,	1,	0,	64,	1,	202,	8,	0,	0,	1,	3,	0,	0,
+						0,	1,	4,	0,	0,	0,	36,	34,	5,	1,	17,	1,	0,	0,	64,	2,	12,	0,	0,	0,	34,	44,	34,	109,	111,	105,	115,	53,	34,	58,	34,	0,
+						1,	134,	4,	0,	0,	10,	1,	134,	4,	0,	0,	1,	202,	4,	0,	0,	1,	24,	0,	1,	0,	64,	1,	202,	8,	0,	0,	1,	4,	0,	0,	0,
+						1,	4,	0,	0,	0,	36,	34,	5,	1,	17,	1,	0,	0,	64,	2,	12,	0,	0,	0,	34,	44,	34,	109,	111,	105,	115,	54,	34,	58,	34,	0,	1,
+						134,	4,	0,	0,	10,	1,	134,	4,	0,	0,	1,	202,	4,	0,	0,	1,	24,	0,	1,	0,	64,	1,	202,	8,	0,	0,	1,	5,	0,	0,	0,	1,
+						4,	0,	0,	0,	36,	34,	5,	1,	17,	1,	0,	0,	64,	2,	12,	0,	0,	0,	34,	44,	34,	109,	111,	105,	115,	55,	34,	58,	34,	0,	1,	134,
+						4,	0,	0,	10,	1,	134,	4,	0,	0,	1,	202,	4,	0,	0,	1,	24,	0,	1,	0,	64,	1,	202,	8,	0,	0,	1,	6,	0,	0,	0,	1,	4,
+						0,	0,	0,	36,	34,	5,	1,	17,	1,	0,	0,	64,	2,	12,	0,	0,	0,	34,	44,	34,	109,	111,	105,	115,	56,	34,	58,	34,	0,	1,	134,	4,
+						0,	0,	10,	1,	134,	4,	0,	0,	1,	202,	4,	0,	0,	1,	24,	0,	1,	0,	64,	1,	202,	8,	0,	0,	1,	7,	0,	0,	0,	1,	4,	0,
+						0,	0,	36,	34,	5,	1,	17,	1,	0,	0,	64,	2,	12,	0,	0,	0,	34,	44,	34,	109,	111,	105,	115,	57,	34,	58,	34,	0,	1,	134,	4,	0,
+						0,	10,	1,	134,	4,	0,	0,	1,	202,	4,	0,	0,	1,	24,	0,	1,	0,	64,	1,	202,	8,	0,	0,	1,	8,	0,	0,	0,	1,	4,	0,	0,
+						0,	36,	34,	5,	1,	17,	1,	0,	0,	64,	2,	4,	0,	0,	0,	34,	125,	125,	0,	1,	134,	4,	0,	0,	10,	1,	134,	4,	0,	0,	1,	202,
+						4,	0,	0,	1,	24,	0,	1,	0,	64,	1,	202,	4,	0,	0,	1,	25,	0,	1,	0,	64,	1,	250,	8,	0,	0,	9,	1,	250,	8,	0,	0,	5,
+						1,	202,	4,	0,	0,	1,	238,	8,	0,	0,	5,	1,	22,	0,	1,	0,	64,	29,	1,	202,	4,	0,	0,	1,	14,	0,	1,	0,	64,	1,	60,	0,
+						0,	0,	1,	23,	0,	1,	0,	64,	1,	59,	1,	0,	0,	61,	127};
+
+				vm.setStackSize(150);
+				vm.setProgram(prg, 0, sizeof(prg));
+				vm.enable(true);
+			}
+			else if(strcmp(token, "vm2") == 0)
+			{
+				const uint8_t prg[] = {1,	203,	0,	0,	0,	0,	1,	47,	62,	2,	5,	0,	0,	0,	104,	111,	108,	97,	0,	1,	204,	0,	0,	0,	10,	1,	204,	0,	0,	0,	1,	14,
+										0,	1,	0,	64,	1,	10,	0,	0,	0,	1,	23,	0,	1,	0,	64,	1,	150,	0,	0,	0,	61,	127};
+				vm.setStackSize(150);
+				vm.setProgram(prg, 0, 54);
+				vm.enable(true);
+			}
+			else if(strcmp(token, "sleep") == 0)
+			{
+				token = strtok(NULL, " ");
+				if(token == NULL)
+					sleepFor(10);
+				else
+				{
+					int sleepLen = atoi(token);
+					if(sleepLen == 0) sleepFor(10);
+					else sleepFor(sleepLen);
+				}
+			}
+			else if(strcmp(token, "5v") == 0)
+			{
+				HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_12);
+			}
+			else if(strcmp(token, "12v") == 0)
+			{
+				HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_11);
 			}
 		}
 
@@ -1045,11 +1134,11 @@ namespace FwLogger
 			}
 			else if(strcmp(token, "data") == 0)
 			{
-				if(sdi12.singleMeasure(0, sdi12_test, 6) != 0)
+				if(sdi12.singleMeasure(0, sdi12_test, 9) != 0)
 					printf("Not ready yet\n");
 				else
 				{
-					printf("Data: %f\t%f\t%f\t%f\t%f\t%f\n", sdi12_test[0], sdi12_test[1], sdi12_test[2], sdi12_test[3], sdi12_test[4], sdi12_test[5]);
+					printf("Data: %f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n", sdi12_test[0], sdi12_test[1], sdi12_test[2], sdi12_test[3], sdi12_test[4], sdi12_test[5], sdi12_test[6], sdi12_test[7], sdi12_test[8]);
 				}
 			}
 			else if(strcmp(token, "fudge") == 0)
@@ -1642,7 +1731,7 @@ namespace FwLogger
 				tsk.counter = 1;
 				tsk.fd = fd;
 
-				etsdb.startGetNextFile(*reinterpret_cast<eTSDB::FilePage*>(tsk.buf));
+				//etsdb.startGetNextFile(*reinterpret_cast<eTSDB::FilePage*>(tsk.buf));
 
 				msgQueue.push_back(tsk);
 			}
@@ -1774,10 +1863,7 @@ namespace FwLogger
 	int OS::open(char* path, int oflag)
 	{
 		if(path[0] != '/')
-		{
-			errno = ENOENT;
-			return -1;
-		}
+			return PortManager::open(path);
 
 		char* pch;
 		pch = strtok(path, "/");
@@ -1928,22 +2014,24 @@ namespace FwLogger
 						for(std::size_t i = 0; i < count; ++i)
 							merge_buf[i+_fd.buf_idx] = reinterpret_cast<const uint8_t*>(buf)[i];
 
-						etsdb.writeFile(*reinterpret_cast<eTSDB::FilePage*>(_fd.ptr), merge_buf, count+_fd.buf_idx);
+						//TODO
+						//etsdb.writeFile(*reinterpret_cast<eTSDB::FilePage*>(_fd.ptr), merge_buf, count+_fd.buf_idx);
 
 						_alloc.Deallocate(_fd.buf);
 						_fd.buf = nullptr;
 						_fd.buf_idx = 0;
 					}
 					else
-						etsdb.writeFile(*reinterpret_cast<eTSDB::FilePage*>(_fd.ptr), reinterpret_cast<const uint8_t*>(buf), count);
+						0;
+						//etsdb.writeFile(*reinterpret_cast<eTSDB::FilePage*>(_fd.ptr), reinterpret_cast<const uint8_t*>(buf), count);
 					return count;
 				}
 			}
 		}
 		else
 		{
-			fd -= SOCKET_DESCRIPTOR_OFFSET;
 			PortManager::write(fd, buf, count); // it frees sockets if self managed
+			return count;
 		}
 		errno = EUNSPEC;
 		return -2;
@@ -1957,7 +2045,7 @@ namespace FwLogger
 		if(_fd.type == FDType::None) return EBADF;
 		if(_fd.type == FDType::File)
 		{
-			eTSDB::FilePage* fp = reinterpret_cast<eTSDB::FilePage*>(_fd.ptr);
+			/*eTSDB::FilePage* fp = reinterpret_cast<eTSDB::FilePage*>(_fd.ptr);
             if(etsdb.closeFile(*fp) != eTSDB::RetValue::Ok)
 			{
                 return EBUSY;
@@ -1965,7 +2053,7 @@ namespace FwLogger
 			if(_fd.buf != nullptr) _alloc.Deallocate(_fd.buf);
 			delete fp;
             _alloc.Deallocate(_fd.ptr);
-            _fd.ptr = nullptr;
+            _fd.ptr = nullptr;*/
 		}
 		else if(_fd.type == FDType::TS)
 		{
@@ -2031,6 +2119,50 @@ namespace FwLogger
 
 	}
 
+	int OS::sleepFor(int s)
+	{
+		printf("Sleeping for %d seconds\n",s);
+		HAL_Delay(100);
+		RTC_TimeTypeDef sTime;
+		HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
+
+		int secs = sTime.Hours*3600+sTime.Minutes*60+sTime.Seconds;
+		secs += s;
+
+		RTC_AlarmTypeDef sAlarm;
+		sAlarm.Alarm = RTC_ALARM_A;
+		sAlarm.AlarmTime.Hours = secs/3600;
+		secs %= 3600;
+		sAlarm.AlarmTime.Minutes = secs/60;
+		sAlarm.AlarmTime.Seconds = secs%60;
+
+		if(HAL_RTC_SetAlarm_IT(&hrtc, &sAlarm, RTC_FORMAT_BIN)!=HAL_OK)
+		{
+			printf("Error on AlarmA\n");
+			HAL_Delay(100);
+		};
+		vm.pauseExec();
+
+		prepareSleep();
+
+		return 0;
+	}
+
+	void OS::prepareSleep()
+	{
+		PortGSM::get().powerOff();
+
+		m_lpEnabled = true;
+	}
+
+	void OS::wakeUp()
+	{
+		m_lpEnabled = false;
+
+		PortGSM::get().reset();
+		PortUART::get().reset();
+	}
+
 	int8_t OS::_createFD(FDType type)
 	{
 		for(int i = 0; i < 16; ++i)
@@ -2059,8 +2191,24 @@ namespace FwLogger
 
 	void OS::sleep()
 	{
-		Log::Verbose("Going to sleep\n");
-		//HAL_PWR_EnterSTOPMode(PWR_LOWPOWERREGULATOR_ON, PWR_STOPENTRY_WFI);
+		//Log::Verbose("Going to sleep\n");
+		PortUART::get().powerOff();
+
+		HAL_TIM_Base_Stop_IT(&htim6);
+		HAL_ADC_Stop_DMA(&hadc1);
+		HAL_NVIC_DisableIRQ(SPI1_IRQn);
+		HAL_NVIC_DisableIRQ(USART1_IRQn);
+
+		HAL_SuspendTick();
+		HAL_PWR_EnableSleepOnExit();
+		HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+		HAL_ResumeTick();
+
+		HAL_TIM_Base_Start_IT(&htim6);
+		HAL_ADC_Start_DMA(&hadc1, reinterpret_cast<uint32_t*>(adc_data), 5);
+
+		HAL_NVIC_EnableIRQ(SPI1_IRQn);
+		HAL_NVIC_EnableIRQ(USART1_IRQn);
 	}
 
 	void OS::saveConfig()
@@ -2207,6 +2355,5 @@ namespace FwLogger
 
 			mod->setParam(param, paramValue);
 		}
-
 	}
 }

@@ -101,9 +101,13 @@ namespace FwLogger
 			int16_t get_adc_val(int channel);
 
 			void enablePower(int enable);
+			void enableLowPower(int enable);
+			int sleepFor(int s);
+			void prepareSleep();
+			void wakeUp();
 
 			SPIFlash flash;
-			eTSDB::Driver etsdb;
+			//eTSDB::Driver etsdb;
 			SDI12_Driver sdi12;
 			VirtualMachine vm;
 			Digital_Driver digital;
@@ -161,7 +165,7 @@ namespace FwLogger
 
 			bool m_rxBin, m_rtcFlag, m_pendingTask, m_lpEnabled;
 
-			float sdi12_test[6];
+			float sdi12_test[9];
 
 			int8_t _createFD(FDType type);
 			void _deleteFD(int fd);

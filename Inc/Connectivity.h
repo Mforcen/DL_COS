@@ -65,18 +65,14 @@ namespace FwLogger
 		}
 
 		SocketType getType() { return type; }
-		uint8_t* getData() { return data; }
-		size_t getDataSize() { return size; }
 
 		SocketType type;
-		uint8_t* data;
 		union
 		{
 			void* ptr;
 			int val;
 		} params;
 
-		size_t recv_bytes, size;
 		int state;
 		bool self_managed; // free on write
 	};
@@ -118,6 +114,8 @@ namespace FwLogger
 		virtual int open_type(Socket* sock, const char* scheme, const char* path) = 0;
 		virtual int write_type(Socket* sock, const void* buf, size_t count) = 0;
 		virtual bool loop() { return false; }
+		virtual void reset() {}
+		virtual void powerOff() {}
 
 	protected:
 		static Allocator<128>* getAllocator() { return PortManager::_alloc; }
@@ -147,7 +145,7 @@ namespace FwLogger
 		uint16_t* m_llAddr;
 
 		fixed_string<256> m_rxbuf;
-		circular_buffer<128> m_txbuf;
+		circular_buffer<2048> m_txbuf;
 	};
 
 	class PortUART : public Port
@@ -169,7 +167,10 @@ namespace FwLogger
 		uint8_t UART_txing;
 
 		fixed_string<64> m_rxbuf;
-		circular_buffer<128> m_txbuf;
+		circular_buffer<1024> m_txbuf;
+
+		void reset();
+		void powerOff();
 	private:
 		PortUART();
 	};
@@ -190,22 +191,83 @@ namespace FwLogger
 		fixed_string<256> m_rxbuf;
 		uint8_t m_txbuf[256];
 
+		void reset();
+		void powerOff();
+
+		enum class GSMStatus : uint8_t
+		{
+			Init,
+			Wait,
+			Ready,
+			Sending,
+			NoSim,
+			Error,
+			Off
+		};
+
+		GSMStatus getStatus()
+		{
+			return m_status;
+		}
+
+		const char* getStatusStr()
+		{
+			switch(m_status)
+			{
+			case GSMStatus::Init:
+				return "Init";
+				break;
+			case GSMStatus::Wait:
+				return "Wait";
+				break;
+			case GSMStatus::Ready:
+				return "Ready";
+				break;
+			case GSMStatus::Sending:
+				return "Sending";
+				break;
+			case GSMStatus::NoSim:
+				return "NoSim";
+				break;
+			case GSMStatus::Error:
+				return "Error";
+				break;
+			case GSMStatus::Off:
+				return "Off";
+				break;
+			}
+		}
+
 	private:
 		PortGSM();
 
 		enum class GSMOp : uint8_t
 		{
-			TestCommand = 0,
+			InitModem,
+
+			TestCommand,
 			ReadCommand,
 			WriteCommand,
 			ExecCommand,
+
+			GetSignal,
+
 			SMSSend,
+
+			BearerOpen,
+			BearerClose,
+
 			HTTPData,
 			HTTPAction,
 
+			IPShut,
+
 			RecvResponse,
 			RecvSMSEntry,
+
 			DisableEcho,
+			DisableModem,
+
 			Delay,
 			Nop = 0xff
 		};
@@ -217,7 +279,7 @@ namespace FwLogger
 			char* nonConstValues;
 		};
 
-		struct GSMStatus
+		struct GSMState
 		{
 			GSMOp op;
 			union {
@@ -229,13 +291,33 @@ namespace FwLogger
 			int counter;
 		};
 
+
+
+		void startQueue();
+
 		void execute();
 		void step();
 
 		void initHTTP();
 
+		void setStatus(GSMStatus s)
+		{
+			m_status = s;
+			printf("Modem changed to %s\n", getStatusStr());
+		}
+
+
+		GSMStatus m_status;
+		int8_t m_signal;
+		int m_lastSignal;
+		bool m_sapbr;
+		int16_t m_pin;
+		uint8_t m_ipAddr[4];
+		char m_apn[32];
+
+
 		uint32_t delayStart;
-		circular_buffer<16, GSMStatus> _statusList;
+		circular_buffer<16, GSMState> _statusList;
 	};
 
 	class PortRadio : public Port

@@ -7,7 +7,7 @@ VirtualMachine::VirtualMachine() : FwLogger::Module("CuleVM", VM_BINID, 0, 6)
 	init_builtinFuncs();
 }
 
-void VirtualMachine::setProgram(uint8_t* program, uint32_t addr, uint32_t length)
+void VirtualMachine::setProgram(const uint8_t* program, uint32_t addr, uint32_t length)
 {
 	for(std::size_t i = 0; i < length; ++i)
 		m_ram[m_stackSize+i+addr] = program[i]; // de momento
@@ -69,8 +69,8 @@ bool VirtualMachine::loop()
 		if(HAL_GetTick() - m_delayStart < m_delayTime) return true;
 		m_delayEnabled = false;
 	}
-    uint16_t startUS = getUS();
-    while(static_cast<uint16_t>(getUS()-startUS) < 50000)
+	uint16_t startUS = getUS();
+	while(static_cast<uint16_t>(getUS()-startUS) < 50000)
 	{
 		if(!cycle()) return true; //false cycle means exit from loop
 	}
@@ -99,6 +99,11 @@ void VirtualMachine::resumeExec()
 	m_waitTable = false;
 }
 
+void VirtualMachine::pauseExec()
+{
+	m_waitTable = true;
+}
+
 void VirtualMachine::clear()
 {
 	m_symbolTable.clear();
@@ -107,7 +112,7 @@ void VirtualMachine::clear()
 	reset();
 }
 
-uint8_t* VirtualMachine::getPrgName()
+const uint8_t* VirtualMachine::getPrgName()
 {
 	return m_prgName;
 }
@@ -139,7 +144,7 @@ bool VirtualMachine::getWaitFlag()
 
 int VirtualMachine::getNextAlarm(int now_alarm) // now alarm is in seconds
 {
-    return (((now_alarm/tablePeriod)+1)*tablePeriod)%86400;
+	return (((now_alarm/tablePeriod)+1)*tablePeriod)%86400;
 }
 
 bool VirtualMachine::cycle()
@@ -457,9 +462,9 @@ bool VirtualMachine::cycle()
 
 	else if(op == Opcode::INT2FLOAT)
 	{
-        float value = pop<uint32_t>();
-        push<float>(value);
-        ++m_programCounter;
+		float value = pop<uint32_t>();
+		push<float>(value);
+		++m_programCounter;
 	}
 
 	/**
@@ -536,7 +541,8 @@ bool VirtualMachine::cycle()
 			m_programCounter = retAddr;
 			m_execBuiltin = true;
 			prepareBuiltin();
-			callBuiltin();
+			if(callBuiltin())
+				return false; // si la función devuelve otra cosa que no sea 0, entonces se sale del cycle para esperar
 		}
 		else
 		{
@@ -702,38 +708,38 @@ void VirtualMachine::prepareBuiltin()
 	{
 		if(currFunc.argTypes[i] == CHAR)
 		{
-            m_currBuiltin.args[i].ival = pop<uint8_t>();
+			m_currBuiltin.args[i].ival = pop<uint8_t>();
 		}
 		else if(currFunc.argTypes[i] == INT || currFunc.argTypes[i] == UINT || currFunc.argTypes[i] == FLOAT)
 		{
-            m_currBuiltin.args[i].ival = pop<uint32_t>();
+			m_currBuiltin.args[i].ival = pop<uint32_t>();
 		}
 		else if(currFunc.argTypes[i] == PTR)
 		{
 			/*int arr_len = pop<uint32_t>();
 			m_currBuiltin.args[i].ptr_val = reinterpret_cast<intptr_t>(&m_ram[m_stackPointer-arr_len]);
 			m_stackPointer -= arr_len; // values shouldn't been overwritten since the vm is blocked until the function is not finished*/
-			m_currBuiltin.args[i].ptr_val = pop<intptr_t>()+reinterpret_cast<intptr_t>(m_ram);
+			m_currBuiltin.args[i].ptr_val = pop<int32_t>()+reinterpret_cast<intptr_t>(m_ram);
 		}
 	}
 }
 
-void VirtualMachine::callBuiltin()
+int VirtualMachine::callBuiltin()
 {
 	Arg rv;
-	uint32_t rc = 0;
-    if(m_currBuiltin.nArgs == 0)
-		rc = reinterpret_cast<uint32_t (*)(Arg*)>(builtinFuncs[m_currBuiltin.func_addr].func_ptr)(&rv);
+	int32_t rc = 0;
+	if(m_currBuiltin.nArgs == 0)
+		rc = reinterpret_cast<int32_t (*)(Arg*)>(builtinFuncs[m_currBuiltin.func_addr].func_ptr)(&rv);
 	else if(m_currBuiltin.nArgs == 1)
-		rc = reinterpret_cast<uint32_t (*)(Arg*, Arg)>(builtinFuncs[m_currBuiltin.func_addr].func_ptr)(&rv, m_currBuiltin.args[0]);
+		rc = reinterpret_cast<int32_t (*)(Arg*, Arg)>(builtinFuncs[m_currBuiltin.func_addr].func_ptr)(&rv, m_currBuiltin.args[0]);
 	else if(m_currBuiltin.nArgs == 2)
-		rc = reinterpret_cast<uint32_t (*)(Arg*, Arg, Arg)>(builtinFuncs[m_currBuiltin.func_addr].func_ptr)(&rv, m_currBuiltin.args[0], m_currBuiltin.args[1]);
+		rc = reinterpret_cast<int32_t (*)(Arg*, Arg, Arg)>(builtinFuncs[m_currBuiltin.func_addr].func_ptr)(&rv, m_currBuiltin.args[0], m_currBuiltin.args[1]);
 	else if(m_currBuiltin.nArgs == 3)
-		rc = reinterpret_cast<uint32_t (*)(Arg*, Arg, Arg, Arg)>(builtinFuncs[m_currBuiltin.func_addr].func_ptr)(&rv, m_currBuiltin.args[0], m_currBuiltin.args[1], m_currBuiltin.args[2]);
+		rc = reinterpret_cast<int32_t (*)(Arg*, Arg, Arg, Arg)>(builtinFuncs[m_currBuiltin.func_addr].func_ptr)(&rv, m_currBuiltin.args[0], m_currBuiltin.args[1], m_currBuiltin.args[2]);
 	else if(m_currBuiltin.nArgs == 4)
-		rc = reinterpret_cast<uint32_t (*)(Arg*, Arg, Arg, Arg, Arg)>(builtinFuncs[m_currBuiltin.func_addr].func_ptr)(&rv, m_currBuiltin.args[0], m_currBuiltin.args[1], m_currBuiltin.args[2], m_currBuiltin.args[3]);
+		rc = reinterpret_cast<int32_t (*)(Arg*, Arg, Arg, Arg, Arg)>(builtinFuncs[m_currBuiltin.func_addr].func_ptr)(&rv, m_currBuiltin.args[0], m_currBuiltin.args[1], m_currBuiltin.args[2], m_currBuiltin.args[3]);
 	else if(m_currBuiltin.nArgs == 5)
-		rc = reinterpret_cast<uint32_t (*)(Arg*, Arg, Arg, Arg, Arg, Arg)>(builtinFuncs[m_currBuiltin.func_addr].func_ptr)(&rv, m_currBuiltin.args[0], m_currBuiltin.args[1], m_currBuiltin.args[2], m_currBuiltin.args[3], m_currBuiltin.args[4]);
+		rc = reinterpret_cast<int32_t (*)(Arg*, Arg, Arg, Arg, Arg, Arg)>(builtinFuncs[m_currBuiltin.func_addr].func_ptr)(&rv, m_currBuiltin.args[0], m_currBuiltin.args[1], m_currBuiltin.args[2], m_currBuiltin.args[3], m_currBuiltin.args[4]);
 
 	if(builtinFuncs[m_currBuiltin.func_addr].retValue == CHAR)
 		push<uint8_t>(rv.buf[0]);
@@ -742,4 +748,10 @@ void VirtualMachine::callBuiltin()
 
 	if(rc == 0)
 		m_execBuiltin = false;
+	else if(rc < 0)
+	{
+		m_execBuiltin = false;
+		return -1;
+	}
+	return 0;
 }

@@ -8,15 +8,6 @@
 
 uint16_t getUS(); // funcion del timer
 
-union Arg
-{
-	float fval;
-	int32_t ival;
-	uint32_t uival;
-	char buf[4];
-	intptr_t ptr_val;
-};
-
 struct cFuncCall
 {
 	int nArgs;
@@ -57,7 +48,7 @@ class VirtualMachine : public FwLogger::Module
 	public:
 		VirtualMachine();
 
-		void setProgram(uint8_t* program, uint32_t addr, uint32_t length); // el program tiene una cabecera y de momento es lo que va a hacer
+		void setProgram(const uint8_t* program, uint32_t addr, uint32_t length); // el program tiene una cabecera y de momento es lo que va a hacer
         void setStackSize(uint32_t stackSize);
         void enable(bool enable = true);
         bool getEnabled();
@@ -68,9 +59,10 @@ class VirtualMachine : public FwLogger::Module
         bool loop();
         void reset();
         void resumeExec(); //wakes the machine up when the RTC alarm fires up
+        void pauseExec();
         void clear();
 
-        uint8_t* getPrgName();
+        const uint8_t* getPrgName();
 
         int getNextAlarm(int now_alarm);
 
@@ -120,7 +112,7 @@ class VirtualMachine : public FwLogger::Module
 		bool m_waitTable;
 
 		void prepareBuiltin();
-        void callBuiltin();
+        int callBuiltin();
 
 		template<typename T>
 		void pack(uint32_t addr, T val); // esto es en ram, indicando la memoria

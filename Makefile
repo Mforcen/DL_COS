@@ -170,7 +170,7 @@ CFLAGS = $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-
 CPPFLAGS = -fno-rtti -fno-exceptions -std=c++11 -fno-threadsafe-statics
 
 ifeq ($(DEBUG), 1)
-CFLAGS += -g -gdwarf-2
+CFLAGS += -g3 -gdwarf-2
 endif
 
 

@@ -156,6 +156,8 @@ int main(void)
 	//HAL_UART_Receive_IT(&huart1, &_UART_rx_char, 1);
 	//HAL_NVIC_EnableIRQ(USART1_IRQn);
 	//HAL_NVIC_EnableIRQ(USART3_IRQn);
+	HAL_NVIC_SetPriority(RTC_Alarm_IRQn, 0, 0);
+	HAL_NVIC_EnableIRQ(RTC_Alarm_IRQn);
 
 	HAL_Delay(10);
 	/*uint8_t data[] = "hola caracola";
@@ -467,7 +469,6 @@ static void MX_RTC_Init(void)
 
 		HAL_RTCEx_BKUPWrite(&hrtc, 0, 0xaaaaaaaa);
 	}
-
 
 	/* USER CODE BEGIN RTC_Init 2 */
 
@@ -814,7 +815,7 @@ static void MX_GPIO_Init(void)
 					  |Radio_rxen_Pin|Radio_txen_Pin|SDI12_0_Pin|SDI12_1_Pin, GPIO_PIN_RESET);
 
 	/*Configure GPIO pin Output Level */
-	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6|Radio_rst_Pin|SDI12_Dir_Pin|Flash_nss_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOA, Radio_rst_Pin|SDI12_Dir_Pin|Flash_nss_Pin, GPIO_PIN_RESET);
 
 	/*Configure GPIO pin Output Level */
 	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2|Radio_nss_Pin|SPI2_NSS_Pin, GPIO_PIN_RESET);
@@ -828,8 +829,8 @@ static void MX_GPIO_Init(void)
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_MEDIUM;
 	HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-	/*Configure GPIO pins : PA6 Radio_rst_Pin SDI12_Dir_Pin Flash_nss_Pin */
-	GPIO_InitStruct.Pin = GPIO_PIN_6|Radio_rst_Pin|SDI12_Dir_Pin|Flash_nss_Pin;
+	/*Configure GPIO pins : Radio_rst_Pin SDI12_Dir_Pin Flash_nss_Pin */
+	GPIO_InitStruct.Pin = Radio_rst_Pin|SDI12_Dir_Pin|Flash_nss_Pin;
 	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -841,8 +842,8 @@ static void MX_GPIO_Init(void)
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-	/*Configure GPIO pins : PB2 Radio_nss_Pin SPI2_NSS_Pin */
-	GPIO_InitStruct.Pin = GPIO_PIN_2|Radio_nss_Pin|SPI2_NSS_Pin;
+	/*Configure GPIO pins : PB2 PB10 Radio_nss_Pin SPI2_NSS_Pin */
+	GPIO_InitStruct.Pin = GPIO_PIN_2|GPIO_PIN_10|GPIO_PIN_11|GPIO_PIN_12|Radio_nss_Pin|SPI2_NSS_Pin;
 	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;

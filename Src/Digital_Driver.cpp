@@ -9,14 +9,14 @@ namespace FwLogger
 		_pins[2].port = GPIOC;
 		_pins[3].port = GPIOC;
 		_pins[4].port = GPIOB;
-		_pins[5].port = GPIOA;
+		_pins[5].port = GPIOC;
 
 		_pins[0].pin = GPIO_PIN_0;
 		_pins[1].pin = GPIO_PIN_1;
 		_pins[2].pin = GPIO_PIN_2;
 		_pins[3].pin = GPIO_PIN_3;
 		_pins[4].pin = GPIO_PIN_2;
-		_pins[5].pin = GPIO_PIN_6;
+		_pins[5].pin = GPIO_PIN_8;
 
 		_pins[0].mode = PinMode::Input;
 		_pins[1].mode = PinMode::Input;

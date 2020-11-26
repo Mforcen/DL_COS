@@ -125,17 +125,17 @@
   The compilation define  USE_HAL_RTC_REGISTER_CALLBACKS when set to 1
   allows the user to configure dynamically the driver callbacks.
   Use Function @ref HAL_RTC_RegisterCallback() to register an interrupt callback.
-  
+
   [..]
   Function @ref HAL_RTC_RegisterCallback() allows to register following callbacks:
     (+) AlarmAEventCallback          : RTC Alarm A Event callback.
     (+) Tamper1EventCallback         : RTC Tamper 1 Event callback.
     (+) MspInitCallback              : RTC MspInit callback.
     (+) MspDeInitCallback            : RTC MspDeInit callback.
-  [..]	  
+  [..]
   This function takes as parameters the HAL peripheral handle, the Callback ID
   and a pointer to the user callback function.
-  
+
   [..]
   Use function @ref HAL_RTC_UnRegisterCallback() to reset a callback to the default
   weak function.
@@ -1633,7 +1633,7 @@ static HAL_StatusTypeDef RTC_WriteTimeCounter(RTC_HandleTypeDef *hrtc, uint32_t 
     WRITE_REG(hrtc->Instance->CNTL, (TimeCounter & RTC_CNTL_RTC_CNT));
 
     /* Wait for synchro */
-    if (RTC_ExitInitMode(hrtc) != HAL_OK)
+	if (RTC_ExitInitMode(hrtc) != HAL_OK)
     {
       status = HAL_ERROR;
     }

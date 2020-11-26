@@ -60,26 +60,37 @@ void sdi12_Isr();
 /* Private defines -----------------------------------------------------------*/
 #define Radio_rst_Pin GPIO_PIN_7
 #define Radio_rst_GPIO_Port GPIOA
+
 #define Radio_rxen_Pin GPIO_PIN_4
 #define Radio_rxen_GPIO_Port GPIOC
+
 #define Radio_txen_Pin GPIO_PIN_5
 #define Radio_txen_GPIO_Port GPIOC
+
 #define Radio_dio0_Pin GPIO_PIN_0
 #define Radio_dio0_GPIO_Port GPIOB
+
 #define Radio_dio1_Pin GPIO_PIN_1
 #define Radio_dio1_GPIO_Port GPIOB
+
 #define SDI12_0_Pin GPIO_PIN_6
 #define SDI12_0_GPIO_Port GPIOC
+
 #define SDI12_1_Pin GPIO_PIN_7
 #define SDI12_1_GPIO_Port GPIOC
+
 #define SDIO_CD_Pin GPIO_PIN_9
 #define SDIO_CD_GPIO_Port GPIOC
+
 #define SDI12_Dir_Pin GPIO_PIN_8
 #define SDI12_Dir_GPIO_Port GPIOA
+
 #define Flash_nss_Pin GPIO_PIN_15
 #define Flash_nss_GPIO_Port GPIOA
+
 #define Radio_nss_Pin GPIO_PIN_8
 #define Radio_nss_GPIO_Port GPIOB
+
 #define SPI2_NSS_Pin GPIO_PIN_9
 #define SPI2_NSS_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */

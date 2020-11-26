@@ -15,6 +15,7 @@ int SDI12_SingleMeasurementRead(int addr, float* dst, int count, int additional)
 int DigitalRead(int ch);
 void DigitalWrite(int ch, int value);
 int PulseCount(int ch);
+void sleepFor(int s);
 uint64_t time();
 
 #endif // IO_H_INCLUDED

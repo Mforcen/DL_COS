@@ -9,6 +9,17 @@
 #include "stm32f1xx_hal.h"
 #include "pin_defs.h"
 
+union Arg
+{
+	float fval;
+	int32_t ival;
+	uint32_t uival;
+	char buf[4];
+	intptr_t ptr_val;
+	char* str;
+	uint8_t* ustr;
+};
+
 enum TypeVal : uint8_t
 {
 	UNKNOWN = 0,
@@ -43,33 +54,33 @@ struct BuiltinFunc
 
 // TODO (forcen#1#): Define the remaining builtin functions for accessing all the hardware interfaces
 
-uint32_t _sin(float* rv, float rad);
-uint32_t _cos(float* rv, float rad);
-uint32_t _tan(float* rv, float rad);
-uint32_t _asin(float* rv, float rad);
-uint32_t _acos(float* rv, float rad);
-uint32_t _atan(float* rv, float rad);
-uint32_t _sinh(float* rv, float rad);
-uint32_t _cosh(float* rv, float rad);
-uint32_t _tanh(float* rv, float rad);
-uint32_t _asinh(float* rv, float rad);
-uint32_t _acosh(float* rv, float rad);
-uint32_t _atanh(float* rv, float rad);
+int32_t _sin(float* rv, Arg rad);
+int32_t _cos(float* rv, Arg rad);
+int32_t _tan(float* rv, Arg rad);
+int32_t _asin(float* rv, Arg rad);
+int32_t _acos(float* rv, Arg rad);
+int32_t _atan(float* rv, Arg rad);
+int32_t _sinh(float* rv, Arg rad);
+int32_t _cosh(float* rv, Arg rad);
+int32_t _tanh(float* rv, Arg rad);
+int32_t _asinh(float* rv, Arg rad);
+int32_t _acosh(float* rv, Arg rad);
+int32_t _atanh(float* rv, Arg rad);
 
-uint32_t _sqrt(float* rv, float val);
-uint32_t _exp(float* rv, float val);
+int32_t _sqrt(float* rv, Arg val);
+int32_t _exp(float* rv, Arg val);
 
-uint32_t _print(void* rv, char* fmt);
+int32_t _print(void* rv, Arg fmt);
 
-uint32_t _getAdc(uint32_t* rv, int port, int chan);
+int32_t _getAdc(uint32_t* rv, Arg port, Arg chan);
 
-uint32_t _SDI12_ReadSingleMeasurement(void* rv, int addr, float* dst, int count, int additional);
-uint32_t _digitalRead(int* rv, int ch);
-uint32_t _digitalWrite(void* rv, int ch, int value);
-uint32_t _pulseRead(int* rv, int ch);
+int32_t _SDI12_ReadSingleMeasurement(void* rv, Arg addr, Arg dst, Arg count, Arg additional);
+int32_t _digitalRead(int* rv, Arg ch);
+int32_t _digitalWrite(void* rv, Arg ch, Arg value);
+int32_t _pulseRead(int* rv, Arg ch);
 
 
-extern BuiltinFunc builtinFuncs[23];
+extern BuiltinFunc builtinFuncs[29];
 void init_builtinFuncs();
 
 
