@@ -25,12 +25,13 @@ namespace FwLogger
 		m_name[3] = 'a';
 		m_name[4] = 0;
 
-		Log::setLogLevel(Log::LevelError);
+		Log::setLogLevel(Log::LevelVerbose);
 
 		//loadConfig();
 		//ctor
 
 		PortManager::setAllocator(&_alloc);
+		m_pendingAlarm = false;
 		//do not call hardware settings
 	}
 
@@ -55,6 +56,10 @@ namespace FwLogger
 		m_lpEnabled = false;
 
 		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11 | GPIO_PIN_12, GPIO_PIN_SET);
+		//HAL_Delay(1000);
+
+		m_init = false;
+		init_delay = HAL_GetTick();
 	}
 
 	void OS::RTC_ISR()
@@ -78,6 +83,40 @@ namespace FwLogger
 		m_pendingTask = work_left;
 
 		m_pendingTask |= PortManager::loop();
+		if(!m_init)
+		{
+			if(HAL_GetTick()-init_delay > 5000)
+			{
+				uint8_t prg[] = {2,	63,	0,	0,	0,	104,	116,	116,	112,	58,	108,	97,	98,	115,	97,	112,	46,	117,	112,	99,	116,	46,	101,	115,	58,	56,	48,	56,	48,	47,	97,	112,
+					105,	47,	118,	49,	47,	77,	89,	111,	72,	104,	69,	71,	69,	102,	57,	114,	110,	54,	53,	103,	100,	55,	75,	113,	99,	47,	116,	101,	108,	101,	109,	101,
+					116,	114,	121,	0,	1,	43,	3,	0,	0,	10,	2,	4,	0,	0,	0,	34,	44,	34,	0,	1,	172,	3,	0,	0,	10,	1,	43,	3,	0,	0,	1,	20,
+					0,	1,	0,	64,	1,	212,	7,	0,	0,	9,	1,	0,	0,	0,	0,	1,	216,	7,	0,	0,	9,	1,	59,	1,	0,	0,	61,	4,	0,	0,	0,	4,
+					0,	0,	0,	1,	108,	3,	0,	0,	1,	0,	0,	0,	0,	5,	1,	27,	0,	1,	0,	64,	1,	108,	3,	0,	0,	1,	176,	3,	0,	0,	1,	24,
+					0,	1,	0,	64,	65,	1,	42,	3,	0,	0,	0,	1,	47,	62,	1,	0,	0,	0,	0,	1,	6,	0,	0,	0,	1,	176,	7,	0,	0,	1,	0,	0,
+					0,	0,	1,	16,	0,	1,	0,	64,	2,	11,	0,	0,	0,	123,	34,	109,	111,	105,	115,	49,	34,	58,	34,	0,	1,	176,	3,	0,	0,	10,	1,	176,
+					7,	0,	0,	1,	0,	0,	0,	0,	1,	4,	0,	0,	0,	36,	34,	5,	1,	17,	1,	0,	0,	64,	2,	12,	0,	0,	0,	34,	44,	34,	109,	111,
+					105,	115,	50,	34,	58,	34,	0,	1,	108,	3,	0,	0,	10,	1,	108,	3,	0,	0,	1,	176,	3,	0,	0,	1,	24,	0,	1,	0,	64,	1,	176,	7,
+					0,	0,	1,	1,	0,	0,	0,	1,	4,	0,	0,	0,	36,	34,	5,	1,	17,	1,	0,	0,	64,	2,	12,	0,	0,	0,	34,	44,	34,	109,	111,	105,
+					115,	51,	34,	58,	34,	0,	1,	108,	3,	0,	0,	10,	1,	108,	3,	0,	0,	1,	176,	3,	0,	0,	1,	24,	0,	1,	0,	64,	1,	176,	7,	0,
+					0,	1,	2,	0,	0,	0,	1,	4,	0,	0,	0,	36,	34,	5,	1,	17,	1,	0,	0,	64,	2,	12,	0,	0,	0,	34,	44,	34,	109,	111,	105,	115,
+					52,	34,	58,	34,	0,	1,	108,	3,	0,	0,	10,	1,	108,	3,	0,	0,	1,	176,	3,	0,	0,	1,	24,	0,	1,	0,	64,	1,	176,	7,	0,	0,
+					1,	3,	0,	0,	0,	1,	4,	0,	0,	0,	36,	34,	5,	1,	17,	1,	0,	0,	64,	2,	12,	0,	0,	0,	34,	44,	34,	109,	111,	105,	115,	53,
+					34,	58,	34,	0,	1,	108,	3,	0,	0,	10,	1,	108,	3,	0,	0,	1,	176,	3,	0,	0,	1,	24,	0,	1,	0,	64,	1,	176,	7,	0,	0,	1,
+					4,	0,	0,	0,	1,	4,	0,	0,	0,	36,	34,	5,	1,	17,	1,	0,	0,	64,	2,	12,	0,	0,	0,	34,	44,	34,	109,	111,	105,	115,	54,	34,
+					58,	34,	0,	1,	108,	3,	0,	0,	10,	1,	108,	3,	0,	0,	1,	176,	3,	0,	0,	1,	24,	0,	1,	0,	64,	1,	176,	7,	0,	0,	1,	5,
+					0,	0,	0,	1,	4,	0,	0,	0,	36,	34,	5,	1,	17,	1,	0,	0,	64,	2,	3,	0,	0,	0,	34,	125,	0,	1,	108,	3,	0,	0,	10,	1,
+					108,	3,	0,	0,	1,	176,	3,	0,	0,	1,	24,	0,	1,	0,	64,	1,	176,	3,	0,	0,	1,	25,	0,	1,	0,	64,	1,	220,	7,	0,	0,	9,
+					1,	220,	7,	0,	0,	5,	1,	176,	3,	0,	0,	1,	212,	7,	0,	0,	5,	1,	22,	0,	1,	0,	64,	29,	1,	176,	3,	0,	0,	1,	14,	0,
+					1,	0,	64,	1,	60,	0,	0,	0,	1,	23,	0,	1,	0,	64,	1,	59,	1,	0,	0,	61,	127};
+
+				vm.setStackSize(150);
+				vm.setProgram(prg, 0, sizeof(prg));
+
+				vm.enable(true);
+
+				m_init = true;
+			}
+		}
 
 		if(m_lpEnabled && !m_pendingTask)
 		{
@@ -88,6 +127,7 @@ namespace FwLogger
 
 		if(m_rtcFlag) // if it has to wake up from sleep
 		{
+			m_pendingAlarm = false;
 			m_rtcFlag = false;
 			m_lpEnabled = false;
 			vm.resumeExec(); // this will resume VM execution if WAIT_TABLE is called
@@ -114,7 +154,7 @@ namespace FwLogger
             eTSDB::HeaderPage* hp = reinterpret_cast<eTSDB::HeaderPage*>(_fds[vm.HeaderFD-FD_BUILTINS].ptr);
             if(hp != nullptr)
 			{
-				eTSDB::Row* dataRow = new (_alloc.Allocate(sizeof(eTSDB::Row), reinterpret_cast<uintptr_t>(this))) eTSDB::Row();
+				eTSDB::Row* dataRow = new (_alloc.Allocate(sizeof(eTSDB::Row), this)) eTSDB::Row();
 				hp->getFormat(*dataRow);
 				dataRow->deserialize(vm.getTableAddress());
 
@@ -145,9 +185,22 @@ namespace FwLogger
 		}
 	}
 
-	int twodecparse(uint8_t* num)
+	int twodecparse(uint8_t* str)
 	{
-		return (num[0]-'0')*10 + num[1]-'0';
+		return (str[0]-'0')*10 + (str[0]-'0');
+	}
+
+	int parse_num(int* dst, uint8_t* str)
+	{
+		int i = 0;
+        int val = 0;
+        while(str[i] >= '0' && str[i] <= '9')
+        {
+                val *= 10;
+                val += str[i++] - '0';
+        }
+        *dst = val;
+        return i;
 	}
 
 	bool OS::task_loop()
@@ -182,17 +235,8 @@ namespace FwLogger
 
 		else if(currTask->op == Operation::ModemEval)
 		{
-			//reinterpret_cast<char*>(currTask->buf)[currTask->counter] = 0;
-			//printf("Modem[%s]:%s\n", PortGSM::get().getStatusStr(), reinterpret_cast<char*>(currTask->buf));
+			Log::Verbose("[Modem(%s)] R: %s\n", PortGSM::get().getStatusStr(), reinterpret_cast<char*>(currTask->buf));
 			PortGSM::get().eval(reinterpret_cast<uint8_t*>(currTask->buf), currTask->counter);
-
-			if(strncmp(reinterpret_cast<char*>(currTask->buf), "OK",2) != 0)
-			{
-				printf("Modem[%s]:%s\n", PortGSM::get().getStatusStr(), reinterpret_cast<char*>(currTask->buf));
-				//PortUART::get().write_type(nullptr, currTask->buf, currTask->counter);
-				//printf("\n");
-			}
-
 
 			uint8_t* uib = reinterpret_cast<uint8_t*>(currTask->buf);
 			if(uib[0] == '+')
@@ -237,6 +281,36 @@ namespace FwLogger
 						HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BIN);
 						HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
 
+					}
+				}
+			}
+			else if(uib[0] == '*')
+			{
+				if(!m_pendingAlarm)
+				{
+					if(strncmp(reinterpret_cast<char*>(uib), "*PSUTTZ", 7) == 0)
+					{
+						uib = uib + 11;
+						RTC_DateTypeDef sDate;
+						RTC_TimeTypeDef sTime;
+						int dst;
+
+						uib += (parse_num(&dst, uib)+1);
+						sDate.Year = dst;
+						uib += parse_num(&dst, uib)+1;
+						sDate.Month = dst;
+						uib += parse_num(&dst, uib)+1;
+						sDate.Date = dst;
+
+						uib += parse_num(&dst, uib)+1;
+						sTime.Hours = dst;
+						uib += parse_num(&dst, uib)+1;
+						sTime.Minutes = dst;
+						uib += parse_num(&dst, uib)+1;
+						sTime.Seconds = dst;
+
+						HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BIN);
+						HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
 					}
 				}
 			}
@@ -530,7 +604,7 @@ namespace FwLogger
 			if(currTask->buf == nullptr)
 			{
 				currTask->counter = 0;
-				currTask->buf = _alloc.Allocate(sizeof(ProgramInitializer), reinterpret_cast<uintptr_t>(this));
+				currTask->buf = _alloc.Allocate(sizeof(ProgramInitializer), this);
 				for(std::size_t i = 0; i < sizeof(ProgramInitializer); ++i)
 					reinterpret_cast<uint8_t*>(currTask->buf)[i] = 0;
 			}
@@ -733,7 +807,7 @@ namespace FwLogger
 			if(strcmp(token, "AT") == 0)
 			{
 				printf("Sending AT\n");
-				PortGSM::get().write_type(0, "AT\r", 3);
+				PortGSM::get().write(0, "AT\r", 3);
 			}
 			else if(strcmp(token, "comerror") == 0)
 			{
@@ -753,19 +827,24 @@ namespace FwLogger
 			}
 			else if(strcmp(token, "time") == 0)
 			{
-				PortGSM::get().write_type(nullptr, "AT+CCLK?\r", strlen("AT+CCLK?\r"));
+				PortGSM::get().write(nullptr, "AT+CCLK?\r", strlen("AT+CCLK?\r"));
 			}
 			else if(strcmp(token, "disable") == 0)
 				PortGSM::get().powerOff();
 			else if(strcmp(token, "enable") == 0)
 				PortGSM::get().reset();
+			else if(strcmp(token, "apn") == 0)
+			{
+				token = strtok(NULL, " ");
+				PortGSM::get().setAPN(token);
+			}
 			else
 			{
 				if(token[0] == 'A')
 				{
 					uint8_t buf[64] = {0};
 					int len = sprintf(reinterpret_cast<char*>(buf), "%s\r", token);
-					PortGSM::get().write_type(nullptr, buf, len);
+					PortGSM::get().write(nullptr, buf, len);
 				}
 			}
 		}
@@ -1084,10 +1163,10 @@ namespace FwLogger
 			}
 			else if(strcmp(token, "status") == 0)
 			{
-				if(vm.getEnabled())
-					printf("VM enabled\n");
-				else
-					printf("VM disabled\n");
+				VirtualMachine::Context ctx = vm.getCurrentContext();
+
+				printf("VMEn\tPC\tSP\tRAdr\tLVAdr\tArgAdr\n%d\t%d\t%d\t%d\t%d\t%d\n",vm.getEnabled(), ctx.programCounter, ctx.stackPointer, ctx.returnAddr,
+						ctx.localVarAddr, ctx.argAddr);
 			}
 			else if(strcmp(token, "stop") == 0)
 			{
@@ -1110,7 +1189,7 @@ namespace FwLogger
 			}
 			else if(strcmp(token, "ca") == 0)
 			{
-				sdi12.changeAddr('9', '0');
+				sdi12.changeAddr('c', '0');
 			}
 			else if(strcmp(token, "gd") == 0)
 			{
@@ -1934,7 +2013,7 @@ namespace FwLogger
 			FileDescriptor& _fd = _fds[fd-FD_BUILTINS];
 			if(_fd.type == FDType::File)
 			{
-				if(_fd.buf == nullptr) _fd.buf = reinterpret_cast<uint8_t*>(_alloc.Allocate(128, reinterpret_cast<uintptr_t>(this)));
+				if(_fd.buf == nullptr) _fd.buf = reinterpret_cast<uint8_t*>(_alloc.Allocate(128, this));
 				eTSDB::FilePage* fp = reinterpret_cast<eTSDB::FilePage*>(_fd.ptr);
 				if(fp->getFileSize() <= _fd.bytes_read)
 				{
@@ -1982,7 +2061,7 @@ namespace FwLogger
 	{
 		if(fd == 0)
 		{
-			PortUART::get().write_type(0, buf, count);
+			PortUART::get().write(0, buf, count);
 
 			return count;
 		}
@@ -1999,7 +2078,7 @@ namespace FwLogger
 				if(_fd.ptr == nullptr) // there is no page yet
 				{
 					if(_fd.buf == nullptr)
-						_fd.buf = reinterpret_cast<uint8_t*>(_alloc.Allocate(128, reinterpret_cast<uintptr_t>(this)));
+						_fd.buf = reinterpret_cast<uint8_t*>(_alloc.Allocate(128, this));
                     for(std::size_t i = 0; i < count; ++i)
 						_fd.buf[_fd.buf_idx++] = reinterpret_cast<const uint8_t*>(buf)[i];
 				}
@@ -2135,6 +2214,7 @@ namespace FwLogger
 		secs %= 3600;
 		sAlarm.AlarmTime.Minutes = secs/60;
 		sAlarm.AlarmTime.Seconds = secs%60;
+		m_pendingAlarm = true;
 
 		if(HAL_RTC_SetAlarm_IT(&hrtc, &sAlarm, RTC_FORMAT_BIN)!=HAL_OK)
 		{
@@ -2194,6 +2274,8 @@ namespace FwLogger
 		//Log::Verbose("Going to sleep\n");
 		PortUART::get().powerOff();
 
+		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11 | GPIO_PIN_12, GPIO_PIN_RESET);
+
 		HAL_TIM_Base_Stop_IT(&htim6);
 		HAL_ADC_Stop_DMA(&hadc1);
 		HAL_NVIC_DisableIRQ(SPI1_IRQn);
@@ -2209,6 +2291,9 @@ namespace FwLogger
 
 		HAL_NVIC_EnableIRQ(SPI1_IRQn);
 		HAL_NVIC_EnableIRQ(USART1_IRQn);
+
+		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11 | GPIO_PIN_12, GPIO_PIN_SET);
+		HAL_Delay(1000);
 	}
 
 	void OS::saveConfig()

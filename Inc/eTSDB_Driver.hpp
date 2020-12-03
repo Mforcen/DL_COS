@@ -37,7 +37,6 @@
 
 namespace FwLogger
 {
-
 	namespace eTSDB
 	{
 		class Driver : public SPIFlash

@@ -9,12 +9,12 @@ extern "C"
 	{
 		if(huart == &huart1)//port serial recv
 		{
-			FwLogger::PortUART::get().push_rx(&UART1_rx_char, 1);
+			FwLogger::PortUART::get().push_rx(UART1_rx_char);
 			HAL_UART_Receive_IT(huart, &UART1_rx_char, 1);
 		}
 		else if(huart == &huart3)
 		{
-			FwLogger::PortGSM::get().push_rx(&UART3_rx_char, 1);
+			FwLogger::PortGSM::get().push_char(UART3_rx_char);
 			HAL_UART_Receive_IT(huart, &UART3_rx_char, 1);
 		}
 	}
@@ -23,11 +23,7 @@ extern "C"
 	{
 		if(huart == &huart1)
 		{
-			uint8_t ph;
-			if(FwLogger::PortUART::get().m_txbuf.pop_front(&ph) == 0)
-				HAL_UART_Transmit_IT(huart, &ph, 1);
-			else
-				FwLogger::PortUART::get().UART_txing = 0;
+			FwLogger::PortUART::get().UART_txing = 0;
 		}
 		else if(huart == &huart3)
 		{
@@ -46,27 +42,46 @@ extern "C"
 		if(huart == &huart3)
 		{
 			if(HAL_UART_GetError(huart) == HAL_UART_ERROR_PE)
-				FwLogger::PortUART::get().write_type(0, "huart3 pe\n", 8+2);
+			{
+				FwLogger::Log::Error("huart3 pe\n");
+			}
 			else if(HAL_UART_GetError(huart) == HAL_UART_ERROR_NE)
-				FwLogger::PortUART::get().write_type(0, "huart3 ne\n", 8+2);
+			{
+				FwLogger::Log::Error("huart3 ne\n");
+			}
 			else if(HAL_UART_GetError(huart) == HAL_UART_ERROR_FE)
-				FwLogger::PortUART::get().write_type(0, "huart3 fe\n", 8+2);
+			{
+				FwLogger::Log::Error("huart3 fe\n");
+			}
 			else if(HAL_UART_GetError(huart) == HAL_UART_ERROR_ORE)
-				FwLogger::PortUART::get().write_type(0, "huart3 ore\n", 8+3);
+			{
+				FwLogger::Log::Error("huart3 ore\n");
+				__HAL_UART_CLEAR_OREFLAG(huart);
+			}
 			else if(HAL_UART_GetError(huart) == HAL_UART_ERROR_DMA)
-				FwLogger::PortUART::get().write_type(0, "huart3 dma\n", 8+3);
+			{
+				FwLogger::Log::Error("huart3 dma\n");
+			}
 
 			FwLogger::PortGSM::get().m_rxbuf.clear();
-			HAL_UART_Receive_IT(huart, &UART3_rx_char, 1);
+			FwLogger::PortGSM::get().reset();
 		}
 	}
 }
 
 namespace FwLogger
 {
+	/**
+	  *
+	  * PortManager
+	  *
+	  */
+
 	Allocator<128>* PortManager::_alloc = nullptr;
 	Socket PortManager::_sockTable[SOCKET_TABLE_SIZE];
 	uint8_t PortManager::_in_use[SOCKET_TABLE_SIZE] = {0};
+	size_t PortManager::_currPorts = 0;
+	Port* PortManager::_ports[6] = { nullptr };
 
 	int PortManager::open(const char* uri)
 	{
@@ -102,15 +117,15 @@ namespace FwLogger
 		}
 		else if(strcmp(scheme, "sms") == 0)
 		{
-			PortGSM::get().open_type(&_sockTable[sd], scheme, path);
+			PortGSM::get().open(&_sockTable[sd], scheme, path);
 		}
 		else if(strcmp(scheme, "http") == 0)
 		{
-			PortGSM::get().open_type(&_sockTable[sd], scheme, path);
+			PortGSM::get().open(&_sockTable[sd], scheme, path);
 		}
 		else if(strcmp(scheme, "https") == 0)
 		{
-			PortGSM::get().open_type(&_sockTable[sd], scheme, path);
+			PortGSM::get().open(&_sockTable[sd], scheme, path);
 		}
 		else
 			return -1;
@@ -123,33 +138,43 @@ namespace FwLogger
 
 	int PortManager::write(int sock_d, const void* buf, size_t count)
 	{
-		if(sock_d < SOCKET_DESCRIPTOR_OFFSET) return -1;
+		if(sock_d < SOCKET_DESCRIPTOR_OFFSET) return -2;
+
 		sock_d -= SOCKET_DESCRIPTOR_OFFSET;
-		if(sock_d < 0 || sock_d >= SOCKET_TABLE_SIZE) return -1;
+
+		if(sock_d < 0 || sock_d >= SOCKET_TABLE_SIZE) return -2;
 		if(!_in_use[sock_d]) return -1;
 
 		Socket& sock  = _sockTable[sock_d];
 
-		if(sock.type == SOCK_UART) return PortUART::get().write_type(nullptr, buf, count);
-		else if(sock.type == SOCK_CDC) return PortCDC::get().write_type(nullptr, buf, count);
-		else if(sock.type == SOCK_GSM) return PortGSM::get().write_type(nullptr, buf, count);
-		else if(sock.type == SOCK_RADIO) return PortGSM::get().write_type(nullptr, buf, count);
-		else if(sock.type == SOCK_GSM_SMS || sock.type == SOCK_GSM_HTTP || sock.type == SOCK_GSM_HTTPS)
-			return PortGSM::get().write_type(&sock, buf, count);
-
-		//if(sock.self_managed) close(sock_d);
+		switch(sock.type)
+		{
+		case SOCK_UART:
+			return PortUART::get().write(nullptr, buf, count);
+		case SOCK_CDC:
+			return PortCDC::get().write(nullptr, buf, count);
+		case SOCK_GSM:
+			return PortGSM::get().write(nullptr, buf, count);
+		case SOCK_RADIO:
+			return 0;//PortRadio::get().write(nullptr, buf, count);
+		case SOCK_GSM_SMS:
+		case SOCK_GSM_HTTP:
+		case SOCK_GSM_HTTPS:
+			return PortGSM::get().write(&sock, buf, count);
+		default:
+			return -2;
+		}
 
 		return -1;
 	}
 
-	int PortManager::close(int sd)
+	int PortManager::close(int sd) // revisar
 	{
 		sd -= SOCKET_DESCRIPTOR_OFFSET;
 		if(!_in_use[sd]) return -1;
 
 		_sockTable[sd].type = SocketType::None;
 
-		if(_sockTable[sd].data != nullptr) _alloc->Deallocate(_sockTable[sd].data);
 		if(_sockTable[sd].type == SOCK_GSM_HTTP || _sockTable[sd].type == SOCK_GSM_HTTPS)
 			if(_sockTable[sd].params.ptr != nullptr) _alloc->Deallocate(_sockTable[sd].params.ptr);
 
@@ -200,6 +225,44 @@ namespace FwLogger
 		return sd + SOCKET_DESCRIPTOR_OFFSET;
 	}
 
+	void PortManager::addPort(Port* port)
+	{
+		_ports[_currPorts++] = port;
+	}
+
+	/**
+	  *
+	  * Port implementation
+	  *
+	  */
+
+	int Port::write(Socket* sock, const void* buf, size_t count)
+	{
+		if(m_portStatus == Status::Error || m_portStatus == Status::None) return -2; // error
+
+		PortTask p;
+		p.op = PortTask::Op::Write;
+		p.sock = sock;
+		p.data = getAllocator()->Allocate(count, this);
+		if(p.data == nullptr) return -2;
+		memcpy(p.data, buf, count);
+		p.len = count;
+
+		if(m_tasks.push_back(p) == -1)
+		{
+			getAllocator()->Deallocate(p.data);
+			return -2;
+		}
+
+		return count;
+	}
+
+	/**
+	  *
+	  * PortCDC driver
+	  *
+	  */
+
 	PortCDC::PortCDC()
 	{
 		m_pStatus = ParserStatus::Start;
@@ -208,12 +271,12 @@ namespace FwLogger
 		m_pLastRecv = HAL_GetTick();
 	}
 
-	int PortCDC::open_type(Socket* sock, const char* scheme, const char* path)
+	int PortCDC::open(Socket* sock, const char* scheme, const char* path)
 	{
 		return 0;
 	}
 
-	int PortCDC::write_type(Socket* sock, const void* buf, size_t count)
+	int PortCDC::write(Socket* sock, const void* buf, size_t count)
 	{
 		/*if(sock == nullptr)
 		{
@@ -414,9 +477,10 @@ namespace FwLogger
 
 	/**
 	  *
-	  *  UART Driver
+	  *  PortUART Driver
 	  *
 	  */
+
 	PortUART::PortUART()
 	{
 		m_pIndex = 0;
@@ -425,18 +489,24 @@ namespace FwLogger
 		m_pLastRecv = HAL_GetTick();
 
 		HAL_UART_Receive_IT(&huart1, &UART1_rx_char, 1);
+
+		m_txFull = false;
+		m_txRead = 0;
+		m_txWrite = 0;
+
+		m_portStatus = Status::Ready;
 	}
 
-	int PortUART::open_type(Socket* sock, const char* scheme, const char* path)
+	int PortUART::open(Socket* sock, const char* scheme, const char* path)
 	{
 		return 0;
 	}
 
-	int PortUART::write_type(Socket* sock, const void* buf, size_t count)
+	int PortUART::write(Socket* sock, const void* buf, size_t count)
 	{
 		if(sock == nullptr)
 		{
-			push_tx(reinterpret_cast<const uint8_t*>(buf), count);
+			_txPush(reinterpret_cast<const uint8_t*>(buf), count);
 		}
 		else
 		{
@@ -445,23 +515,29 @@ namespace FwLogger
 		return count;
 	}
 
-	void PortUART::push_rx(uint8_t* buf, size_t count)
+	void PortUART::push_rx(uint8_t c) //TODO reimplement to avoid ISR overrun
 	{
 		m_pLastRecv = HAL_GetTick();
-		for(size_t i = 0; i < count; ++i)
+		m_rxbuf.push_back(c);
+	}
+
+	void PortUART::setAddrPtr(uint16_t* addrPtr)
+	{
+		m_llAddr = addrPtr;
+	}
+
+	bool PortUART::loop()
+	{
+		uint8_t c = 0;
+		while(m_rxbuf.pop_front(&c) != -1)
 		{
-			char c = buf[i];
 			if(m_pStatus == ParserStatus::Start)
 			{
-				m_rxbuf.clear();
-
 				if(std::isalnum(c))
 				{
-					//write_type(sockid, &c, 1);
-					push_tx(reinterpret_cast<uint8_t*>(&c), 1);
-					if(c == '\b' || c == 127) return;
+					_txPush(reinterpret_cast<uint8_t*>(&c), 1);
+					if(c == '\b' || c == 127) continue;
 					m_pStatus = ParserStatus::AsciiCommand;
-					m_rxbuf.push_back(c);
 
 					m_sockNow = nullptr;
 
@@ -475,23 +551,24 @@ namespace FwLogger
 					}
 
 					if(m_sockNow == nullptr) m_sockNow = _createSelfManagedSocket();
-					if(m_sockNow == nullptr) return;
+					if(m_sockNow == nullptr) continue;
 
 					m_sockNow->type = SOCK_UART;
-					m_sockNow->data = reinterpret_cast<uint8_t*>(getAllocator()->Allocate(128, reinterpret_cast<uintptr_t>(this)));
+					m_sockNow->data = reinterpret_cast<uint8_t*>(getAllocator()->Allocate(128, this));
 					m_sockNow->recv_bytes = 1;
 					reinterpret_cast<uint8_t*>(m_sockNow->data)[0] = c;
 
 				}
 				else
 				{
-					m_rxbuf.push_back(c);
+					m_rxHeader.clear();
+					m_rxHeader.push_back(c);
 					m_pStatus = ParserStatus::LLHeader;
 				}
 			}
 			else if(m_pStatus == ParserStatus::AsciiCommand)
 			{
-				push_tx(reinterpret_cast<uint8_t*>(&c), 1);
+				_txPush(reinterpret_cast<uint8_t*>(&c), 1);
 				if(c == '\b' || c == 127)
 				{
 
@@ -512,6 +589,7 @@ namespace FwLogger
 					m_sockNow->data = reinterpret_cast<uintptr_t>(nullptr);
 
 					m_pStatus = ParserStatus::Start;
+					m_sockNow = nullptr;
 
 					msgQueue.push_front(tsk);
 				}
@@ -522,11 +600,11 @@ namespace FwLogger
 			}
 			else if(m_pStatus == ParserStatus::LLHeader)
 			{
-				m_rxbuf.push_back(c);
-				if(m_rxbuf.size() == 8)
+				m_rxHeader.push_back(c);
+				if(m_rxHeader.size() == 8)
 				{
 					LLHeader header;
-					if(!header.deserialize(m_rxbuf.buf))
+					if(!header.deserialize(m_rxHeader.buf))
 					{
 						m_pStatus = ParserStatus::Start; //malformed packet
 					}
@@ -566,12 +644,12 @@ namespace FwLogger
 						{
 
 							m_sockNow = _createSelfManagedSocket();
-							if(m_sockNow == nullptr) return;
+							if(m_sockNow == nullptr) continue;
 
 							new(m_sockNow) Socket();
 							m_sockNow->type = SOCK_CDC_LL;
 
-							LLConn* conn = reinterpret_cast<LLConn*>(getAllocator()->Allocate(sizeof(LLConn), reinterpret_cast<uintptr_t>(this)));
+							LLConn* conn = reinterpret_cast<LLConn*>(getAllocator()->Allocate(sizeof(LLConn), this));
 							m_sockNow->params.ptr = conn;
 
 							conn->type = header.type;
@@ -579,7 +657,7 @@ namespace FwLogger
 							conn->remoteAddr = header.srcAddr;
 							conn->id = header.id;
 
-							m_sockNow->data = reinterpret_cast<uint8_t*>(getAllocator()->Allocate(header.len, reinterpret_cast<uintptr_t>(this)));
+							m_sockNow->data = reinterpret_cast<uint8_t*>(getAllocator()->Allocate(header.len, this));
 							m_sockNow->recv_bytes = header.seq*118; // configure offset
 						}
 
@@ -607,44 +685,20 @@ namespace FwLogger
 				}
 			}
 		}
-	}
 
-	void PortUART::push_tx(const uint8_t* buf, size_t count)
-	{
-		const uint8_t* ui8_buf = reinterpret_cast<const uint8_t*>(buf);
-		for(unsigned int i = 0; i < count; ++i)
-		{
-			if(m_txbuf.push_back(ui8_buf[i]) != 0)
-			{
-				//errno = EBADF;
-				return;
-			}
-		}
-		if(!UART_txing) // esto se podría ver como un flush
-		{
-			uint8_t ph;
-			if(m_txbuf.pop_front(&ph) == 0)
-			{
-				HAL_UART_Transmit_IT(&huart1, &ph, 1);
-				UART_txing = 1;
-			}
-		}
-	}
-
-	void PortUART::setAddrPtr(uint16_t* addrPtr)
-	{
-		m_llAddr = addrPtr;
-	}
-
-	bool PortUART::loop()
-	{
 		if(HAL_GetTick()-m_pLastRecv > 5000)
 		{
 			m_pStatus = ParserStatus::Start;
 			m_pLastRecv = HAL_GetTick();
 			m_rxbuf.clear();
+			m_rxHeader.clear();
 		}
+
 		if(UART_txing) return true;
+		else
+		{
+			_txStart();
+		}
 		return false;
 	}
 
@@ -664,9 +718,63 @@ namespace FwLogger
 		HAL_UART_AbortReceive_IT(&huart1);
 	}
 
+	int PortUART::_txPush(const uint8_t* buf, uint16_t len)
+	{
+		if(1024-_txGetSize() < len) return -1;
+		if(m_txWrite+len <= 1024)
+		{
+			memcpy(&m_txbuf[m_txWrite], buf, len);
+			m_txWrite += len;
+			m_txWrite %= 1024; // if m_txWrite == 1024 -> m_txWrite = 0
+		}
+		else
+		{
+			int l1n = 1024-m_txWrite;
+			memcpy(&m_txbuf[m_txWrite], buf, l1n);
+			m_txWrite = len-l1n;
+			memcpy(m_txbuf, &buf[l1n], m_txWrite);
+		}
+		return len;
+	}
+
+	uint16_t PortUART::_txGetTransferSize()
+	{
+		if(m_txWrite == m_txRead)
+		{
+			if(m_txFull) return 1024-m_txRead;
+			else return 0;
+		}
+		else if(m_txWrite > m_txRead)
+		{
+			return m_txWrite-m_txRead;
+		}
+		else
+		{
+			return 1024-m_txRead;
+		}
+	}
+
+	uint16_t PortUART::_txGetSize()
+	{
+		if(m_txFull) return 1024;
+		return (m_txWrite+1024-m_txRead)%1024;
+	}
+
+	void PortUART::_txStart()
+	{
+		int txSize = _txGetTransferSize();
+		if(txSize > 0)
+		{
+			UART_txing = true;
+			HAL_UART_Transmit_DMA(&huart1, &m_txbuf[m_txRead], txSize);
+			m_txRead += txSize;
+			m_txRead %= 1024;
+		}
+	}
+
 	/**
 	  *
-	  * GSM Driver
+	  * PortGSM Driver
 	  *
 	  */
 
@@ -726,12 +834,13 @@ namespace FwLogger
 		m_pin = 0;
 		m_lastSignal = HAL_GetTick();
 		m_status = GSMStatus::Init;
+		m_portStatus = Status::Init;
+		_clear_currMsg();
 
 		reset();
-		execute();
 	}
 
-	int PortGSM::open_type(Socket* sock, const char* scheme, const char* path)
+	int PortGSM::open(Socket* sock, const char* scheme, const char* path)
 	{
 		if(strcmp(scheme, "sms") == 0)
 		{
@@ -742,179 +851,59 @@ namespace FwLogger
 		{
 			sock->type = SOCK_GSM_HTTP;
 
-			uint8_t* url = reinterpret_cast<uint8_t*>(getAllocator()->Allocate(strlen(path), reinterpret_cast<uintptr_t>(this)));
+			uint8_t* url = reinterpret_cast<uint8_t*>(getAllocator()->Allocate(strlen(path), this));
 			strcpy(reinterpret_cast<char*>(url), path);
 			sock->params.ptr = url;
 		}
 		else if(strcmp(scheme, "https") == 0)
 		{
 			sock->type = SOCK_GSM_HTTPS;
-			uint8_t* url = reinterpret_cast<uint8_t*>(getAllocator()->Allocate(strlen(path), reinterpret_cast<uintptr_t>(this)));
+			uint8_t* url = reinterpret_cast<uint8_t*>(getAllocator()->Allocate(strlen(path), this));
 			strcpy(reinterpret_cast<char*>(url), path);
 			sock->params.ptr = url;
 		}
 		else return -1;
 
-		return 0; // TODO cambiar
+		return 0;
 	}
 
-	inline void swap(char *x, char *y) {
-		char t = *x; *x = *y; *y = t;
-	}
-
-	// function to reverse buffer[i..j]
-	char* reverse(char *buffer, int i, int j)
+	void PortGSM::push_char(uint8_t c)
 	{
-		while (i < j)
-			swap(&buffer[i++], &buffer[j--]);
-
-		return buffer;
+		if(m_rxbuf.push_back(c) != 0) setStatus(GSMStatus::Error, __func__, __LINE__);
 	}
 
-	int PortGSM::write_type(Socket* sock, const void* buf, size_t count)
+	bool PortGSM::loop()
 	{
-		if(m_status == GSMStatus::Error) return -1;
-		if(sock == nullptr)
+		if(m_status == GSMStatus::Error) return false;
+
+		uint8_t c = 0;
+		while(m_rxbuf.pop_front(&c) != -1)
 		{
-			//push_tx(reinterpret_cast<const uint8_t*>(buf), count);
-			uint8_t shittybuf[128];
-			for(size_t i = 0; i < count; ++i)
-				shittybuf[i] = reinterpret_cast<const uint8_t*>(buf)[i];
-			HAL_UART_Transmit(&huart3, shittybuf, count, 1000);
-		}
-		else
-		{
-			if(sock->type == SOCK_GSM_SMS)
+			if(c == '\r')
 			{
-				GSMState stat;
-				stat.op = GSMOp::WriteCommand;
-
-				GSMWriteParams* write_params = reinterpret_cast<GSMWriteParams*>(getAllocator()->Allocate(sizeof(GSMWriteParams), reinterpret_cast<uintptr_t>(this)));
-				stat.params.ptr = write_params;
-				write_params->command = GSMCommands::SMS_CMGF;
-				write_params->paramValues = "1";
-				write_params->nonConstValues = nullptr;
-
-				_statusList.push_back(stat);
-
-				write_params = reinterpret_cast<GSMWriteParams*>(getAllocator()->Allocate(sizeof(GSMWriteParams), reinterpret_cast<uintptr_t>(this)));
-				stat.params.ptr = write_params;
-				write_params->command = GSMCommands::SMS_CSCS;
-				write_params->paramValues = "\"GSM\"";
-				write_params->nonConstValues = nullptr;
-
-				_statusList.push_back(stat);
-
-				stat.op = GSMOp::SMSSend;
-				stat.state = 0;
-
-				char* msg = reinterpret_cast<char*>(getAllocator()->Allocate(count+3, reinterpret_cast<uintptr_t>(this)));
-				stat.params.ptr = msg;
-
-				stat.counter = sock->params.val; // numero de telefono
-
-				memcpy(msg, buf, count);
-				msg[count] ='\r';
-				msg[count+1] = '\n';
-				msg[count+2] = 0;
-
-				_statusList.push_back(stat);
-			}
-			else if(sock->type == SOCK_GSM_HTTP || sock->type == SOCK_GSM_HTTPS)
-			{
-				if(!m_sapbr)
-					initHTTP();
-
-				GSMState stat;
-				stat.op = GSMOp::ExecCommand;
-
-				stat.op = GSMOp::WriteCommand;
-				GSMWriteParams* wp = reinterpret_cast<GSMWriteParams*>(getAllocator()->Allocate(sizeof(GSMWriteParams), reinterpret_cast<uintptr_t>(this)));
-				wp->command = GSMCommands::HTTP_PARA;
-				wp->paramValues = "\"CID\",1";
-				wp->nonConstValues = nullptr;
-				stat.params.ptr = wp;
-				_statusList.push_back(stat);
-
-				wp = reinterpret_cast<GSMWriteParams*>(getAllocator()->Allocate(sizeof(GSMWriteParams), reinterpret_cast<uintptr_t>(this)));
-				wp->command = GSMCommands::HTTP_PARA;
-				wp->nonConstValues = reinterpret_cast<char*>(getAllocator()->Allocate(6+strlen(reinterpret_cast<char*>(sock->params.ptr)), reinterpret_cast<uintptr_t>(this)));
-				sprintf(wp->nonConstValues, "\"URL\",\"%s\"", reinterpret_cast<char*>(sock->params.ptr));
-				stat.params.ptr = wp;
-				_statusList.push_back(stat);
-
-
-				if(sock->type == SOCK_GSM_HTTPS)
-				{
-					stat.op = GSMOp::ExecCommand;
-					stat.params.command = "AT+HTTPSSL=1\r";
-					_statusList.push_back(stat);
-				}
-
-				stat.op = GSMOp::HTTPData;
-				stat.params.ptr = reinterpret_cast<char*>(getAllocator()->Allocate(count, reinterpret_cast<uintptr_t>(this)));
-				stat.counter = count;
-				memcpy(stat.params.ptr, buf, count);
-				_statusList.push_back(stat);
-
-				stat.op = GSMOp::HTTPAction;
-				stat.counter = 1; // post action
-				stat.params.ptr = nullptr;
-				_statusList.push_back(stat);
-
-				stat.op = GSMOp::ExecCommand;
-				stat.params.command = GSMCommands::HTTP_READ;
-				_statusList.push_back(stat);
-
-				stat.params.command = GSMCommands::HTTP_TERM;
-				_statusList.push_back(stat);
-
-				if(!m_sapbr)
-				{
-					stat.op = GSMOp::BearerClose;
-					_statusList.push_back(stat);
-					m_sapbr = true;
-				}
-			}
-			startQueue();
-		}
-		return count;
-	}
-
-	void PortGSM::push_rx(uint8_t* buf, size_t count)
-	{
-		for(size_t i = 0; i < count; ++i)
-		{
-
-			if(buf[i] == '\r')
-			{
-				if(m_rxbuf.size() == 0)
-				{
-					//m_rxbuf.clear();
-					continue;
-				}
+				if(m_currSize == 0) continue;
+				_push_currMsg(0);
 
 				Task tsk;
 				tsk.op = Operation::ModemEval;
-				tsk.counter = m_rxbuf.size();
-				tsk.buf = getAllocator()->Allocate(tsk.counter, reinterpret_cast<uintptr_t>(this));
+				tsk.counter = m_currSize;
+				tsk.buf = m_currMsg;
+				m_currMsg = nullptr;
 
 				Socket* sock = _createSelfManagedSocket();
 				sock->type = SOCK_GSM;
 
 				tsk.fd = _getSocketDescriptor(sock);
 
-				for(size_t buf_idx = 0; buf_idx < tsk.counter; ++buf_idx)
-					(reinterpret_cast<uint8_t*>(tsk.buf))[buf_idx] = m_rxbuf[buf_idx];
-
 				msgQueue.push_back(tsk);
-				m_rxbuf.clear();
+				_clear_currMsg();
+
 			}
-			else if(buf[i] == '\n')
+			else if(c == '\n')
 			{
 
 			}
-			else if(buf[i] == ' ')
+			else if(c == ' ')
 			{
 				GSMState* st = _statusList.at_front();
 				if(st != nullptr)
@@ -923,44 +912,42 @@ namespace FwLogger
 					{
 						if(st->state == 1)
 						{
-							if(m_rxbuf.back() == '>')
+							if(m_currMsg[m_currSize] == '>')
 							{
 								st->state = 2;
-								m_rxbuf.clear();
-								HAL_UART_Transmit_IT(&huart3, reinterpret_cast<uint8_t*>(st->params.ptr), strlen(reinterpret_cast<char*>(st->params.ptr)));
+								_clear_currMsg();
+								_gsm_tx(reinterpret_cast<uint8_t*>(st->params.ptr), strlen(reinterpret_cast<char*>(st->params.ptr)));
 								continue;
 							}
 						}
 						else if(st->state == 2)
 						{
-							if(m_rxbuf.back() == '>')
+							if(m_currMsg[m_currSize] == '>')
 							{
 								getAllocator()->Deallocate(st->params.ptr);
 								m_txbuf[0] = '\r';
 								m_txbuf[1] = '\n';
 								m_txbuf[2] = '\x1a';
-								m_rxbuf.clear();
-								HAL_UART_Transmit_IT(&huart3, m_txbuf, 3);
+								_clear_currMsg();
+								_gsm_tx(m_txbuf, 3);
 								continue;
 							}
 						}
 					}
 				}
-				m_rxbuf.push_back(buf[i]); //should be reached when >
+				_push_currMsg(c); //should be reached when >
 			}
 			else
-				m_rxbuf.push_back(buf[i]);
+				_push_currMsg(c);
 		}
-	}
 
-	bool PortGSM::loop()
-	{
-		if(m_status == GSMStatus::Error) return false;
 		GSMState* stat =_statusList.at_front();
 
-		if(stat == nullptr)
+		if(stat == nullptr) // not pending ops
 		{
-			if(m_status == GSMStatus::Ready)
+			if(m_tasks.size() > 0) _startTask();
+			else return false; // nothing to do
+			/*if(m_status == GSMStatus::Ready)
 			{
 				if(HAL_GetTick()-m_lastSignal > 10000)
 				{
@@ -969,15 +956,11 @@ namespace FwLogger
 					GSMState st;
 					st.op = GSMOp::GetSignal;
 					//_statusList.push_back(st);
-
-					//startQueue();
 					return true;
 				}
-			}
-			else if(m_status == GSMStatus::Sending)
-				setStatus(GSMStatus::Ready);
-			return false;
+			}*/
 		}
+
 		else if(stat->op == GSMOp::Delay)
 		{
 			if(HAL_GetTick()-delayStart >= stat->params.delay)
@@ -1004,21 +987,31 @@ namespace FwLogger
 					stat->state = 2;
 
 					strcpy(reinterpret_cast<char*>(m_txbuf), "AT\r");
-					HAL_UART_Transmit_IT(&huart3, m_txbuf, strlen("AT\r"));
+					_gsm_tx(m_txbuf, strlen("AT\r"));
 				}
 			}
 			else if(stat->state == 2)
 			{
-				if(HAL_GetTick()-delayStart > 1000)
+				if(HAL_GetTick()-delayStart > 1500) // debería haber recibido un OK
 				{
-					setStatus(GSMStatus::Error);
+					if(m_initRetry++ > 5)
+					{
+						setStatus(GSMStatus::Error, __func__, __LINE__);
+					}
+					else
+					{
+						HAL_UART_AbortReceive_IT(&huart3);
+						delayStart = HAL_GetTick();
+						stat->state = 0;
+						HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, GPIO_PIN_RESET);
+					}
 				}
 			}
 			else if(stat->state == 3)
 			{
 				if(HAL_GetTick()-delayStart >= 15000)
 				{
-					setStatus(GSMStatus::Ready);
+					setStatus(GSMStatus::Ready, __func__, __LINE__);
 					step();
 				}
 			}
@@ -1029,6 +1022,16 @@ namespace FwLogger
 			{
 				step();
 			}
+		}
+		else if(stat->op == GSMOp::RecvResponse)
+		{
+			if(HAL_GetTick()-stat->params.delay > 5000)
+				step();
+		}
+		else
+		{
+			if(HAL_GetTick()-delayStart > 10000)
+				execute();
 		}
 		return true;
 	}
@@ -1065,124 +1068,16 @@ namespace FwLogger
 
 		buf[len] = 0; // suboptimal
 
-		if(stat->op == GSMOp::RecvResponse)//todo repensar
+		if(len >= 5) // reset modem if smt returns error
 		{
-			if(strcmp(reinterpret_cast<char*>(buf), "OK") == 0) step();
-		}
-		else if(stat->op == GSMOp::DisableEcho)
-		{
-			if(stat->state == 0)
+			if(strncmp(reinterpret_cast<char*>(buf), "ERROR", 5) == 0)
 			{
-				if(buf[0] == 0) // skips 0 char
-					buf = buf + 1;
+				Log::Error("[Modem(%s)]: error, state: %d\n", getStatusStr(), stat->state);
+				reset();
+			}
+		}
 
-				if(strcmp(reinterpret_cast<char*>(buf), "AT") == 0)
-					stat->state = 1;
-
-				else if(strcmp(reinterpret_cast<char*>(buf), "OK") == 0)
-					step();
-			}
-			else if(stat->state == 1)
-			{
-				if(strcmp(reinterpret_cast<char*>(buf), "OK") == 0)
-				{
-					int len = sprintf(reinterpret_cast<char*>(m_txbuf), "%s0&W\r", GSMCommands::ATE);
-					HAL_UART_Transmit_IT(&huart3, m_txbuf, len);
-					stat->state = 2;
-				}
-			}
-			else if(stat->state == 2)
-			{
-				if(strcmp(reinterpret_cast<char*>(buf), "OK") == 0)
-					step();
-			}
-		}
-		else if(stat->op == GSMOp::SMSSend)
-		{
-			if(stat->state == 2)
-			{
-				if(strcmp(reinterpret_cast<char*>(buf), "OK") == 0)
-					step();
-			}
-		}
-		else if(stat->op == GSMOp::HTTPData)
-		{
-			if(stat->state == 1)
-			{
-				if(strcmp(reinterpret_cast<char*>(buf), "DOWNLOAD") == 0)
-				{
-					HAL_UART_Transmit_IT(&huart3, reinterpret_cast<uint8_t*>(stat->params.ptr), stat->counter);
-					stat->state = 2;
-				}
-			}
-			else if(stat->state == 2)
-			{
-				if(strcmp(reinterpret_cast<char*>(buf), "OK") == 0)
-				{
-					getAllocator()->Deallocate(stat->params.ptr);
-					step();
-				}
-			}
-		}
-		else if(stat->op == GSMOp::HTTPAction)
-		{
-			if(stat->state == 1)
-			{
-				if(strcmp(reinterpret_cast<char*>(buf), "OK") == 0)
-					stat->state = 2;
-			}
-			else if(stat->state == 2)
-				step();
-		}
-		else if(stat->op == GSMOp::DisableModem)
-		{
-			delayStart = HAL_GetTick();
-			if(stat->state == 0)
-			{
-				if(strcmp(reinterpret_cast<char*>(buf), "OK") == 0 || strncmp(reinterpret_cast<char*>(buf), "+CPIN", 5) == 0)
-				{
-					int len = sprintf(reinterpret_cast<char*>(m_txbuf), "%s=2\r", GSMCommands::CSCLK);
-					HAL_UART_Transmit_IT(&huart3, m_txbuf, len);
-					stat->state = 1;
-				}
-			}
-			else if(stat->state == 1)
-			{
-				if(strcmp(reinterpret_cast<char*>(buf), "OK") == 0)
-				{
-					stat->state = 2;
-					//HAL_UART_AbortReceive_IT(&huart3);
-					//step();
-
-					int len = sprintf(reinterpret_cast<char*>(m_txbuf), "AT+CSGS=0\r");
-					HAL_UART_Transmit_IT(&huart3, m_txbuf, len);
-
-					//int len = sprintf(reinterpret_cast<char*>(m_txbuf), "AT+CPOWD=1\r");
-					//HAL_UART_Transmit_IT(&huart3, m_txbuf, len);
-				}
-			}
-			else if(stat->state == 2)
-			{
-				//if(strcmp(reinterpret_cast<char*>(buf), "NORMAL POWER DOWN") == 0)
-				if(strcmp(reinterpret_cast<char*>(buf), "OK") == 0)
-				{
-					HAL_UART_AbortReceive_IT(&huart3);
-					step();
-				}
-			}
-		}
-		else if(stat->op == GSMOp::IPShut)
-		{
-			if(stat->state == 1)
-			{
-				if(strcmp(reinterpret_cast<char*>(buf), "SHUT OK") == 0)
-					step();
-
-				else
-					execute();
-			}
-		}
-		else if(stat->op == GSMOp::InitModem)
+		if(stat->op == GSMOp::InitModem)
 		{
 			if(stat->state == 2)
 			{
@@ -1194,13 +1089,40 @@ namespace FwLogger
 			}
 			else if(stat->state == 3)
 			{
-				if(strncmp(reinterpret_cast<char*>(buf), "+CIEV", 5) == 0)
+				if(strncmp(reinterpret_cast<char*>(buf), "*PSUTTZ", 7) == 0)
 				{
-					setStatus(GSMStatus::Ready);
+					setStatus(GSMStatus::Ready, __func__, __LINE__);
 					step();
 				}
 			}
 		}
+
+		else if(stat->op == GSMOp::RecvResponse)//todo repensar
+		{
+			if(strcmp(reinterpret_cast<char*>(buf), "OK") == 0) step();
+		}
+
+		else if(stat->op == GSMOp::GetSignal)
+		{
+			if(strncmp(reinterpret_cast<char*>(buf), "+CSQ", 4) == 0)
+			{
+
+			}
+			else if(strcmp(reinterpret_cast<char*>(buf), "OK") == 0)
+			{
+				step();
+			}
+		}
+
+		else if(stat->op == GSMOp::SMSSend)
+		{
+			if(stat->state == 2)
+			{
+				if(strcmp(reinterpret_cast<char*>(buf), "OK") == 0)
+					step();
+			}
+		}
+
 		else if(stat->op == GSMOp::BearerOpen)
 		{
 			if(stat->state == 0)
@@ -1209,7 +1131,7 @@ namespace FwLogger
 				{
 					stat->state = 1;
 					int len = sprintf(reinterpret_cast<char*>(m_txbuf), "%s=3,1,\"APN\",\"%s\"\r", GSMCommands::IP_BEARER, m_apn);
-					HAL_UART_Transmit_IT(&huart3, m_txbuf, len);
+					_gsm_tx(m_txbuf, len);
 				}
 			}
 			else if(stat->state == 1)
@@ -1218,7 +1140,7 @@ namespace FwLogger
 				{
 					stat->state = 2;
 					int len = sprintf(reinterpret_cast<char*>(m_txbuf), "%s=1,1\r", GSMCommands::IP_BEARER);
-					HAL_UART_Transmit_IT(&huart3, m_txbuf, len);
+					_gsm_tx(m_txbuf, len);
 				}
 			}
 			else if(stat->state == 2)
@@ -1227,7 +1149,7 @@ namespace FwLogger
 				{
 					stat->state = 3;
 					int len = sprintf(reinterpret_cast<char*>(m_txbuf), "%s=2,1\r", GSMCommands::IP_BEARER);
-					HAL_UART_Transmit_IT(&huart3, m_txbuf, len);
+					_gsm_tx(m_txbuf, len);
 				}
 			}
 			else if(stat->state == 3)
@@ -1250,7 +1172,7 @@ namespace FwLogger
 				{
 					stat->state = 1;
 					int len = sprintf(reinterpret_cast<char*>(m_txbuf), "%s=0,1\r", GSMCommands::IP_BEARER);
-					HAL_UART_Transmit_IT(&huart3, m_txbuf, len);
+					_gsm_tx(m_txbuf, len);
 				}
 			}
 			else if(stat->state == 1)
@@ -1259,15 +1181,110 @@ namespace FwLogger
 					step();
 			}
 		}
-		else if(stat->op == GSMOp::GetSignal)
-		{
-			if(strncmp(reinterpret_cast<char*>(buf), "+CSQ", 4) == 0)
-			{
 
-			}
-			else if(strcmp(reinterpret_cast<char*>(buf), "OK") == 0)
+		else if(stat->op == GSMOp::HTTPData)
+		{
+			if(stat->state == 0)
 			{
+				if(strcmp(reinterpret_cast<char*>(buf), "DOWNLOAD") == 0)
+				{
+					HAL_UART_Transmit_IT(&huart3, reinterpret_cast<uint8_t*>(stat->params.ptr), stat->counter);
+					stat->state = 1;
+				}
+			}
+			else if(stat->state == 1)
+			{
+				if(strcmp(reinterpret_cast<char*>(buf), "OK") == 0)
+					step();
+			}
+		}
+		else if(stat->op == GSMOp::HTTPAction)
+		{
+			if(stat->state == 0)
+			{
+				if(strcmp(reinterpret_cast<char*>(buf), "OK") == 0)
+					stat->state = 1;
+			}
+			else if(stat->state == 1)
 				step();
+		}
+
+
+		else if(stat->op == GSMOp::IPShut)
+		{
+			if(stat->state == 0)
+			{
+				if(strcmp(reinterpret_cast<char*>(buf), "SHUT OK") == 0)
+					step();
+
+				else
+					execute();
+			}
+		}
+
+		else if(stat->op == GSMOp::DisableEcho)
+		{
+			if(stat->state == 0)
+			{
+				if(buf[0] == 0) // skips 0 char
+					buf = buf + 1;
+
+				if(strcmp(reinterpret_cast<char*>(buf), "AT") == 0)
+					stat->state = 1;
+
+				else if(strcmp(reinterpret_cast<char*>(buf), "OK") == 0)
+					step();
+			}
+			else if(stat->state == 1)
+			{
+				if(strcmp(reinterpret_cast<char*>(buf), "OK") == 0)
+				{
+					int len = sprintf(reinterpret_cast<char*>(m_txbuf), "%s0&W\r", GSMCommands::ATE);
+					_gsm_tx(m_txbuf, len);
+					stat->state = 2;
+				}
+			}
+			else if(stat->state == 2)
+			{
+				if(strcmp(reinterpret_cast<char*>(buf), "OK") == 0)
+					step();
+			}
+		}
+		else if(stat->op == GSMOp::DisableModem)
+		{
+			delayStart = HAL_GetTick();
+			if(stat->state == 0)
+			{
+				if(strcmp(reinterpret_cast<char*>(buf), "OK") == 0 || strncmp(reinterpret_cast<char*>(buf), "+CPIN", 5) == 0)
+				{
+					int len = sprintf(reinterpret_cast<char*>(m_txbuf), "%s=2\r", GSMCommands::CSCLK);
+					_gsm_tx(m_txbuf, len);
+					stat->state = 1;
+				}
+			}
+			else if(stat->state == 1)
+			{
+				if(strcmp(reinterpret_cast<char*>(buf), "OK") == 0)
+				{
+					stat->state = 2;
+					//HAL_UART_AbortReceive_IT(&huart3);
+					//step();
+
+					int len = sprintf(reinterpret_cast<char*>(m_txbuf), "AT+CSGS=0\r");
+					_gsm_tx(m_txbuf, len);
+
+					//int len = sprintf(reinterpret_cast<char*>(m_txbuf), "AT+CPOWD=1\r");
+					//HAL_UART_Transmit_IT(&huart3, m_txbuf, len);
+				}
+			}
+			else if(stat->state == 2)
+			{
+				//if(strcmp(reinterpret_cast<char*>(buf), "NORMAL POWER DOWN") == 0)
+				if(strcmp(reinterpret_cast<char*>(buf), "OK") == 0)
+				{
+					HAL_UART_AbortReceive_IT(&huart3);
+					step();
+				}
 			}
 		}
 	}
@@ -1278,7 +1295,11 @@ namespace FwLogger
 		if(stat == nullptr) return;
 
 		if(stat->op == GSMOp::TestCommand || stat->op == GSMOp::ReadCommand || stat->op == GSMOp::ExecCommand)
+		{
 			stat->op = GSMOp::RecvResponse;
+			stat->params.delay = HAL_GetTick();
+		}
+
 		else if(stat->op == GSMOp::WriteCommand)
 		{
 			GSMWriteParams* wp = reinterpret_cast<GSMWriteParams*>(stat->params.ptr);
@@ -1289,30 +1310,26 @@ namespace FwLogger
 			}
 			stat->op = GSMOp::RecvResponse;
 		}
+
 		else if(stat->op == GSMOp::SMSSend)
 		{
 			if(stat->state == 0)
-				stat->state = 1; // waiting >
+				stat->state = 1; // waiting > in push rx
 		}
+
 		else if(stat->op == GSMOp::HTTPData)
 		{
-			if(stat->state == 0)
+			if(stat->state == 1)
 			{
 				getAllocator()->Deallocate(stat->params.ptr);
-				stat->state = 1; // waiting DOWNLOAD
+				stat->params.ptr = nullptr;
 			}
 		}
-		else if(stat->op == GSMOp::HTTPAction)
+
+		else if(stat->op == GSMOp::RawSend)
 		{
-			if(stat->state == 0)
-				stat->state = 1;
+			step();
 		}
-		else if(stat->op == GSMOp::IPShut)
-		{
-			if(stat->state == 0)
-				stat->state = 1;
-		}
-		//step();
 	}
 
 	PortGSM& PortGSM::get()
@@ -1321,11 +1338,212 @@ namespace FwLogger
 		return S;
 	}
 
-	void PortGSM::startQueue()
+	void PortGSM::reset()
 	{
-		if(m_status != GSMStatus::Ready) return;
-		setStatus(GSMStatus::Sending);
+		_statusList.clear(); //think how to safely clean memory
+		m_initRetry = 0;
 
+		GSMState st;
+		st.op = GSMOp::InitModem;
+		_statusList.push_back(st);
+
+		execute();
+	}
+
+	void PortGSM::powerOff()
+	{
+		PortTask t;
+		t.op = PortTask::Op::PowerOff;
+		m_tasks.push_back(t);
+	}
+
+	void PortGSM::setAPN(const char* apn)
+	{
+		strcpy(m_apn, apn);
+	}
+
+	void PortGSM::_push_currMsg(uint8_t c)
+	{
+		if(m_currMsg == nullptr)
+		{
+			m_currMsg = reinterpret_cast<uint8_t*>(getAllocator()->Allocate(256, this));
+			m_currSize = 0;
+		}
+		m_currMsg[m_currSize++] = c;
+	}
+
+	void PortGSM::_clear_currMsg()
+	{
+		if(m_currMsg != nullptr) getAllocator()->Deallocate(m_currMsg);
+		m_currSize = 0;
+	}
+
+	void PortGSM::_startTask()
+	{
+		PortTask* t = m_tasks.at_front();
+		if(t == nullptr) return;
+
+		if(t->op == PortTask::Op::Init)
+		{
+			Log::Verbose("[Modem] Task: Init\n");
+
+			if(m_status == GSMStatus::Init) return;
+			_statusList.clear();
+			reset();
+		}
+		else if(t->op == PortTask::Op::PowerOff)
+		{
+			if(m_status == GSMStatus::Off) return;
+			_statusList.push_back(GSMState());
+			_statusList.at_back()->op = GSMOp::DisableModem;
+
+			_statusList.push_back(GSMState());
+			_statusList.at_back()->op = GSMOp::EndTask;
+
+			Log::Verbose("[Modem] Task: Power Off\n");
+
+			if(m_status == GSMStatus::Ready) execute();
+		}
+		else if(t->op == PortTask::Op::Write)
+		{
+			if(m_status == GSMStatus::Off)
+				reset();
+
+			if(m_status == GSMStatus::Init)
+				_appendWrite();
+			else if(m_status == GSMStatus::Ready)
+			{
+				Log::Verbose("[Modem] Task: Write\n");
+
+				_appendWrite();
+				execute();
+			}
+		}
+	}
+
+	void PortGSM::_appendWrite()
+	{
+		PortTask* t = m_tasks.at_front();
+
+		if(t->sock == nullptr)
+		{
+			_statusList.push_back(GSMState());
+			_statusList.at_back()->op = GSMOp::StartSend;
+
+			_statusList.push_back(GSMState());
+			_statusList.at_back()->op = GSMOp::RawSend;
+		}
+		else
+		{
+			if(t->sock->type == SOCK_GSM_SMS)
+			{
+				GSMState stat;
+				stat.op = GSMOp::StartSend;
+				_statusList.push_back(stat);
+
+				stat.op = GSMOp::WriteCommand;
+				GSMWriteParams* write_params = reinterpret_cast<GSMWriteParams*>(getAllocator()->Allocate(sizeof(GSMWriteParams), this));
+				stat.params.ptr = write_params;
+				write_params->command = GSMCommands::SMS_CMGF;
+				write_params->paramValues = "1";
+				write_params->nonConstValues = nullptr;
+
+				_statusList.push_back(stat);
+
+				write_params = reinterpret_cast<GSMWriteParams*>(getAllocator()->Allocate(sizeof(GSMWriteParams), this));
+				stat.params.ptr = write_params;
+				write_params->command = GSMCommands::SMS_CSCS;
+				write_params->paramValues = "\"GSM\"";
+				write_params->nonConstValues = nullptr;
+
+				_statusList.push_back(stat);
+
+				stat.op = GSMOp::SMSSend;
+				stat.state = 0;
+
+				char* msg = reinterpret_cast<char*>(getAllocator()->Allocate(t->len+3, this));
+				stat.params.ptr = msg;
+
+				stat.counter = t->sock->params.val; // numero de telefono
+
+				memcpy(msg, t->data, t->len);
+				msg[t->len] ='\r';
+				msg[t->len+1] = '\n';
+				msg[t->len+2] = 0;
+
+				_statusList.push_back(stat);
+
+				stat.op = GSMOp::EndTask;
+				_statusList.push_back(stat);
+			}
+			else if(t->sock->type == SOCK_GSM_HTTP || t->sock->type == SOCK_GSM_HTTPS)
+			{
+				_statusList.push_back(GSMState());
+				_statusList.at_back()->op = GSMOp::StartSend;
+
+				if(!m_sapbr)
+					initHTTP();
+
+				GSMState* stat;
+
+				_statusList.push_back(GSMState());
+				stat = _statusList.at_back();
+				stat->op = GSMOp::WriteCommand;
+				stat->params.ptr = getAllocator()->Allocate(sizeof(GSMWriteParams), this);
+				reinterpret_cast<GSMWriteParams*>(stat->params.ptr)->command = GSMCommands::HTTP_PARA;
+				reinterpret_cast<GSMWriteParams*>(stat->params.ptr)->paramValues = "\"CID\",1";
+				reinterpret_cast<GSMWriteParams*>(stat->params.ptr)->nonConstValues = nullptr;
+
+				_statusList.push_back(GSMState());
+				stat = _statusList.at_back();
+				stat->op = GSMOp::WriteCommand;
+				stat->params.ptr = getAllocator()->Allocate(sizeof(GSMWriteParams), this);
+				reinterpret_cast<GSMWriteParams*>(stat->params.ptr)->command = GSMCommands::HTTP_PARA;
+				reinterpret_cast<GSMWriteParams*>(stat->params.ptr)->nonConstValues = reinterpret_cast<char*>(getAllocator()->Allocate(6+strlen(reinterpret_cast<char*>(t->sock->params.ptr)), this));
+				sprintf(reinterpret_cast<GSMWriteParams*>(stat->params.ptr)->nonConstValues, "\"URL\",\"%s\"", reinterpret_cast<char*>(t->sock->params.ptr));
+
+				if(t->sock->type == SOCK_GSM_HTTPS)
+				{
+					_statusList.push_back(GSMState());
+					_statusList.at_back()->op = GSMOp::ExecCommand;
+					_statusList.at_back()->params.command = "AT+HTTPSSL=1\r";
+				}
+
+				_statusList.push_back(GSMState());
+				_statusList.at_back()->op = GSMOp::HTTPData;
+				_statusList.at_back()->params.ptr = reinterpret_cast<char*>(getAllocator()->Allocate(t->len, this));
+				_statusList.at_back()->counter = t->len;
+				memcpy(_statusList.at_back()->params.ptr, t->data, t->len);
+
+				_statusList.push_back(GSMState());
+				_statusList.at_back()->op = GSMOp::HTTPAction;
+				_statusList.at_back()->counter = 1; // post action
+
+				_statusList.push_back(GSMState());
+				_statusList.at_back()->op = GSMOp::ExecCommand;
+				_statusList.at_back()->params.command = GSMCommands::HTTP_READ;
+
+
+				_statusList.push_back(GSMState());
+				_statusList.at_back()->op = GSMOp::ExecCommand;
+				_statusList.at_back()->params.command = GSMCommands::HTTP_TERM;
+
+				if(!m_sapbr)
+				{
+					_statusList.push_back(GSMState());
+					_statusList.at_back()->op = GSMOp::BearerClose;
+					m_sapbr = true;
+				}
+
+			}
+		}
+		_statusList.push_back(GSMState());
+		_statusList.at_back()->op = GSMOp::EndTask;
+	}
+
+	void PortGSM::step()
+	{
+		_statusList.delete_front();
 		execute();
 	}
 
@@ -1333,15 +1551,25 @@ namespace FwLogger
 	{
 		int len = 0;
 		GSMState* stat = _statusList.at_front();
+		delayStart = HAL_GetTick();
 
 		if(stat == nullptr)
 		{
 			if(m_status == GSMStatus::Sending)
-				setStatus(GSMStatus::Ready);
+				setStatus(GSMStatus::Ready, __func__, __LINE__);
 			return;
 		}
 
-		if(stat->op == GSMOp::TestCommand)
+		if(stat->op == GSMOp::InitModem)
+		{
+			HAL_UART_AbortReceive_IT(&huart3); // if only
+			stat->state = 0;
+			setStatus(GSMStatus::Init, __func__, __LINE__);
+			HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, GPIO_PIN_SET);
+			delayStart = HAL_GetTick();
+		}
+
+		else if(stat->op == GSMOp::TestCommand)
 			len = sprintf(reinterpret_cast<char*>(m_txbuf), "%s=?\r",stat->params.command);
 		else if(stat->op == GSMOp::ReadCommand)
 			len = sprintf(reinterpret_cast<char*>(m_txbuf), "%s?\r", stat->params.command);
@@ -1359,49 +1587,18 @@ namespace FwLogger
 		}
 		else if(stat->op == GSMOp::ExecCommand)
 			len = sprintf(reinterpret_cast<char*>(m_txbuf), "%s\r", stat->params.command);
-		else if(stat->op == GSMOp::Delay)
+
+		else if(stat->op == GSMOp::GetSignal)
 		{
-			delayStart = HAL_GetTick();
+			len = sprintf(reinterpret_cast<char*>(m_txbuf), "%s\r", GSMCommands::CSQ);
 		}
-		else if(stat->op == GSMOp::DisableEcho)
-		{
-			stat->state = 0;
-			len = sprintf(reinterpret_cast<char*>(m_txbuf), "%s\r", GSMCommands::AT);
-		}
+
 		else if(stat->op == GSMOp::SMSSend)
 		{
 			stat->state = 0;
 			len = sprintf(reinterpret_cast<char*>(m_txbuf), "%s=\"0034%d\"\r", GSMCommands::SMS_CMGS, stat->counter);
 		}
-		else if(stat->op == GSMOp::HTTPData)
-		{
-			stat->state = 0;
-			len = sprintf(reinterpret_cast<char*>(m_txbuf), "%s=%d,10000\r", GSMCommands::HTTP_DATA, strlen(reinterpret_cast<char*>(stat->params.ptr)));
-		}
-		else if(stat->op == GSMOp::HTTPAction)
-		{
-			stat->state = 0;
-			len = sprintf(reinterpret_cast<char*>(m_txbuf), "%s=%d\r", GSMCommands::HTTP_ACTION, stat->counter);
-		}
-		else if(stat->op == GSMOp::DisableModem)
-		{
-			stat->state = 0;
-			setStatus(GSMStatus::Off);
-			len = sprintf(reinterpret_cast<char*>(m_txbuf), "%s=0\r", GSMCommands::CFUN);
-			delayStart = HAL_GetTick();
-		}
-		else if(stat->op == GSMOp::InitModem)
-		{
-			stat->state = 0;
-			setStatus(GSMStatus::Init);
-			HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, GPIO_PIN_SET);
-			delayStart = HAL_GetTick();
-		}
-		else if(stat->op == GSMOp::IPShut)
-		{
-			stat->state = 0;
-			len = sprintf(reinterpret_cast<char*>(m_txbuf), "%s\r", GSMCommands::IP_CIPSHUT);
-		}
+
 		else if(stat->op == GSMOp::BearerOpen)
 		{
 			m_sapbr = false;
@@ -1417,19 +1614,63 @@ namespace FwLogger
 			m_ipAddr[3] = 0;
 			len = sprintf(reinterpret_cast<char*>(m_txbuf), "%s\r", GSMCommands::IP_CIPSHUT);
 		}
-		else if(stat->op == GSMOp::GetSignal)
+
+		else if(stat->op == GSMOp::HTTPData)
 		{
-			len = sprintf(reinterpret_cast<char*>(m_txbuf), "%s\r", GSMCommands::CSQ);
+			stat->state = 0;
+			len = sprintf(reinterpret_cast<char*>(m_txbuf), "%s=%d,10000\r", GSMCommands::HTTP_DATA, strlen(reinterpret_cast<char*>(stat->params.ptr)));
+		}
+		else if(stat->op == GSMOp::HTTPAction)
+		{
+			stat->state = 0;
+			len = sprintf(reinterpret_cast<char*>(m_txbuf), "%s=%d\r", GSMCommands::HTTP_ACTION, stat->counter);
+		}
+
+		else if(stat->op == GSMOp::IPShut)
+		{
+			stat->state = 0;
+			len = sprintf(reinterpret_cast<char*>(m_txbuf), "%s\r", GSMCommands::IP_CIPSHUT);
+		}
+
+		else if(stat->op == GSMOp::DisableEcho)
+		{
+			stat->state = 0;
+			len = sprintf(reinterpret_cast<char*>(m_txbuf), "%s\r", GSMCommands::AT);
+		}
+		else if(stat->op == GSMOp::DisableModem)
+		{
+			stat->state = 0;
+			setStatus(GSMStatus::Off, __func__, __LINE__);
+			len = sprintf(reinterpret_cast<char*>(m_txbuf), "%s=0\r", GSMCommands::CFUN);
+			delayStart = HAL_GetTick();
+		}
+
+		else if(stat->op == GSMOp::Delay)
+		{
+			delayStart = HAL_GetTick();
+		}
+
+		else if(stat->op == GSMOp::StartSend)
+		{
+			setStatus(GSMStatus::Sending, __func__, __LINE__);
+			step();
+		}
+		else if(stat->op == GSMOp::RawSend)
+		{
+			PortTask* t = m_tasks.at_front();
+			_gsm_tx(reinterpret_cast<uint8_t*>(t->data), t->len);
+		}
+		else if(stat->op == GSMOp::EndTask)
+		{
+			getAllocator()->Deallocate(m_tasks.at_front()->data);
+			m_tasks.at_front()->data = 0;
+			m_tasks.delete_front();
+			if(m_status == GSMStatus::Sending) setStatus(GSMStatus::Ready, __func__, __LINE__);
+			_statusList.delete_front();
 		}
 
 		if(len > 0)
-			HAL_UART_Transmit_IT(&huart3, m_txbuf, len);
-	}
-
-	void PortGSM::step()
-	{
-		_statusList.delete_front();
-		execute();
+			_gsm_tx(m_txbuf, len);
 	}
 
 	void PortGSM::initHTTP()
@@ -1443,47 +1684,25 @@ namespace FwLogger
 		_statusList.push_back(st);
 	}
 
-	void PortGSM::reset()
+	void PortGSM::_gsm_tx(uint8_t* data, uint16_t len)
 	{
-		GSMState st;
-		st.op = GSMOp::InitModem;
-		_statusList.push_back(st);
-
-		if(m_status == GSMStatus::Off || m_status == GSMStatus::Error)
-			execute();
-		else
-			startQueue();
+		uint8_t buf[128];
+		memcpy(buf, data, len);
+		buf[len] = 0;
+		HAL_UART_Transmit_IT(&huart3, data, len);
+		Log::Verbose("[Modem(%s)] T: %s\n", getStatusStr(), buf);
 	}
 
-	void PortGSM::powerOff()
-	{
-		GSMState st;
-		st.op = GSMOp::DisableModem;
-		_statusList.push_back(st);
-
-		startQueue();
-	}
-
-	/** LoRa Driver */
+	/** PortRadio Driver */
 
 	PortRadio::PortRadio(LoRa* lora)
 	{
 		m_lora = lora;
 	}
 
-	int PortRadio::open_type(Socket* sock, const char* scheme, const char* path)
+	int PortRadio::open(Socket* sock, const char* scheme, const char* path)
 	{
 		return -1;
-	}
-
-	int PortRadio::write_type(Socket* sock, const void* buf, size_t count)
-	{
-		return 0;
-	}
-
-	void PortRadio::push_rx(uint8_t* buf, size_t count)
-	{
-
 	}
 
 	bool PortRadio::loop()

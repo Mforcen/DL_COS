@@ -161,9 +161,8 @@ namespace FwLogger
 			};
 
 			int errno;
-			//circular_buffer<16, Task> _ops;
 
-			bool m_rxBin, m_rtcFlag, m_pendingTask, m_lpEnabled;
+			bool m_rxBin, m_rtcFlag, m_pendingTask, m_lpEnabled, m_pendingAlarm;
 
 			float sdi12_test[9];
 
@@ -175,13 +174,15 @@ namespace FwLogger
 			Allocator<128> _alloc;
 			uint8_t _alloc_buf[8192];
 			uint8_t _alloc_idx[64];
-			uintptr_t _alloc_ownership[64];
+			void* _alloc_ownership[64];
 			int printf_out;
 
 			void saveConfig();
 			void loadConfig();
 
 			char m_name[32];
+			bool m_init = false;
+			uint32_t init_delay;
 	};
 }
 #endif // FWLOGGER_H

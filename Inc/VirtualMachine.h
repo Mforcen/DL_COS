@@ -87,6 +87,17 @@ class VirtualMachine : public FwLogger::Module
 		void resizeSymbolTable(std::size_t entries);
 		std::size_t getSymbolTableSize();
 
+		struct Context
+		{
+			uint32_t stackPointer;
+			uint32_t returnAddr;
+			uint32_t localVarAddr;
+			uint32_t argAddr;
+			uint32_t programCounter;
+		};
+
+		Context getCurrentContext();
+
         int bin_eval(uint8_t* buf, int buflen, uint8_t* outbuf);
 	protected:
 

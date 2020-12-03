@@ -509,7 +509,7 @@ namespace FwLogger
 			_read_bytes = fp->_read_bytes;
 			if(fp->_databuf != nullptr)
 			{
-				_databuf = reinterpret_cast<uint8_t*>(_alloc->Allocate(128, 2));
+				_databuf = reinterpret_cast<uint8_t*>(_alloc->Allocate(128, reinterpret_cast<void*>(2)));
 				for(int i = 0; i<128; ++i) _databuf[i] = fp->_databuf[i];
 			}
 			else

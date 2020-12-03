@@ -6,8 +6,6 @@
 #include <utility>
 #include <new>
 
-#include "Log.h"
-
 template <std::size_t sizeval>
 struct fixed_string
 {
@@ -37,10 +35,7 @@ struct fixed_string
 	void clear()
 	{
 		idx = 0;
-		for(std::size_t i = 0; i < sizeval; ++i)
-		{
-			buf[i] = 0;
-		}
+		//for(std::size_t i = 0; i < sizeval; ++i) buf[i] = 0;
 	}
 
 	size_t size()
@@ -59,7 +54,9 @@ struct circular_buffer
 public:
 	circular_buffer()
 	{
-		clear();
+		write_ptr = 0;
+		read_ptr = 0;
+		full = 0;
 	}
 
 	int8_t push_back(T val)
@@ -100,6 +97,7 @@ public:
 	{
 		if(read_ptr == write_ptr && !full)
 			return -1;
+		buffer[read_ptr].~T();
 		read_ptr = (read_ptr+1)%sizeval;
 		full = 0;
 		return 0;
@@ -151,7 +149,11 @@ public:
 
 	void clear()
 	{
-		//for(std::size_t i = 0; i < sizeval; ++i) buffer[i] = 0;
+		T t;
+		while(pop_front(&t)!=-1)
+		{
+			t.~T();
+		}
 		write_ptr = 0;
 		read_ptr = 0;
 		full = 0;
@@ -304,7 +306,7 @@ template <std::size_t pageSize>
 class Allocator // 128bytes per object
 {
 	public:
-		Allocator(uint8_t* mem, uint8_t* idx, uintptr_t* ownership, std::size_t size)
+		Allocator(uint8_t* mem, uint8_t* idx, void** ownership, std::size_t size)
 		{
 			_mem = mem;
 			_idx = idx;
@@ -315,7 +317,7 @@ class Allocator // 128bytes per object
 			_numBlocks = size/pageSize;
 		}
 
-		void* Allocate(std::size_t reqSize, uintptr_t owner)
+		void* __attribute__((optimize("O0"))) Allocate(std::size_t reqSize, void* owner)
 		{
 			//FwLogger::Log::Verbose("Allocating %d bytes for 0x%x\n", reqSize, owner);
 			uint8_t reqBlocks = int_ceil(reqSize, pageSize);
@@ -346,7 +348,7 @@ class Allocator // 128bytes per object
 			return nullptr;
 		}
 
-		void Deallocate(void* ptr)
+		void __attribute__((optimize("O0"))) Deallocate(void* ptr)
 		{
 			//printf("Deallocating 0x%016x\n", ptr);
 			uintptr_t dealloc_ptr = reinterpret_cast<uintptr_t>(ptr);
@@ -356,13 +358,13 @@ class Allocator // 128bytes per object
 			//if(_idx[numBlock] == 0) FwLogger::Log::Warning("Error, double deallocation for block %d\n", numBlock);
 			//FwLogger::Log::Verbose("Deallocating block %d\n", numBlock);
 			_idx[numBlock] = 0;
-			_ownership[numBlock] = 0;
+			_ownership[numBlock] = nullptr;
 		}
 
 	private:
 		uint8_t* _mem;
 		uint8_t* _idx;
-		uintptr_t* _ownership;
+		void** _ownership;
 		std::size_t _numBlocks;
 
 		int int_ceil(int D, int d)
@@ -397,7 +399,7 @@ class vector
 			_capacity = other._capacity;
 			if(other._data != nullptr)
 			{
-				_data = reinterpret_cast<T*>(_vectAllocator->Allocate(_capacity*sizeof(T), reinterpret_cast<uintptr_t>(this)));
+				_data = reinterpret_cast<T*>(_vectAllocator->Allocate(_capacity*sizeof(T), this));
 
 				for(std::size_t i = 0; i < _size; ++i)
 					_data[i] = other._data[i];
@@ -474,7 +476,7 @@ class vector
 			if(_capacity*sizeof(T) < mem_req)
 			{
 				T* old_data = _data;
-				_data = reinterpret_cast<T*>(_vectAllocator->Allocate(mem_req, reinterpret_cast<uintptr_t>(this)));
+				_data = reinterpret_cast<T*>(_vectAllocator->Allocate(mem_req, this));
 
 				if(old_data != nullptr)
 				{
@@ -577,7 +579,7 @@ public:
 
 	node* _createNewNode()
 	{
-		node* nn = reinterpret_cast<node*>(_vectAllocator->Allocate(sizeof(node), reinterpret_cast<uintptr_t>(this)));
+		node* nn = reinterpret_cast<node*>(_vectAllocator->Allocate(sizeof(node), this));
 		new(&nn->data) T();
 		return nn;
 	}

@@ -681,6 +681,18 @@ std::size_t VirtualMachine::getSymbolTableSize()
 	return m_symbolTable.size();
 }
 
+VirtualMachine::Context VirtualMachine::getCurrentContext()
+{
+	Context ctx;
+	ctx.argAddr = m_argAddr;
+	ctx.localVarAddr = m_localVarAddr;
+	ctx.programCounter = m_programCounter;
+	ctx.returnAddr = m_returnAddr;
+	ctx.stackPointer = m_stackPointer;
+
+	return ctx;
+}
+
 int VirtualMachine::bin_eval(uint8_t* buf, int buflen, uint8_t* outbuf)
 {
 	if(buf[0] == 's')

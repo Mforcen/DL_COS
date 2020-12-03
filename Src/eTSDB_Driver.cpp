@@ -346,7 +346,7 @@ namespace FwLogger
 
 			if(file._databuf == nullptr)
 			{
-				file._databuf = static_cast<uint8_t*>(_alloc->Allocate(128, 3));
+				file._databuf = static_cast<uint8_t*>(_alloc->Allocate(128, reinterpret_cast<void*>(3)));
 				file._data_status = 0;
 				file._data_idx = 0;
 			}
@@ -425,7 +425,7 @@ namespace FwLogger
 			file._read_bytes += _opLen;
 
 			if(file._databuf == nullptr)
-				file._databuf = static_cast<uint8_t*>(_alloc->Allocate(_opLen, reinterpret_cast<uintptr_t>(&file)));
+				file._databuf = static_cast<uint8_t*>(_alloc->Allocate(_opLen, &file));
 
 			readPage(_opLen, _opAddr, file._databuf);
 
@@ -562,7 +562,7 @@ namespace FwLogger
 			_opAddr = num_entry*dp->_rowWidth + dp->_header_span + dp->getPageIdx()*PageWidth;
 			_opLen = dp->_rowWidth;
 			_opIdx = 1;
-			_opBuf = _alloc->Allocate(dp->_rowWidth, reinterpret_cast<uintptr_t>(this));
+			_opBuf = _alloc->Allocate(dp->_rowWidth, this);
 
 			uint8_t* opBuf = static_cast<uint8_t*>(_opBuf);
 
@@ -766,7 +766,7 @@ namespace FwLogger
 			else if(_states[_stateIdx] == State::FindNonEmpty)
 			{
 				uint16_t readVal;
-				int i;
+				unsigned int i;
 
 				for(i = 0; i < _opLen/2; ++i) // arreglar esto por si es la segunda lectura
 				{
@@ -859,7 +859,7 @@ namespace FwLogger
 			{
 				_opLen = _page->getSize();
 				_opAddr = _page->getPageIdx()*PageWidth;
-				_opBuf = _alloc->Allocate(_opLen, reinterpret_cast<uintptr_t>(this));
+				_opBuf = _alloc->Allocate(_opLen, this);
 				_page->serialize(static_cast<uint8_t*>(_opBuf));
 
 				if(_page->getType() == FileType)
@@ -1128,7 +1128,7 @@ namespace FwLogger
 					fp->_read_bytes = read_len;
 					if(fp->_databuf == nullptr)
 					{
-						fp->_databuf = reinterpret_cast<uint8_t*>(_alloc->Allocate(128, reinterpret_cast<uintptr_t>(this)));
+						fp->_databuf = reinterpret_cast<uint8_t*>(_alloc->Allocate(128, this));
 					}
 					uint32_t addr = fp->getPageIdx()*PageWidth+fp->getSize();
 					readPage(read_len, addr, fp->_databuf);

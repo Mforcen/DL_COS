@@ -4,6 +4,7 @@
 #include "errno.h"
 #include "mem_structs.hpp"
 #include "Module.h"
+#include "Log.h"
 
 #include <limits>
 
@@ -16,7 +17,6 @@ uint16_t getUS();
 namespace FwLogger
 {
 	// TODO (forcen#1#): Create better interfaces for other parts of the program
-	// TODO (forcen#1#): Add logging capabilities
 	class SDI12_Driver : public Module
 	{
 		public:
@@ -96,6 +96,8 @@ namespace FwLogger
 			int parseData(float* dst, int count, uint8_t* buf);
 
 			void push_bits(int16_t bits, GPIO_PinState pinValue);
+
+			circular_buffer<16,uint16_t> _rx_times;
 
 			uint8_t _rx_char;
 			uint32_t _last_rx;

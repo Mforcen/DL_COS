@@ -167,8 +167,6 @@ int main(void)
 		HAL_Delay(100);
 	}*/
 
-	uint32_t last_tick = 0;
-
 	HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_data, 5);
 
 	FwLogger::OS::setOS(&os);

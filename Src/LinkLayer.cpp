@@ -210,7 +210,7 @@ namespace FwLogger
 		pkt.len = len;
 		//pkt.id = idx;
 		pkt.seq = 0;
-		pkt.payload = reinterpret_cast<uint8_t*>(_alloc->Allocate(len, reinterpret_cast<uintptr_t>(this)));
+		pkt.payload = reinterpret_cast<uint8_t*>(_alloc->Allocate(len, this));
 
 		for(int i = 0; i < len; ++i) pkt.payload[i] = buf[i];
 
@@ -305,6 +305,7 @@ namespace FwLogger
 			}
 		}
 		return true;*/
+		return false;
 	}
 
 	void LinkLayer::send_pkt()

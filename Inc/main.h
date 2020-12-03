@@ -93,6 +93,7 @@ void sdi12_Isr();
 
 #define SPI2_NSS_Pin GPIO_PIN_9
 #define SPI2_NSS_GPIO_Port GPIOB
+
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */

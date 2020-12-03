@@ -36,7 +36,7 @@ namespace FwLogger
 			virtual int deserialize(uint8_t* buf);
 
 			static void setAllocator(Allocator<128>* alloc){_alloc = alloc; }
-			void* operator new(std::size_t size) { return _alloc->Allocate(size, 1); }
+			void* operator new(std::size_t size) { return _alloc->Allocate(size, reinterpret_cast<void*>(1)); }
 			void operator delete(void *ptr) { _alloc->Deallocate(ptr); }
 
 		protected:

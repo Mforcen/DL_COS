@@ -139,7 +139,7 @@ namespace FwLogger
 			}
 			break;
 
-		case Transmitting: //revisar porque esto no está bien, hay que cumplir los 10 bits
+		case Transmitting:
 			{
 				int bit_idx, byte_idx;
 				bit_idx = (_counter) % 10; //obtener qué hay que poner (start, 7 bits, paridad, stop)
@@ -174,11 +174,11 @@ namespace FwLogger
 						_measDst[i] = std::numeric_limits<float>::quiet_NaN();
 					}
 					_state = DataFull;
-					Log::Warning("Sensor not responding data\n");
+					Log::Warning("[SDI12]Sensor not responding data\n");
 				}
 				else if(_state == Command)
 				{
-					Log::Warning("Sensor not responding command\n");
+					Log::Warning("[SDI12]Sensor not responding command\n");
 				}
 
 				_error = 1;
@@ -196,7 +196,7 @@ namespace FwLogger
 		}
 	 }
 
-	void SDI12_Driver::pin_isr() //Esto se queda en Listening hasta timeout
+	void SDI12_Driver::pin_isr() //Esto se queda en Listening hasta timeout TODO reescribir para reducir tiempo de ejecucion
 	{
 		if(_status == Receiving){
 			if(_state == WaitingSR) return;
@@ -210,7 +210,9 @@ namespace FwLogger
 
 			GPIO_PinState pinValue = HAL_GPIO_ReadPin(_gpio, _pin);
 
+			#ifdef SDI12_DEBUG
 			Log::Verbose("R:%d,%d,%d\n", dt_rx, pinValue, _counter);
+			#endif // SDI12_DEBUG
 
 			push_bits(bits, pinValue);
 			/*while(bits-->0)
@@ -301,7 +303,10 @@ namespace FwLogger
 
 	void SDI12_Driver::setStatus(SDI12_Driver::TransceiverStatus status)
 	{
+		#ifdef SDI12_DEBUG
 		Log::Verbose("Switching to status %d with counter val %d\n", status, _counter);
+		#endif // SDI12_DEBUG
+
 		_status = status;
 		_counter = 0;
 		switch(status)
@@ -517,6 +522,11 @@ namespace FwLogger
 		else if(_state == DataFull)
 		{
 			Log::Info("SDI12 collected\n");
+			if(_error == 1)
+			{
+				_error = 0;
+				for(uint8_t i = 0; i < count; ++i) dst[i] = std::numeric_limits<float>::quiet_NaN();
+			}
 			_state = Nop;
 			return 0;
 		}
@@ -698,7 +708,10 @@ namespace FwLogger
 			}
 			else if(innerCounter == 10)
 			{
+				#ifdef SDI12_DEBUG
 				Log::Verbose("C: %c\n",_rx_char);
+				#endif // SDI12_DEBUG
+
 				_rx_buffer.push_back(_rx_char & 0x7f);
 				if(_rx_buffer.idx > 2)
 				{
