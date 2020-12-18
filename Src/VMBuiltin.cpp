@@ -92,9 +92,9 @@ int32_t _exp(float* rv, Arg val)
 	return 0;
 }
 
-int32_t _getAdc(uint32_t* rv, Arg port, Arg chan)
+int32_t _getAdc(uint32_t* rv, Arg chan)
 {
-	*rv = getADC(port.ival, chan.ival);
+	*rv = getADC(chan.ival);
 	return 0;
 }
 
@@ -182,7 +182,19 @@ int32_t _time(int* rv)
 	return 0;
 }
 
-BuiltinFunc builtinFuncs[29];
+int32_t _getBattery(int* rv)
+{
+	*rv = getBattery();
+	return 0;
+}
+
+int32_t _getCharging(int* rv)
+{
+	*rv = getCharging();
+	return 0;
+}
+
+BuiltinFunc builtinFuncs[31];
 
 void init_builtinFuncs()
 {
@@ -261,10 +273,9 @@ void init_builtinFuncs()
 	builtinFuncs[14].argTypes[0] = PTR;
 	builtinFuncs[14].func_ptr = (intptr_t)_print;
 
-	builtinFuncs[15].nArgs = 2;
+	builtinFuncs[15].nArgs = 1;
 	builtinFuncs[15].retValue = INT;
 	builtinFuncs[15].argTypes[0] = INT;
-	builtinFuncs[15].argTypes[1] = INT;
 	builtinFuncs[15].func_ptr = (intptr_t)_getAdc;
 
 	builtinFuncs[16].nArgs = 4;
@@ -341,5 +352,13 @@ void init_builtinFuncs()
 	builtinFuncs[28].nArgs = 0;
 	builtinFuncs[28].retValue = INT;
 	builtinFuncs[28].func_ptr = (intptr_t)_time;
+
+	builtinFuncs[29].nArgs = 0;
+	builtinFuncs[29].retValue = INT;
+	builtinFuncs[29].func_ptr = (intptr_t)_getBattery;
+
+	builtinFuncs[30].nArgs = 0;
+	builtinFuncs[30].retValue = INT;
+	builtinFuncs[30].func_ptr = (intptr_t)_getCharging;
 }
 

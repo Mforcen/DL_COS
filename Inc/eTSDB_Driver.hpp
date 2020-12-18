@@ -42,8 +42,8 @@ namespace FwLogger
 		class Driver : public SPIFlash
 		{
 		public:
-			// TODO (forcen#1#): Add logging functions where they should be
-			// TODO (forcen#1#): Add support for n columns, instead of up to 8, adding multipage datapage and colnum byte in header
+			// TODO (forcen#1#12/03/20): Reimplement the driver in order to make it more like littlefs ...
+//Logging and CObW
 			Driver(uint32_t offsetAddress, uint32_t size, SPI_HandleTypeDef* hspi, GPIO_TypeDef* gpio, uint16_t pin, Allocator<128>* alloc);
 
 			/**

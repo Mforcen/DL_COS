@@ -74,7 +74,7 @@ PCD_HandleTypeDef hpcd_USB_FS;
 
 /* USER CODE BEGIN PV */
 
-int16_t adc_data[5];
+int16_t adc_data[6];
 
 FwLogger::OS os;
 /* USER CODE END PV */
@@ -150,24 +150,18 @@ int main(void)
 	MX_USART1_UART_Init();
 	MX_USART3_UART_Init();
 	//MX_USB_PCD_Init();
+	RTC->CRL &= ~0x02;
 
 	//MX_USB_DEVICE_Init();
 	/* USER CODE BEGIN 2 */
-	//HAL_UART_Receive_IT(&huart1, &_UART_rx_char, 1);
-	//HAL_NVIC_EnableIRQ(USART1_IRQn);
-	//HAL_NVIC_EnableIRQ(USART3_IRQn);
 	HAL_NVIC_SetPriority(RTC_Alarm_IRQn, 0, 0);
 	HAL_NVIC_EnableIRQ(RTC_Alarm_IRQn);
 
 	HAL_Delay(10);
-	/*uint8_t data[] = "hola caracola";
-	while(1)
-	{
-		HAL_UART_Transmit(&huart3, data, 13, 1000);
-		HAL_Delay(100);
-	}*/
 
-	HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_data, 5);
+	HAL_ADCEx_Calibration_Start(&hadc1);
+
+	HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_data, 6);
 
 	FwLogger::OS::setOS(&os);
 
@@ -230,7 +224,7 @@ void SystemClock_Config(void)
   PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RTC|RCC_PERIPHCLK_ADC
                               |RCC_PERIPHCLK_USB;
   PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_LSE;
-  PeriphClkInit.AdcClockSelection = RCC_ADCPCLK2_DIV6;
+  PeriphClkInit.AdcClockSelection = RCC_ADCPCLK2_DIV8;
   PeriphClkInit.UsbClockSelection = RCC_USBCLKSOURCE_PLL_DIV1_5;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
   {
@@ -263,7 +257,7 @@ static void MX_ADC1_Init(void)
 	hadc1.Init.DiscontinuousConvMode = DISABLE;
 	hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
 	hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
-	hadc1.Init.NbrOfConversion = 5;
+	hadc1.Init.NbrOfConversion = 6;
 	if (HAL_ADC_Init(&hadc1) != HAL_OK)
 	{
 		Error_Handler();
@@ -272,7 +266,7 @@ static void MX_ADC1_Init(void)
 	*/
 	sConfig.Channel = ADC_CHANNEL_0;
 	sConfig.Rank = ADC_REGULAR_RANK_1;
-	sConfig.SamplingTime = ADC_SAMPLETIME_1CYCLE_5;
+	sConfig.SamplingTime = ADC_SAMPLETIME_13CYCLES_5;
 	if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
 	{
 		Error_Handler();
@@ -306,6 +300,14 @@ static void MX_ADC1_Init(void)
 	sConfig.Channel = ADC_CHANNEL_4;
 	sConfig.Rank = ADC_REGULAR_RANK_5;
 	if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+	{
+		Error_Handler();
+	}
+	/** Configure Regular Channel
+	*/
+	sConfig.Channel = ADC_CHANNEL_6;
+	sConfig.Rank = ADC_REGULAR_RANK_6;
+	if(HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
 	{
 		Error_Handler();
 	}
@@ -434,7 +436,7 @@ static void MX_RTC_Init(void)
 		/** Initialize RTC Only
 		*/
 		hrtc.Instance = RTC;
-		hrtc.Init.AsynchPrediv = RTC_AUTO_1_SECOND;
+		hrtc.Init.AsynchPrediv = 0x7FFF; // supuestamente, 32.768kHz hacen 1 segundo
 		hrtc.Init.OutPut = RTC_OUTPUTSOURCE_ALARM;
 		if (HAL_RTC_Init(&hrtc) != HAL_OK)
 		{
@@ -827,6 +829,13 @@ static void MX_GPIO_Init(void)
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_MEDIUM;
 	HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
+	/**LPtest*/
+	GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3;
+	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+	GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_MEDIUM;
+	HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
 	/*Configure GPIO pins : Radio_rst_Pin SDI12_Dir_Pin Flash_nss_Pin */
 	GPIO_InitStruct.Pin = Radio_rst_Pin|SDI12_Dir_Pin|Flash_nss_Pin;
 	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
@@ -848,10 +857,16 @@ static void MX_GPIO_Init(void)
 	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
 	/*Configure GPIO pin : SDIO_CD_Pin */
-	GPIO_InitStruct.Pin = SDIO_CD_Pin;
+	GPIO_InitStruct.Pin = CHG_Pin;
 	GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
-	HAL_GPIO_Init(SDIO_CD_GPIO_Port, &GPIO_InitStruct);
+	HAL_GPIO_Init(CHG_GPIO_Port, &GPIO_InitStruct);
+
+	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET);
+	GPIO_InitStruct.Pin = GPIO_PIN_7;
+	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
 	GPIO_InitStruct.Pin = (GPIO_PIN_11 | GPIO_PIN_12);
 	GPIO_InitStruct.Mode = GPIO_MODE_AF_INPUT;
@@ -859,6 +874,10 @@ static void MX_GPIO_Init(void)
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
 	HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
+	/** Low power settings */
+	GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+	GPIO_InitStruct.Pin = GPIO_PIN_12 | GPIO_PIN_13;
+	HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 }
 
 /* USER CODE BEGIN 4 */

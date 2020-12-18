@@ -190,6 +190,24 @@ namespace FwLogger
 		return &_sockTable[sd-SOCKET_DESCRIPTOR_OFFSET];
 	}
 
+	bool PortManager::isPort(void* ptr)
+	{
+		for(unsigned int i = 0; i < _currPorts; ++i)
+			if(&_ports[i] == ptr) return true;
+		return false;
+	}
+
+	bool PortManager::isSocket(void* ptr)
+	{
+		for(int i = 0; i < SOCKET_TABLE_SIZE; ++i)
+		{
+			if(_in_use[i]){
+				if(&_sockTable[i] == ptr) return true;
+			}
+		}
+		return false;
+	}
+
 	bool PortManager::loop()
 	{
 		bool retval = false;
@@ -792,6 +810,7 @@ namespace FwLogger
 		const char* CBC = "AT+CBC";
 		const char* CFUN = "AT+CFUN";
 		const char* CSCLK = "AT+CSCLK";
+		const char* CSGS = "AT+CSGS";
 
 		/** SMS */
 		const char* SMS_CMGF = "AT+CMGF";
@@ -1255,22 +1274,22 @@ namespace FwLogger
 			delayStart = HAL_GetTick();
 			if(stat->state == 0)
 			{
-				if(strcmp(reinterpret_cast<char*>(buf), "OK") == 0 || strncmp(reinterpret_cast<char*>(buf), "+CPIN", 5) == 0)
+				if(strcmp(reinterpret_cast<char*>(buf), "OK") == 0)
 				{
-					int len = sprintf(reinterpret_cast<char*>(m_txbuf), "%s=2\r", GSMCommands::CSCLK);
+					int len = sprintf(reinterpret_cast<char*>(m_txbuf), "%s=0\r", GSMCommands::CFUN);
 					_gsm_tx(m_txbuf, len);
 					stat->state = 1;
 				}
 			}
 			else if(stat->state == 1)
 			{
-				if(strcmp(reinterpret_cast<char*>(buf), "OK") == 0)
+				if(strcmp(reinterpret_cast<char*>(buf), "OK") == 0 || strncmp(reinterpret_cast<char*>(buf), "+CPIN", 5) == 0)
 				{
 					stat->state = 2;
 					//HAL_UART_AbortReceive_IT(&huart3);
 					//step();
 
-					int len = sprintf(reinterpret_cast<char*>(m_txbuf), "AT+CSGS=0\r");
+					int len = sprintf(reinterpret_cast<char*>(m_txbuf), "%s=1\r", GSMCommands::CSCLK);
 					_gsm_tx(m_txbuf, len);
 
 					//int len = sprintf(reinterpret_cast<char*>(m_txbuf), "AT+CPOWD=1\r");
@@ -1641,7 +1660,7 @@ namespace FwLogger
 		{
 			stat->state = 0;
 			setStatus(GSMStatus::Off, __func__, __LINE__);
-			len = sprintf(reinterpret_cast<char*>(m_txbuf), "%s=0\r", GSMCommands::CFUN);
+			len = sprintf(reinterpret_cast<char*>(m_txbuf), "%s=0\r", GSMCommands::CSGS);
 			delayStart = HAL_GetTick();
 		}
 

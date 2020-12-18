@@ -53,6 +53,8 @@ struct BuiltinFunc
 };
 
 // TODO (forcen#1#): Define the remaining builtin functions for accessing all the hardware interfaces
+// TODO (forcen#1#12/03/20): Add some functions like: ...
+//-Get battery voltage
 
 int32_t _sin(float* rv, Arg rad);
 int32_t _cos(float* rv, Arg rad);
@@ -72,7 +74,7 @@ int32_t _exp(float* rv, Arg val);
 
 int32_t _print(void* rv, Arg fmt);
 
-int32_t _getAdc(uint32_t* rv, Arg port, Arg chan);
+int32_t _getAdc(uint32_t* rv, Arg chan);
 
 int32_t _SDI12_ReadSingleMeasurement(void* rv, Arg addr, Arg dst, Arg count, Arg additional);
 int32_t _digitalRead(int* rv, Arg ch);
@@ -80,7 +82,7 @@ int32_t _digitalWrite(void* rv, Arg ch, Arg value);
 int32_t _pulseRead(int* rv, Arg ch);
 
 
-extern BuiltinFunc builtinFuncs[29];
+extern BuiltinFunc builtinFuncs[31];
 void init_builtinFuncs();
 
 

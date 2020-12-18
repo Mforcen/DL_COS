@@ -4,14 +4,24 @@
 
 using namespace FwLogger;
 
-int getRawADC(int port, int chan)
+int getRawADC(int chan)
 {
-	return OS::get().get_adc_val(6*port+chan);
+	return OS::get().get_adc_val(chan);
 }
 
-int getADC(int port, int chan)
+int getADC(int chan)
 {
-	return getRawADC(port, chan) * 3300 / 4096;
+	return getRawADC(chan) * 3300 / 4096;
+}
+
+int getBattery()
+{
+	return OS::get().get_adc_bat() * 4200 / 3724;
+}
+
+int getCharging()
+{
+	return OS::get().getCharging();
 }
 
 int open(char* path, int oflag)

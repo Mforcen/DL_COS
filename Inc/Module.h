@@ -32,6 +32,8 @@ namespace FwLogger
 		static Module* getModuleById(char bin_id);
 		static uint8_t getModuleNumber();
 		uint8_t* getName();
+		static bool isModule(void* ptr);
+
 		virtual bool loop() = 0; // return false means that no work is left to do until something
 
 		const uint8_t majorVersion, minorVersion;

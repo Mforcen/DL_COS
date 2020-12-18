@@ -128,6 +128,8 @@ namespace FwLogger
 		static int write(int sock, const void* buf, size_t count);
 		static int close(int sd);
 		static Socket* getSocket(int sd);
+		static bool isPort(void* ptr);
+		static bool isSocket(void* ptr);
 
 		static bool loop();
 		void static setAllocator(Allocator<128>* alloc) { _alloc = alloc; }
@@ -149,7 +151,8 @@ namespace FwLogger
 		static void addPort(Port* port);
 	};
 
-	//TODO (forcen#1#): Add WiFi support
+	// TODO (forcen#1#): Add WiFi support
+	// TODO (forcen#1#12/03/20): Add read capabilities
 
 	class Port
 	{
@@ -242,7 +245,13 @@ namespace FwLogger
 		PortUART();
 	};
 
-	//TODO (forcen#1#): Allow the driver to use IP Stack instead HTTP stack
+	// TODO (forcen#1#): Allow the driver to use IP Stack instead HTTP stack
+	// TODO (forcen#1#12/03/20): Add configurable timeout things
+	// TODO (forcen#1#12/03/20): Add before SAPBR query in order to get if modem is registered in to network
+	// TODO (forcen#1#12/03/20): Fix LED blinking when low power mode is active
+	// TODO (forcen#1#12/03/20): Add read function capabilities from socket (read from HTTP as GET from url)
+	// TODO (forcen#1#12/03/20): Make HTTP write to read status code
+
 	class PortGSM : public Port
 	{
 	public:
@@ -255,7 +264,7 @@ namespace FwLogger
 
 		static PortGSM& get();
 
-		circular_buffer<32> m_rxbuf;
+		circular_buffer<64> m_rxbuf;
 		uint8_t m_txbuf[256];
 
 		void reset();

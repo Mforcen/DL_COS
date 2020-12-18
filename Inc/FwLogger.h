@@ -66,7 +66,7 @@ extern DMA_HandleTypeDef hdma_usart1_tx;
 extern PCD_HandleTypeDef hpcd_USB_FS;
 
 extern circular_buffer<256> tx_buffer;
-extern int16_t adc_data[5];
+extern int16_t adc_data[6];
 extern uint8_t _UART_txing;
 
 namespace FwLogger
@@ -74,14 +74,18 @@ namespace FwLogger
 	class OS
 	{
 		// TODO (forcen#1#): Add Low Power capabilities
+		private:
+			Allocator<128> _alloc;
+			uint8_t _alloc_buf[8192];
+			uint8_t _alloc_idx[64];
+			void* _alloc_ownership[64];
+
 		public:
 			static OS& get();
 			OS();
 			static void setOS(OS* os);
 
 			void init();
-			/*void push_rx(uint8_t c, SocketType sockType);
-			void push_rx(uint8_t* buf, uint16_t len, SocketType sockType);*/
 
 			void RTC_ISR();
 
@@ -99,6 +103,9 @@ namespace FwLogger
 			eTSDB::Date timeETSDB();
 
 			int16_t get_adc_val(int channel);
+			int16_t get_adc_bat();
+			float get_battery();
+			int getCharging();
 
 			void enablePower(int enable);
 			void enableLowPower(int enable);
@@ -164,17 +171,12 @@ namespace FwLogger
 
 			bool m_rxBin, m_rtcFlag, m_pendingTask, m_lpEnabled, m_pendingAlarm;
 
-			float sdi12_test[9];
-
 			int8_t _createFD(FDType type);
 			void _deleteFD(int fd);
 
 			FileDescriptor _fds[16];
 
-			Allocator<128> _alloc;
-			uint8_t _alloc_buf[8192];
-			uint8_t _alloc_idx[64];
-			void* _alloc_ownership[64];
+
 			int printf_out;
 
 			void saveConfig();

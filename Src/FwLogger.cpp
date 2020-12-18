@@ -12,6 +12,58 @@ namespace FwLogger
 		return *ptr;
 	}
 
+	const uint8_t vm_prg[] = {2,	63,	0,	0,	0,	104,	116,	116,	112,	58,	108,	97,	98,	115,	97,	112,	46,	117,	112,	99,	116,	46,	101,	115,	58,	56,	48,	56,	48,	47,	97,	112,
+		105,	47,	118,	49,	47,	77,	89,	111,	72,	104,	69,	71,	69,	102,	57,	114,	110,	54,	53,	103,	100,	55,	75,	113,	99,	47,	116,	101,	108,	101,	109,	101,
+		116,	114,	121,	0,	1,	224,	6,	0,	0,	10,	2,	4,	0,	0,	0,	34,	44,	34,	0,	1,	97,	7,	0,	0,	10,	1,	224,	6,	0,	0,	1,	20,
+		0,	1,	0,	64,	1,	137,	11,	0,	0,	9,	1,	48,	1,	0,	0,	61,	4,	0,	0,	0,	4,	0,	0,	0,	1,	33,	7,	0,	0,	1,	0,	0,
+		0,	0,	5,	1,	27,	0,	1,	0,	64,	1,	33,	7,	0,	0,	1,	101,	7,	0,	0,	1,	24,	0,	1,	0,	64,	65,	1,	223,	6,	0,	0,	0,
+		1,	47,	62,	2,	9,	0,	0,	0,	123,	34,	98,	97,	116,	34,	58,	34,	0,	1,	101,	7,	0,	0,	10,	1,	29,	0,	1,	0,	64,	1,	141,	11,
+		0,	0,	9,	1,	33,	7,	0,	0,	1,	141,	11,	0,	0,	5,	1,	26,	0,	1,	0,	64,	1,	33,	7,	0,	0,	1,	101,	7,	0,	0,	1,	24,
+		0,	1,	0,	64,	2,	10,	0,	0,	0,	34,	44,	34,	99,	104,	103,	34,	58,	34,	0,	1,	33,	7,	0,	0,	10,	1,	33,	7,	0,	0,	1,	101,
+		7,	0,	0,	1,	24,	0,	1,	0,	64,	1,	30,	0,	1,	0,	64,	1,	141,	11,	0,	0,	9,	1,	33,	7,	0,	0,	1,	141,	11,	0,	0,	5,
+		1,	26,	0,	1,	0,	64,	1,	33,	7,	0,	0,	1,	101,	7,	0,	0,	1,	24,	0,	1,	0,	64,	1,	0,	0,	0,	0,	1,	6,	0,	0,	0,
+		1,	101,	11,	0,	0,	1,	0,	0,	0,	0,	1,	16,	0,	1,	0,	64,	2,	12,	0,	0,	0,	34,	44,	34,	109,	111,	105,	115,	49,	34,	58,	34,
+		0,	1,	33,	7,	0,	0,	10,	1,	33,	7,	0,	0,	1,	101,	7,	0,	0,	1,	24,	0,	1,	0,	64,	1,	101,	11,	0,	0,	1,	0,	0,	0,
+		0,	1,	4,	0,	0,	0,	36,	34,	5,	1,	6,	1,	0,	0,	64,	2,	12,	0,	0,	0,	34,	44,	34,	109,	111,	105,	115,	50,	34,	58,	34,	0,
+		1,	33,	7,	0,	0,	10,	1,	33,	7,	0,	0,	1,	101,	7,	0,	0,	1,	24,	0,	1,	0,	64,	1,	101,	11,	0,	0,	1,	1,	0,	0,	0,
+		1,	4,	0,	0,	0,	36,	34,	5,	1,	6,	1,	0,	0,	64,	2,	12,	0,	0,	0,	34,	44,	34,	109,	111,	105,	115,	51,	34,	58,	34,	0,	1,
+		33,	7,	0,	0,	10,	1,	33,	7,	0,	0,	1,	101,	7,	0,	0,	1,	24,	0,	1,	0,	64,	1,	101,	11,	0,	0,	1,	2,	0,	0,	0,	1,
+		4,	0,	0,	0,	36,	34,	5,	1,	6,	1,	0,	0,	64,	2,	12,	0,	0,	0,	34,	44,	34,	109,	111,	105,	115,	52,	34,	58,	34,	0,	1,	33,
+		7,	0,	0,	10,	1,	33,	7,	0,	0,	1,	101,	7,	0,	0,	1,	24,	0,	1,	0,	64,	1,	101,	11,	0,	0,	1,	3,	0,	0,	0,	1,	4,
+		0,	0,	0,	36,	34,	5,	1,	6,	1,	0,	0,	64,	2,	12,	0,	0,	0,	34,	44,	34,	109,	111,	105,	115,	53,	34,	58,	34,	0,	1,	33,	7,
+		0,	0,	10,	1,	33,	7,	0,	0,	1,	101,	7,	0,	0,	1,	24,	0,	1,	0,	64,	1,	101,	11,	0,	0,	1,	4,	0,	0,	0,	1,	4,	0,
+		0,	0,	36,	34,	5,	1,	6,	1,	0,	0,	64,	2,	12,	0,	0,	0,	34,	44,	34,	109,	111,	105,	115,	54,	34,	58,	34,	0,	1,	33,	7,	0,
+		0,	10,	1,	33,	7,	0,	0,	1,	101,	7,	0,	0,	1,	24,	0,	1,	0,	64,	1,	101,	11,	0,	0,	1,	5,	0,	0,	0,	1,	4,	0,	0,
+		0,	36,	34,	5,	1,	6,	1,	0,	0,	64,	1,	2,	0,	0,	0,	1,	6,	0,	0,	0,	1,	101,	11,	0,	0,	1,	0,	0,	0,	0,	1,	16,
+		0,	1,	0,	64,	2,	11,	0,	0,	0,	34,	44,	34,	118,	105,	99,	49,	34,	58,	34,	0,	1,	33,	7,	0,	0,	10,	1,	33,	7,	0,	0,	1,
+		101,	7,	0,	0,	1,	24,	0,	1,	0,	64,	1,	101,	11,	0,	0,	1,	0,	0,	0,	0,	1,	4,	0,	0,	0,	36,	34,	5,	1,	6,	1,	0,
+		0,	64,	2,	11,	0,	0,	0,	34,	44,	34,	118,	105,	99,	50,	34,	58,	34,	0,	1,	33,	7,	0,	0,	10,	1,	33,	7,	0,	0,	1,	101,	7,
+		0,	0,	1,	24,	0,	1,	0,	64,	1,	101,	11,	0,	0,	1,	1,	0,	0,	0,	1,	4,	0,	0,	0,	36,	34,	5,	1,	6,	1,	0,	0,	64,
+		2,	11,	0,	0,	0,	34,	44,	34,	118,	105,	99,	51,	34,	58,	34,	0,	1,	33,	7,	0,	0,	10,	1,	33,	7,	0,	0,	1,	101,	7,	0,	0,
+		1,	24,	0,	1,	0,	64,	1,	101,	11,	0,	0,	1,	2,	0,	0,	0,	1,	4,	0,	0,	0,	36,	34,	5,	1,	6,	1,	0,	0,	64,	2,	11,
+		0,	0,	0,	34,	44,	34,	118,	105,	99,	52,	34,	58,	34,	0,	1,	33,	7,	0,	0,	10,	1,	33,	7,	0,	0,	1,	101,	7,	0,	0,	1,	24,
+		0,	1,	0,	64,	1,	101,	11,	0,	0,	1,	3,	0,	0,	0,	1,	4,	0,	0,	0,	36,	34,	5,	1,	6,	1,	0,	0,	64,	2,	11,	0,	0,
+		0,	34,	44,	34,	118,	105,	99,	53,	34,	58,	34,	0,	1,	33,	7,	0,	0,	10,	1,	33,	7,	0,	0,	1,	101,	7,	0,	0,	1,	24,	0,	1,
+		0,	64,	1,	101,	11,	0,	0,	1,	4,	0,	0,	0,	1,	4,	0,	0,	0,	36,	34,	5,	1,	6,	1,	0,	0,	64,	2,	11,	0,	0,	0,	34,
+		44,	34,	118,	105,	99,	54,	34,	58,	34,	0,	1,	33,	7,	0,	0,	10,	1,	33,	7,	0,	0,	1,	101,	7,	0,	0,	1,	24,	0,	1,	0,	64,
+		1,	101,	11,	0,	0,	1,	5,	0,	0,	0,	1,	4,	0,	0,	0,	36,	34,	5,	1,	6,	1,	0,	0,	64,	1,	4,	0,	0,	0,	1,	6,	0,
+		0,	0,	1,	101,	11,	0,	0,	1,	0,	0,	0,	0,	1,	16,	0,	1,	0,	64,	2,	11,	0,	0,	0,	34,	44,	34,	116,	109,	112,	49,	34,	58,
+		34,	0,	1,	33,	7,	0,	0,	10,	1,	33,	7,	0,	0,	1,	101,	7,	0,	0,	1,	24,	0,	1,	0,	64,	1,	101,	11,	0,	0,	1,	0,	0,
+		0,	0,	1,	4,	0,	0,	0,	36,	34,	5,	1,	6,	1,	0,	0,	64,	2,	11,	0,	0,	0,	34,	44,	34,	116,	109,	112,	50,	34,	58,	34,	0,
+		1,	33,	7,	0,	0,	10,	1,	33,	7,	0,	0,	1,	101,	7,	0,	0,	1,	24,	0,	1,	0,	64,	1,	101,	11,	0,	0,	1,	1,	0,	0,	0,
+		1,	4,	0,	0,	0,	36,	34,	5,	1,	6,	1,	0,	0,	64,	2,	11,	0,	0,	0,	34,	44,	34,	116,	109,	112,	51,	34,	58,	34,	0,	1,	33,
+		7,	0,	0,	10,	1,	33,	7,	0,	0,	1,	101,	7,	0,	0,	1,	24,	0,	1,	0,	64,	1,	101,	11,	0,	0,	1,	2,	0,	0,	0,	1,	4,
+		0,	0,	0,	36,	34,	5,	1,	6,	1,	0,	0,	64,	2,	11,	0,	0,	0,	34,	44,	34,	116,	109,	112,	52,	34,	58,	34,	0,	1,	33,	7,	0,
+		0,	10,	1,	33,	7,	0,	0,	1,	101,	7,	0,	0,	1,	24,	0,	1,	0,	64,	1,	101,	11,	0,	0,	1,	3,	0,	0,	0,	1,	4,	0,	0,
+		0,	36,	34,	5,	1,	6,	1,	0,	0,	64,	2,	11,	0,	0,	0,	34,	44,	34,	116,	109,	112,	53,	34,	58,	34,	0,	1,	33,	7,	0,	0,	10,
+		1,	33,	7,	0,	0,	1,	101,	7,	0,	0,	1,	24,	0,	1,	0,	64,	1,	101,	11,	0,	0,	1,	4,	0,	0,	0,	1,	4,	0,	0,	0,	36,
+		34,	5,	1,	6,	1,	0,	0,	64,	2,	11,	0,	0,	0,	34,	44,	34,	116,	109,	112,	54,	34,	58,	34,	0,	1,	33,	7,	0,	0,	10,	1,	33,
+		7,	0,	0,	1,	101,	7,	0,	0,	1,	24,	0,	1,	0,	64,	1,	101,	11,	0,	0,	1,	5,	0,	0,	0,	1,	4,	0,	0,	0,	36,	34,	5,
+		1,	6,	1,	0,	0,	64,	2,	3,	0,	0,	0,	34,	125,	0,	1,	33,	7,	0,	0,	10,	1,	33,	7,	0,	0,	1,	101,	7,	0,	0,	1,	24,
+		0,	1,	0,	64,	1,	101,	7,	0,	0,	1,	25,	0,	1,	0,	64,	1,	145,	11,	0,	0,	9,	1,	145,	11,	0,	0,	5,	1,	101,	7,	0,	0,
+		1,	137,	11,	0,	0,	5,	1,	22,	0,	1,	0,	64,	29,	1,	101,	7,	0,	0,	1,	14,	0,	1,	0,	64,	1,	88,	2,	0,	0,	1,	23,	0,
+		1,	0,	64,	1,	48,	1,	0,	0,	61,	127};
+
 	OS::OS():_alloc(_alloc_buf, _alloc_idx, _alloc_ownership, 8192), flash(&hspi1, FLASH_CS), /*etsdb(0, 8192*1024, &hspi1, FLASH_CS, &_alloc),*/ sdi12(SDI12_0),
 	radio(&hspi1, LORA_DIO0, LORA_DIO1, LORA_RXEN, LORA_TXEN, LORA_CS, LORA_RST)
 	{
@@ -56,6 +108,15 @@ namespace FwLogger
 		m_lpEnabled = false;
 
 		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11 | GPIO_PIN_12, GPIO_PIN_SET);
+		if(PWR->CSR & 0x02)
+		{
+			Log::Verbose("[OS] Wakeup from Standby\n");
+			PWR->CR |= 0x0c;
+		}
+		else
+		{
+			Log::Verbose("[OS] Init\n");
+		}
 		//HAL_Delay(1000);
 
 		m_init = false;
@@ -85,32 +146,10 @@ namespace FwLogger
 		m_pendingTask |= PortManager::loop();
 		if(!m_init)
 		{
-			if(HAL_GetTick()-init_delay > 5000)
+			if(HAL_GetTick()-init_delay > 15000)
 			{
-				uint8_t prg[] = {2,	63,	0,	0,	0,	104,	116,	116,	112,	58,	108,	97,	98,	115,	97,	112,	46,	117,	112,	99,	116,	46,	101,	115,	58,	56,	48,	56,	48,	47,	97,	112,
-					105,	47,	118,	49,	47,	77,	89,	111,	72,	104,	69,	71,	69,	102,	57,	114,	110,	54,	53,	103,	100,	55,	75,	113,	99,	47,	116,	101,	108,	101,	109,	101,
-					116,	114,	121,	0,	1,	43,	3,	0,	0,	10,	2,	4,	0,	0,	0,	34,	44,	34,	0,	1,	172,	3,	0,	0,	10,	1,	43,	3,	0,	0,	1,	20,
-					0,	1,	0,	64,	1,	212,	7,	0,	0,	9,	1,	0,	0,	0,	0,	1,	216,	7,	0,	0,	9,	1,	59,	1,	0,	0,	61,	4,	0,	0,	0,	4,
-					0,	0,	0,	1,	108,	3,	0,	0,	1,	0,	0,	0,	0,	5,	1,	27,	0,	1,	0,	64,	1,	108,	3,	0,	0,	1,	176,	3,	0,	0,	1,	24,
-					0,	1,	0,	64,	65,	1,	42,	3,	0,	0,	0,	1,	47,	62,	1,	0,	0,	0,	0,	1,	6,	0,	0,	0,	1,	176,	7,	0,	0,	1,	0,	0,
-					0,	0,	1,	16,	0,	1,	0,	64,	2,	11,	0,	0,	0,	123,	34,	109,	111,	105,	115,	49,	34,	58,	34,	0,	1,	176,	3,	0,	0,	10,	1,	176,
-					7,	0,	0,	1,	0,	0,	0,	0,	1,	4,	0,	0,	0,	36,	34,	5,	1,	17,	1,	0,	0,	64,	2,	12,	0,	0,	0,	34,	44,	34,	109,	111,
-					105,	115,	50,	34,	58,	34,	0,	1,	108,	3,	0,	0,	10,	1,	108,	3,	0,	0,	1,	176,	3,	0,	0,	1,	24,	0,	1,	0,	64,	1,	176,	7,
-					0,	0,	1,	1,	0,	0,	0,	1,	4,	0,	0,	0,	36,	34,	5,	1,	17,	1,	0,	0,	64,	2,	12,	0,	0,	0,	34,	44,	34,	109,	111,	105,
-					115,	51,	34,	58,	34,	0,	1,	108,	3,	0,	0,	10,	1,	108,	3,	0,	0,	1,	176,	3,	0,	0,	1,	24,	0,	1,	0,	64,	1,	176,	7,	0,
-					0,	1,	2,	0,	0,	0,	1,	4,	0,	0,	0,	36,	34,	5,	1,	17,	1,	0,	0,	64,	2,	12,	0,	0,	0,	34,	44,	34,	109,	111,	105,	115,
-					52,	34,	58,	34,	0,	1,	108,	3,	0,	0,	10,	1,	108,	3,	0,	0,	1,	176,	3,	0,	0,	1,	24,	0,	1,	0,	64,	1,	176,	7,	0,	0,
-					1,	3,	0,	0,	0,	1,	4,	0,	0,	0,	36,	34,	5,	1,	17,	1,	0,	0,	64,	2,	12,	0,	0,	0,	34,	44,	34,	109,	111,	105,	115,	53,
-					34,	58,	34,	0,	1,	108,	3,	0,	0,	10,	1,	108,	3,	0,	0,	1,	176,	3,	0,	0,	1,	24,	0,	1,	0,	64,	1,	176,	7,	0,	0,	1,
-					4,	0,	0,	0,	1,	4,	0,	0,	0,	36,	34,	5,	1,	17,	1,	0,	0,	64,	2,	12,	0,	0,	0,	34,	44,	34,	109,	111,	105,	115,	54,	34,
-					58,	34,	0,	1,	108,	3,	0,	0,	10,	1,	108,	3,	0,	0,	1,	176,	3,	0,	0,	1,	24,	0,	1,	0,	64,	1,	176,	7,	0,	0,	1,	5,
-					0,	0,	0,	1,	4,	0,	0,	0,	36,	34,	5,	1,	17,	1,	0,	0,	64,	2,	3,	0,	0,	0,	34,	125,	0,	1,	108,	3,	0,	0,	10,	1,
-					108,	3,	0,	0,	1,	176,	3,	0,	0,	1,	24,	0,	1,	0,	64,	1,	176,	3,	0,	0,	1,	25,	0,	1,	0,	64,	1,	220,	7,	0,	0,	9,
-					1,	220,	7,	0,	0,	5,	1,	176,	3,	0,	0,	1,	212,	7,	0,	0,	5,	1,	22,	0,	1,	0,	64,	29,	1,	176,	3,	0,	0,	1,	14,	0,
-					1,	0,	64,	1,	60,	0,	0,	0,	1,	23,	0,	1,	0,	64,	1,	59,	1,	0,	0,	61,	127};
-
 				vm.setStackSize(150);
-				vm.setProgram(prg, 0, sizeof(prg));
+				vm.setProgram(vm_prg, 0, sizeof(vm_prg));
 
 				vm.enable(true);
 
@@ -122,7 +161,7 @@ namespace FwLogger
 		{
 			sleep();
 			wakeUp();
-			printf("hola\n");
+			Log::Verbose("[OS] Waking up\n");
 		}
 
 		if(m_rtcFlag) // if it has to wake up from sleep
@@ -1010,39 +1049,8 @@ namespace FwLogger
 			}
 			else if(strcmp(token, "vm") == 0)
 			{
-				const uint8_t prg[] = {2,	63,	0,	0,	0,	104,	116,	116,	112,	58,	108,	97,	98,	115,	97,	112,	46,	117,	112,	99,	116,	46,	101,	115,	58,	56,	48,	56,	48,	47,	97,	112,
-						105,	47,	118,	49,	47,	73,	121,	87,	52,	84,	89,	74,	86,	89,	78,	57,	104,	74,	102,	65,	121,	100,	70,	107,	120,	47,	116,	101,	108,	101,	109,	101,
-						116,	114,	121,	0,	1,	69,	4,	0,	0,	10,	2,	4,	0,	0,	0,	34,	44,	34,	0,	1,	198,	4,	0,	0,	10,	1,	69,	4,	0,	0,	1,	20,
-						0,	1,	0,	64,	1,	238,	8,	0,	0,	9,	1,	0,	0,	0,	0,	1,	242,	8,	0,	0,	9,	1,	59,	1,	0,	0,	61,	4,	0,	0,	0,	4,
-						0,	0,	0,	1,	134,	4,	0,	0,	1,	0,	0,	0,	0,	5,	1,	27,	0,	1,	0,	64,	1,	134,	4,	0,	0,	1,	202,	4,	0,	0,	1,	24,
-						0,	1,	0,	64,	65,	1,	68,	4,	0,	0,	0,	1,	47,	62,	2,	7,	0,	0,	0,	123,	34,	116,	115,	34,	58,	0,	1,	202,	4,	0,	0,	10,
-						1,	28,	0,	1,	0,	64,	1,	246,	8,	0,	0,	9,	1,	134,	4,	0,	0,	1,	246,	8,	0,	0,	5,	1,	26,	0,	1,	0,	64,	1,	134,	4,
-						0,	0,	1,	202,	4,	0,	0,	1,	24,	0,	1,	0,	64,	1,	0,	0,	0,	0,	1,	9,	0,	0,	0,	1,	202,	8,	0,	0,	1,	0,	0,	0,
-						0,	1,	16,	0,	1,	0,	64,	2,	24,	0,	0,	0,	48,	48,	48,	44,	34,	118,	97,	108,	117,	101,	115,	34,	58,	123,	34,	109,	111,	105,	115,	49,
-						34,	58,	34,	0,	1,	134,	4,	0,	0,	10,	1,	134,	4,	0,	0,	1,	202,	4,	0,	0,	1,	24,	0,	1,	0,	64,	1,	202,	8,	0,	0,	1,
-						0,	0,	0,	0,	1,	4,	0,	0,	0,	36,	34,	5,	1,	17,	1,	0,	0,	64,	2,	12,	0,	0,	0,	34,	44,	34,	109,	111,	105,	115,	50,	34,
-						58,	34,	0,	1,	134,	4,	0,	0,	10,	1,	134,	4,	0,	0,	1,	202,	4,	0,	0,	1,	24,	0,	1,	0,	64,	1,	202,	8,	0,	0,	1,	1,
-						0,	0,	0,	1,	4,	0,	0,	0,	36,	34,	5,	1,	17,	1,	0,	0,	64,	2,	12,	0,	0,	0,	34,	44,	34,	109,	111,	105,	115,	51,	34,	58,
-						34,	0,	1,	134,	4,	0,	0,	10,	1,	134,	4,	0,	0,	1,	202,	4,	0,	0,	1,	24,	0,	1,	0,	64,	1,	202,	8,	0,	0,	1,	2,	0,
-						0,	0,	1,	4,	0,	0,	0,	36,	34,	5,	1,	17,	1,	0,	0,	64,	2,	12,	0,	0,	0,	34,	44,	34,	109,	111,	105,	115,	52,	34,	58,	34,
-						0,	1,	134,	4,	0,	0,	10,	1,	134,	4,	0,	0,	1,	202,	4,	0,	0,	1,	24,	0,	1,	0,	64,	1,	202,	8,	0,	0,	1,	3,	0,	0,
-						0,	1,	4,	0,	0,	0,	36,	34,	5,	1,	17,	1,	0,	0,	64,	2,	12,	0,	0,	0,	34,	44,	34,	109,	111,	105,	115,	53,	34,	58,	34,	0,
-						1,	134,	4,	0,	0,	10,	1,	134,	4,	0,	0,	1,	202,	4,	0,	0,	1,	24,	0,	1,	0,	64,	1,	202,	8,	0,	0,	1,	4,	0,	0,	0,
-						1,	4,	0,	0,	0,	36,	34,	5,	1,	17,	1,	0,	0,	64,	2,	12,	0,	0,	0,	34,	44,	34,	109,	111,	105,	115,	54,	34,	58,	34,	0,	1,
-						134,	4,	0,	0,	10,	1,	134,	4,	0,	0,	1,	202,	4,	0,	0,	1,	24,	0,	1,	0,	64,	1,	202,	8,	0,	0,	1,	5,	0,	0,	0,	1,
-						4,	0,	0,	0,	36,	34,	5,	1,	17,	1,	0,	0,	64,	2,	12,	0,	0,	0,	34,	44,	34,	109,	111,	105,	115,	55,	34,	58,	34,	0,	1,	134,
-						4,	0,	0,	10,	1,	134,	4,	0,	0,	1,	202,	4,	0,	0,	1,	24,	0,	1,	0,	64,	1,	202,	8,	0,	0,	1,	6,	0,	0,	0,	1,	4,
-						0,	0,	0,	36,	34,	5,	1,	17,	1,	0,	0,	64,	2,	12,	0,	0,	0,	34,	44,	34,	109,	111,	105,	115,	56,	34,	58,	34,	0,	1,	134,	4,
-						0,	0,	10,	1,	134,	4,	0,	0,	1,	202,	4,	0,	0,	1,	24,	0,	1,	0,	64,	1,	202,	8,	0,	0,	1,	7,	0,	0,	0,	1,	4,	0,
-						0,	0,	36,	34,	5,	1,	17,	1,	0,	0,	64,	2,	12,	0,	0,	0,	34,	44,	34,	109,	111,	105,	115,	57,	34,	58,	34,	0,	1,	134,	4,	0,
-						0,	10,	1,	134,	4,	0,	0,	1,	202,	4,	0,	0,	1,	24,	0,	1,	0,	64,	1,	202,	8,	0,	0,	1,	8,	0,	0,	0,	1,	4,	0,	0,
-						0,	36,	34,	5,	1,	17,	1,	0,	0,	64,	2,	4,	0,	0,	0,	34,	125,	125,	0,	1,	134,	4,	0,	0,	10,	1,	134,	4,	0,	0,	1,	202,
-						4,	0,	0,	1,	24,	0,	1,	0,	64,	1,	202,	4,	0,	0,	1,	25,	0,	1,	0,	64,	1,	250,	8,	0,	0,	9,	1,	250,	8,	0,	0,	5,
-						1,	202,	4,	0,	0,	1,	238,	8,	0,	0,	5,	1,	22,	0,	1,	0,	64,	29,	1,	202,	4,	0,	0,	1,	14,	0,	1,	0,	64,	1,	60,	0,
-						0,	0,	1,	23,	0,	1,	0,	64,	1,	59,	1,	0,	0,	61,	127};
-
 				vm.setStackSize(150);
-				vm.setProgram(prg, 0, sizeof(prg));
+				vm.setProgram(vm_prg, 0, sizeof(vm_prg));
 				vm.enable(true);
 			}
 			else if(strcmp(token, "vm2") == 0)
@@ -1189,36 +1197,23 @@ namespace FwLogger
 			}
 			else if(strcmp(token, "ca") == 0)
 			{
-				sdi12.changeAddr('c', '0');
+				token = strtok(NULL, " ");
+				char src = token[0];
+
+				token = strtok(NULL, " ");
+				char dst = token[0];
+
+				sdi12.changeAddr(src, dst);
 			}
 			else if(strcmp(token, "gd") == 0)
 			{
 				uint8_t* res_data = sdi12.getCmdResponse();
+
 				if(res_data == nullptr)
-				{
 					printf("Not data yet\n");
-				}
+
 				else
-				{
 					printf("Data:\n%s\n", res_data);
-				}
-			}
-			else if(strcmp(token, "meas") == 0)
-			{
-				token = strtok(NULL, " ");
-				int meas = std::atoi(token);
-				token = strtok(NULL, " ");
-				printf("Start measure on %d\n", meas);
-				sdi12.singleMeasure(0, sdi12_test, 6, meas);
-			}
-			else if(strcmp(token, "data") == 0)
-			{
-				if(sdi12.singleMeasure(0, sdi12_test, 9) != 0)
-					printf("Not ready yet\n");
-				else
-				{
-					printf("Data: %f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n", sdi12_test[0], sdi12_test[1], sdi12_test[2], sdi12_test[3], sdi12_test[4], sdi12_test[5], sdi12_test[6], sdi12_test[7], sdi12_test[8]);
-				}
 			}
 			else if(strcmp(token, "fudge") == 0)
 			{
@@ -1226,6 +1221,13 @@ namespace FwLogger
 				uint8_t newFudge = std::atoi(token);
 				sdi12.setFudge(newFudge);
 				printf("New fudge: %d\n", newFudge);
+			}
+			else if(strcmp(token, "status") == 0)
+			{
+				SDI12_Driver::Status st = sdi12.getModuleStatus();
+				printf("SDI12 Status:\nTStatus: %s\nState: %s\n", sdi12.getTransceiverStatus(), sdi12.getSDI12State());
+				printf("Err\tRetry\tCounter\tLRC\tMeasN\tAMeas\tMAddr\tMSize\tMIdx\tMCmd\MDst\n%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%p\n",
+						st.error, st.retry_counter, st.counter, st.last_rx_counter, st.measNumber, st.additionalMeas, st.measAddr, st.measSize, st.measIdx, st.measCommand, st.measDst);
 			}
 			else if(strcmp(token, "reset") == 0)
 			{
@@ -1246,17 +1248,24 @@ namespace FwLogger
 					printf("Total memory: 4096 bytes\tUsedMemory: %d bytes\n", used_blocks*128);
 					for(int i = 0; i < 32; ++i)
 					{
-						if(_alloc_idx[i] == 0)
+						if(_alloc_ownership[i] == 0)
 						{
 
 						}
-						else if(_alloc_idx[i] < 100) // this is not a debug code
+						else if(reinterpret_cast<uintptr_t>(_alloc_ownership[i]) < 100) // this is not a debug code
 						{
 							printf("Owner: eTSDB::Page new\tBlocks used: %d\n", _alloc_idx[i]);
 						}
 						else
 						{
-							printf("Owner: %s\tBlocks used: %d\n", reinterpret_cast<Module*>(_alloc_ownership)->getName(), _alloc_idx[i]);
+							if(Module::isModule(_alloc_ownership[i]))
+								printf("Owner: %s\tBlocks used: %d\n", reinterpret_cast<Module*>(_alloc_ownership[i])->getName(), _alloc_idx[i]);
+							else if(PortManager::isPort(_alloc_ownership[i]))
+								printf("Owner: Port\tBlocks used: %d\n", _alloc_idx[i]);
+							else if(PortManager::isSocket(_alloc_ownership[i]))
+								printf("Owner: Socket\tBlocks used: %d\n", _alloc_idx[i]);
+							else
+								printf("Owner: Unknown\tBlocks used: %d\n", _alloc_idx[i]);
 						}
 						HAL_Delay(1);
 					}
@@ -1313,21 +1322,6 @@ namespace FwLogger
 					HAL_RTC_GetTime(&hrtc, &rtc_time, RTC_FORMAT_BIN);
 
 					printf("%d/%d/%d %d:%d:%d\n", rtc_date.Year+2000, rtc_date.Month, rtc_date.Date, rtc_time.Hours, rtc_time.Minutes, rtc_time.Seconds);
-				}
-				else if(strcmp(token, "test") == 0)
-				{
-					uint64_t secs = time();
-					secs += 5;
-
-					RTC_AlarmTypeDef sAlarm;
-					sAlarm.Alarm = RTC_ALARM_A;
-					sAlarm.AlarmTime.Hours = (secs % 86400) / 3600;
-					secs %= 3600;
-					sAlarm.AlarmTime.Minutes = secs/60;
-					sAlarm.AlarmTime.Seconds = secs%60;
-
-					HAL_RTC_SetAlarm_IT(&hrtc, &sAlarm, RTC_FORMAT_BIN);
-					printf("testing clock for %d:%d:%d\n", sAlarm.AlarmTime.Hours, sAlarm.AlarmTime.Minutes, sAlarm.AlarmTime.Seconds);
 				}
 			}
 			else if(strcmp(token, "log") == 0)
@@ -1437,12 +1431,18 @@ namespace FwLogger
 					printf("%s\n", m_name);
 				}
 			}
-		}
-		else if(strcmp(token, "power") == 0)
-		{
-            token = strtok(NULL, " ");
-            int power_enable = std::atoi(token);
-            enablePower(power_enable);
+			else if(strcmp(token, "battery") == 0)
+			{
+				printf("Battery: %f\n", get_battery());
+			}
+			else if(strcmp(token, "rawbattery") == 0)
+			{
+				printf("Raw battery: %d\n", get_adc_bat());
+			}
+			else if(strcmp(token, "charge") == 0)
+			{
+				printf("Charging status: %s\n", getCharging() == 1 ? "charging" : "not charging");
+			}
 		}
 		else if(strcmp(token, "radio") == 0)
 		{
@@ -2101,8 +2101,10 @@ namespace FwLogger
 						_fd.buf_idx = 0;
 					}
 					else
-						0;
+					{
+
 						//etsdb.writeFile(*reinterpret_cast<eTSDB::FilePage*>(_fd.ptr), reinterpret_cast<const uint8_t*>(buf), count);
+					}
 					return count;
 				}
 			}
@@ -2119,7 +2121,7 @@ namespace FwLogger
 	int OS::close(int fd) // this return 0 if there is no operation pending
 	{
 		if(fd == 0) return EBADF;
-		if(fd > SOCKET_DESCRIPTOR_OFFSET) PortManager::close(fd);
+		if(fd > SOCKET_DESCRIPTOR_OFFSET) return PortManager::close(fd);
 		FileDescriptor& _fd = _fds[fd-FD_BUILTINS];
 		if(_fd.type == FDType::None) return EBADF;
 		if(_fd.type == FDType::File)
@@ -2137,10 +2139,6 @@ namespace FwLogger
 		else if(_fd.type == FDType::TS)
 		{
 			_alloc.Deallocate(_fd.ptr);
-		}
-		else if(_fd.type == FDType::SOCKET)
-		{
-			0;
 		}
 		_fd.type = FDType::None;
 		return 0;
@@ -2187,15 +2185,30 @@ namespace FwLogger
 			return adc_data[3];
 
 		case ADC_SE_4:
-			return adc_data[0];
+			return adc_data[4];
 		default:
 			return -1;
 		}
 	}
 
+	int16_t OS::get_adc_bat()
+	{
+		return adc_data[5];
+	}
+
+	float OS::get_battery()
+	{
+		return adc_data[5] / 780.19 *1.08;
+	}
+
+	int OS::getCharging()
+	{
+		return HAL_GPIO_ReadPin(CHG_GPIO_Port, CHG_Pin) == GPIO_PIN_RESET ? 1 : 0;
+	}
+
 	void OS::enablePower(int enable)
 	{
-
+		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11 | GPIO_PIN_12, enable != 0 ? GPIO_PIN_SET : GPIO_PIN_RESET);
 	}
 
 	int OS::sleepFor(int s)
@@ -2274,7 +2287,7 @@ namespace FwLogger
 		//Log::Verbose("Going to sleep\n");
 		PortUART::get().powerOff();
 
-		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11 | GPIO_PIN_12, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11 | GPIO_PIN_12, GPIO_PIN_RESET); // apagar el power
 
 		HAL_TIM_Base_Stop_IT(&htim6);
 		HAL_ADC_Stop_DMA(&hadc1);
@@ -2283,7 +2296,8 @@ namespace FwLogger
 
 		HAL_SuspendTick();
 		HAL_PWR_EnableSleepOnExit();
-		HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+		//HAL_PWR_EnterSTOPMode(PWR_LOWPOWERREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+		HAL_PWR_EnterSTANDBYMode();
 		HAL_ResumeTick();
 
 		HAL_TIM_Base_Start_IT(&htim6);
@@ -2406,7 +2420,7 @@ namespace FwLogger
 		//align 4
 		flash_ptr = (flash_ptr+3) & ~(3);
 
-		uint16_t addr = *reinterpret_cast<uint16_t*>(flash_ptr);
+		uint16_t addr = *reinterpret_cast<uint16_t*>(flash_ptr); //LLAddr
 
 		flash_ptr += 4;
 

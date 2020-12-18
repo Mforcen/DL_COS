@@ -28,6 +28,16 @@ namespace FwLogger
 		return _name;
 	}
 
+	bool Module::isModule(void* ptr)
+	{
+		for(int i = 0; i < 16; ++i)
+		{
+			if(_modules[i] == nullptr) return false;
+			if(_modules[i] == ptr) return true;
+		}
+		return false;
+	}
+
 	Module* Module::getModule(int modnum)
 	{
 		return _modules[modnum];

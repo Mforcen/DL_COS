@@ -26,13 +26,13 @@ namespace FwLogger
 		_action = None;
 	}
 
-	int SPIFlash::writeEnable() // solo se llama después de un try_lock
+	int SPIFlash::_writeEnable() // solo se llama después de un try_lock
 	{
 		HAL_GPIO_WritePin(_gpio, _pin, GPIO_PIN_RESET);
 		if(HAL_GetTick()-_last_write_ms < _max_delay_time)
 		{
 			_action = WaitBusy;
-			readStatus(0);
+			_readStatus(0);
 			return -2;
 		}
 
@@ -41,7 +41,7 @@ namespace FwLogger
 		return startWrite(&buf, 1);
 	}
 
-	int SPIFlash::writeDisable()
+	int SPIFlash::_writeDisable()
 	{
 		return 0;
 	}
@@ -95,7 +95,7 @@ namespace FwLogger
 		}
 
 
-		int error = writeEnable();
+		int error = _writeEnable();
 
 		if(error == 0) _max_delay_time = 3;
 
@@ -158,7 +158,7 @@ namespace FwLogger
 
 		write_ops.push_back(op);
 
-		int error = writeEnable();
+		int error = _writeEnable();
 
 		if(error == 0) _max_delay_time = 400;
 
@@ -178,7 +178,7 @@ namespace FwLogger
 
 		write_ops.push_back(op);
 
-		int error = writeEnable();
+		int error = _writeEnable();
 		if(error == 0) _max_delay_time = 100000;
 
 		return error;
@@ -217,6 +217,7 @@ namespace FwLogger
 	{
 		if(_action != SendReadAddr)
 			HAL_GPIO_WritePin(_gpio, _pin, GPIO_PIN_SET); // Hay que dar pulsos en ss para que se procesen las órdenes
+
 		_last_us = getUS();// aquí irán las cosas inmediatas
 
 		_isr_launched = true;
@@ -290,7 +291,7 @@ namespace FwLogger
 				_last_write_ms = HAL_GetTick();
 				if(write_ops.size())
 				{
-					writeEnable();
+					_writeEnable();
 				}
 				else
 					_action = None;
@@ -314,7 +315,7 @@ namespace FwLogger
 		case WENDelay:
 			if(static_cast<uint16_t>(getUS()-_last_us) > 5)
 			{
-				writeEnable();
+				_writeEnable();
 			}
 			break;
 
@@ -347,7 +348,7 @@ namespace FwLogger
 						if(dt >= 20000) //20 segundos desde la última comprobación
 						{
 							_last_write_ms += 20000;
-							readStatus(0);
+							_readStatus(0);
 						}
 					}
 					else if(left_time > 1000)
@@ -355,7 +356,7 @@ namespace FwLogger
 						if(dt >= 150)
 						{
 							_last_write_ms += 150;
-							readStatus(0);
+							_readStatus(0);
 						}
 					}
 					else if(left_time > 100)
@@ -363,7 +364,7 @@ namespace FwLogger
 						if(dt >= 45)
 						{
 							_last_write_ms += 45;
-							readStatus(0);
+							_readStatus(0);
 						}
 					}
 					else
@@ -371,10 +372,10 @@ namespace FwLogger
 						if(dt >= 1)
 						{
 							_last_write_ms += 1;
-							readStatus(0);
+							_readStatus(0);
 						}
 					}
-					writeEnable();
+					_writeEnable();
 				}
 				else
 				{
@@ -430,7 +431,7 @@ namespace FwLogger
 		return 0;
 	}
 
-	void SPIFlash::readStatus(int statusreg)
+	void SPIFlash::_readStatus(int statusreg)
 	{
 		if(statusreg == 1)
 			_tx_status[0] = CMD_READ_STATUS_REG2;

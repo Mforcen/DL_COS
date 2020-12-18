@@ -4,8 +4,10 @@
 #include <cstdint>
 #include <cstdlib>
 
-int getADC(int port, int chan);
-int getRawADC(int port, int chan);
+int getADC(int chan);
+int getRawADC(int chan);
+int getBattery();
+int getCharging();
 int open(char* path, int oflag);
 int read(int fd, void* buf, size_t count);
 int poll(int fd);

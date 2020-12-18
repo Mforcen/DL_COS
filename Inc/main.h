@@ -79,8 +79,8 @@ void sdi12_Isr();
 #define SDI12_1_Pin GPIO_PIN_7
 #define SDI12_1_GPIO_Port GPIOC
 
-#define SDIO_CD_Pin GPIO_PIN_9
-#define SDIO_CD_GPIO_Port GPIOC
+#define CHG_Pin GPIO_PIN_9
+#define CHG_GPIO_Port GPIOC
 
 #define SDI12_Dir_Pin GPIO_PIN_8
 #define SDI12_Dir_GPIO_Port GPIOA

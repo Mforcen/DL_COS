@@ -34,10 +34,95 @@ namespace FwLogger
 			int setFudge(uint8_t newFudge);
 			uint8_t* getCmdResponse();
 
+			void lowPower();
+
 			int singleMeasure(uint8_t addr, float* dst, uint8_t count, int additional = 0);
 			int continuousMeasure(uint8_t addr, float* dst, uint8_t count, int additional = 0);
 
 			int startMeasurement(uint8_t addr, uint8_t type = 0, uint8_t additional = 0, bool crc = false);
+
+			struct Status
+			{
+				int8_t error;
+				int8_t retry_counter;
+				int counter;
+				int last_rx_counter;
+				uint8_t measNumber;
+				uint8_t additionalMeas;
+
+				uint8_t measAddr;
+				uint8_t measSize;
+				uint8_t measIdx;
+				uint8_t measCommand;
+				float* measDst;
+			};
+
+			Status getModuleStatus()
+			{
+				Status st;
+				st.error = _error;
+				st.retry_counter = _retry_counter;
+				st.counter = _counter;
+				st.last_rx_counter = _last_rx_counter;
+				st.measNumber = _measNumber;
+				st.additionalMeas = _additionalMeas;
+
+				st.measAddr = _measAddr;
+				st.measSize = _measSize;
+				st.measIdx = _measIdx;
+				st.measCommand = _measCommand;
+				st.measDst = _measDst;
+
+				return st;
+			}
+
+			const char* getTransceiverStatus()
+			{
+				switch(_status)
+				{
+				case Disabled:
+					return "Disabled";
+				case Breaking:
+					return "Breaking";
+				case MarkingTx:
+					return "MarkingTx";
+				case MarkingRx:
+					return "MarkingRx";
+				case Receiving:
+					return "Receiving";
+				case Transmitting:
+					return "Transmitting";
+				case MeasWaiting:
+					return "MeasWaiting";
+				case RetryWaiting:
+					return "RetryWaiting";
+				default:
+					return "Unknown";
+				}
+			}
+
+			const char* getSDI12State()
+			{
+				switch(_state)
+				{
+				case Nop:
+					return "Nop";
+				case Command:
+					return "Command";
+				case EndCommand:
+					return "EndCommand";
+				case StartMeasure:
+					return "StartMeasure";
+				case WaitingSR:
+					return "WaitingSR";
+				case GettingData:
+					return "GettingData";
+				case DataFull:
+					return "DataFull";
+				default:
+					return "Unknown";
+				}
+			}
 
 			bool loop();
 
@@ -75,6 +160,7 @@ namespace FwLogger
 				GettingData,
 				DataFull
 			};
+			void setState(SDI12States state);
 			SDI12States _state;
 
 			int8_t _error;

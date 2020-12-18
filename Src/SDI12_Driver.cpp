@@ -117,16 +117,19 @@ namespace FwLogger
 				_last_rx_counter++;
 				if(_last_rx_counter < 40 && _last_rx_counter > 30)
 				{
+					//Log::Info("[SDI12]: RXTO\n");
 					if(_counter == 0) //0 bits received, sensor not responding
 					{
 						setStatus(RetryWaiting);
 					}
 					else
 					{
-						push_bits(1, GPIO_PIN_RESET); //put stop bit
 						_last_rx_counter = 40;
+						push_bits(1, GPIO_PIN_RESET); //put stop bit
 					}
 				}
+				else if(_last_rx_counter > 50) // incomplete msg, push bits didn't end the msg
+					setStatus(RetryWaiting);
 				//_state = Nop;
 			}
 			else if(_state == WaitingSR) // add error
@@ -136,6 +139,25 @@ namespace FwLogger
 				{
 					startGetData(_measAddr, 0);
 				}
+			}
+			else
+			{
+				_last_rx_counter++;
+				if(_last_rx_counter > 30 && _last_rx_counter < 40)
+				{
+					if(_counter == 0) //0 bits received, sensor not responding
+					{
+						setStatus(RetryWaiting);
+					}
+					else
+					{
+						_last_rx_counter = 40;
+						push_bits(1, GPIO_PIN_RESET); //put stop bit
+					}
+				}
+				else if(_last_rx_counter > 50) // incomplete msg, push bits didn't end the msg
+					setStatus(RetryWaiting);
+
 			}
 			break;
 
@@ -164,21 +186,27 @@ namespace FwLogger
 			}
 			break;
 		case RetryWaiting:
-			_retry_counter++;
 			if(_retry_counter >= 5)
 			{
 				if(_state == GettingData)
 				{
 					for(std::size_t i = 0; i < _measSize; ++i)
-					{
 						_measDst[i] = std::numeric_limits<float>::quiet_NaN();
-					}
-					_state = DataFull;
-					Log::Warning("[SDI12]Sensor not responding data\n");
+
+					setState(DataFull);
+					Log::Warning("[SDI12] Sensor not responding data\n");
 				}
 				else if(_state == Command)
 				{
-					Log::Warning("[SDI12]Sensor not responding command\n");
+					Log::Warning("[SDI12] Sensor not responding command\n");
+				}
+				else if(_state == StartMeasure)
+				{
+					for(std::size_t i = 0; i < _measSize; ++i)
+						_measDst[i] = std::numeric_limits<float>::quiet_NaN();
+
+					setState(DataFull);
+					Log::Warning("[SDI12] Sensor not measuring\n");
 				}
 
 				_error = 1;
@@ -210,9 +238,7 @@ namespace FwLogger
 
 			GPIO_PinState pinValue = HAL_GPIO_ReadPin(_gpio, _pin);
 
-			#ifdef SDI12_DEBUG
-			Log::Verbose("R:%d,%d,%d\n", dt_rx, pinValue, _counter);
-			#endif // SDI12_DEBUG
+			//Log::Verbose("R:%d,%d,%d\n", dt_rx, pinValue, _counter);
 
 			push_bits(bits, pinValue);
 			/*while(bits-->0)
@@ -303,17 +329,15 @@ namespace FwLogger
 
 	void SDI12_Driver::setStatus(SDI12_Driver::TransceiverStatus status)
 	{
-		#ifdef SDI12_DEBUG
-		Log::Verbose("Switching to status %d with counter val %d\n", status, _counter);
-		#endif // SDI12_DEBUG
-
 		_status = status;
+		Log::Verbose("Status: %s\tC:%d\tRW:%d\n", getTransceiverStatus(), _counter, _retry_counter);
+
 		_counter = 0;
 		switch(status)
 		{
 		case Disabled:
 			{
-				reset();
+				//reset();
 				HAL_GPIO_WritePin(SDI12_DIR, GPIO_PIN_RESET); // B to A
 
 				GPIO_InitTypeDef gpio_init;
@@ -321,8 +345,10 @@ namespace FwLogger
 				gpio_init.Mode = GPIO_MODE_OUTPUT_PP;
 				gpio_init.Pull = GPIO_NOPULL;
 				gpio_init.Speed = GPIO_SPEED_FREQ_LOW;
+
 				HAL_GPIO_WritePin(_gpio, _pin, GPIO_PIN_RESET);
 				HAL_GPIO_Init(_gpio, &gpio_init);
+
 				HAL_NVIC_DisableIRQ(EXTI9_5_IRQn);
 			}
 			break;
@@ -389,6 +415,8 @@ namespace FwLogger
 
 		case RetryWaiting:
 			{
+				_retry_counter++;
+
 				HAL_GPIO_WritePin(SDI12_DIR, GPIO_PIN_RESET); // 3V3 a 5V
 
 				GPIO_InitTypeDef gpio_init;
@@ -407,11 +435,17 @@ namespace FwLogger
 		}
 	}
 
+	void SDI12_Driver::setState(SDI12States state)
+	{
+		_state = state;
+		Log::Verbose("[SDI12]->%s\n", getSDI12State());
+	}
+
 	int SDI12_Driver::ackActive(uint8_t addr)
 	{
 		if(_state != Nop) return EBUSY;
 
-		_state = Command;
+		setState(Command);
 
 		_tx_buffer.clear();
 
@@ -428,7 +462,7 @@ namespace FwLogger
 	{
 		if(_state != Nop) return EBUSY;
 
-		_state = Command;
+		setState(Command);
 
 		_tx_buffer.clear();
 
@@ -445,7 +479,7 @@ namespace FwLogger
 	{
 		if(_state != Nop) return EBUSY;
 
-		_state = Command;
+		setState(Command);
 
 		_tx_buffer.clear();
 
@@ -467,7 +501,7 @@ namespace FwLogger
 	{
 		if(_state != Nop) return EBUSY;
 
-		_state = Command;
+		setState(Command);
 
 		_tx_buffer.clear();
 
@@ -482,7 +516,7 @@ namespace FwLogger
 	{
 		if(_state != Nop) return EBUSY;
 
-		_state = Command;
+		setState(Command);
 
 		_tx_buffer.clear();
 
@@ -505,14 +539,21 @@ namespace FwLogger
 	{
 		if(_state != EndCommand) return nullptr;
 		if(_rx_buffer.idx == 0) return nullptr;
-		_state = Nop;
+		setState(Nop);
 		return _rx_buffer.buf;
+	}
+
+	void SDI12_Driver::lowPower()
+	{
+		setStatus(TransceiverStatus::Disabled);
+		setState(SDI12States::Nop);
 	}
 
 	int SDI12_Driver::singleMeasure(uint8_t addr, float* dst, uint8_t count, int additional)
 	{
 		if(_state == Nop) // start measure
 		{
+			reset();
 			Log::Info("SDI12 %d meas on %d\n", count, addr);
 			startMeasurement(addr, additional);
 			_measDst = dst;
@@ -527,7 +568,7 @@ namespace FwLogger
 				_error = 0;
 				for(uint8_t i = 0; i < count; ++i) dst[i] = std::numeric_limits<float>::quiet_NaN();
 			}
-			_state = Nop;
+			setState(Nop);
 			return 0;
 		}
 		else
@@ -546,7 +587,7 @@ namespace FwLogger
 	{
 		if(_state != Nop) return EBUSY;
 
-		_state = StartMeasure;
+		setState(StartMeasure);
 
 		_tx_buffer.clear();
 
@@ -562,7 +603,7 @@ namespace FwLogger
 		else
 		{
 			_tx_buffer.clear();
-			_state = Nop;
+			setState(Nop);
 			return EPERM;
 		}
 
@@ -582,7 +623,7 @@ namespace FwLogger
 
 	int SDI12_Driver::startGetData(uint8_t addr, uint8_t additional)
 	{
-		_state = GettingData;
+		setState(GettingData);
 
 		_tx_buffer.clear();
 		_tx_buffer.push_back(addr<9 ? addr+'0' : addr);
@@ -666,9 +707,8 @@ namespace FwLogger
 
 	void SDI12_Driver::push_bits(int16_t bits, GPIO_PinState pinValue)
 	{
-		if(reinterpret_cast<intptr_t>(this) == 0x20)
+		if(reinterpret_cast<intptr_t>(this) == 0x20) // TODO (forcen#1#12/03/20): probar a quitar
 		{
-			0;
 			return;
 		}
 		while(bits-->0)
@@ -682,7 +722,7 @@ namespace FwLogger
 					{
 						_measDst[i] = std::numeric_limits<float>::quiet_NaN();
 					}
-					_state = StartMeasure;
+					setState(StartMeasure);
 					setStatus(Transmitting); // debería ser un start bit (nivel alto) pero es bajo, ergo es un error
 				}
 
@@ -704,13 +744,11 @@ namespace FwLogger
 			}
 			else if(innerCounter == 9)
 			{
-				0; // no compruebo paridad porque alv, pero tampoco puedo guardarlo
+				0; // TODO (forcen#1#12/03/20): Comprobar paridad
 			}
 			else if(innerCounter == 10)
 			{
-				#ifdef SDI12_DEBUG
 				Log::Verbose("C: %c\n",_rx_char);
-				#endif // SDI12_DEBUG
 
 				_rx_buffer.push_back(_rx_char & 0x7f);
 				if(_rx_buffer.idx > 2)
@@ -719,7 +757,7 @@ namespace FwLogger
 					{
 						if(_state == Command)
 						{
-							_state = EndCommand;
+							setState(EndCommand);
 						}
 						else if(_state == StartMeasure)
 						{
@@ -731,11 +769,11 @@ namespace FwLogger
 							_last_rx_counter *= 1200;
 							_rx_buffer.clear(); //
 
-							_state = WaitingSR;
+							setState(WaitingSR);
 						}
 						else if(_state == GettingData)
 						{
-							Log::Info("SDI12 got %d data from %d\n", _measIdx, _measAddr);
+							Log::Info("SDI12 got %d data from %c\n", _measIdx, _measAddr);
 							_measIdx += parseData(&(_measDst[_measIdx]), _measNumber-_measIdx, _rx_buffer.buf);
 							if(_measIdx < _measNumber)
 							{
@@ -744,7 +782,7 @@ namespace FwLogger
 							else
 							{
 								setStatus(Disabled);
-								_state = DataFull;
+								setState(DataFull);
 							}
 						}
 					}

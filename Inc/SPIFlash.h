@@ -7,6 +7,7 @@
 
 namespace FwLogger
 {
+	// TODO (forcen#1#12/03/20): Change model flash driver
 	class SPIFlash : public SPI_Device, public Module
 	{
 		public:
@@ -71,11 +72,11 @@ namespace FwLogger
 			uint32_t _last_write_ms;
 			uint32_t _max_delay_time;
 
-			int writeEnable(); // añadir bsy check
-			int writeDisable();
+			int _writeEnable(); // añadir bsy check
+			int _writeDisable();
 
-			void readStatus(int statusreg);
-			void writeStatus(uint16_t status);
+			void _readStatus(int statusreg);
+			void _writeStatus(uint16_t status);
 			bool _isr_launched = false;
 	};
 }
