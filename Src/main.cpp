@@ -74,7 +74,7 @@ PCD_HandleTypeDef hpcd_USB_FS;
 
 /* USER CODE BEGIN PV */
 
-int16_t adc_data[6];
+int16_t adc_data[7];
 
 FwLogger::OS os;
 /* USER CODE END PV */
@@ -161,7 +161,7 @@ int main(void)
 
 	HAL_ADCEx_Calibration_Start(&hadc1);
 
-	HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_data, 6);
+	HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_data, 7);
 
 	FwLogger::OS::setOS(&os);
 
@@ -257,7 +257,7 @@ static void MX_ADC1_Init(void)
 	hadc1.Init.DiscontinuousConvMode = DISABLE;
 	hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
 	hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
-	hadc1.Init.NbrOfConversion = 6;
+	hadc1.Init.NbrOfConversion = 7;
 	if (HAL_ADC_Init(&hadc1) != HAL_OK)
 	{
 		Error_Handler();
@@ -266,7 +266,7 @@ static void MX_ADC1_Init(void)
 	*/
 	sConfig.Channel = ADC_CHANNEL_0;
 	sConfig.Rank = ADC_REGULAR_RANK_1;
-	sConfig.SamplingTime = ADC_SAMPLETIME_13CYCLES_5;
+	sConfig.SamplingTime = ADC_SAMPLETIME_239CYCLES_5;
 	if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
 	{
 		Error_Handler();
@@ -307,6 +307,14 @@ static void MX_ADC1_Init(void)
 	*/
 	sConfig.Channel = ADC_CHANNEL_6;
 	sConfig.Rank = ADC_REGULAR_RANK_6;
+	if(HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+	{
+		Error_Handler();
+	}
+	/** Configure Regular Channel
+	*/
+	sConfig.Channel = ADC_CHANNEL_VREFINT;
+	sConfig.Rank = ADC_REGULAR_RANK_7;
 	if(HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
 	{
 		Error_Handler();

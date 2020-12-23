@@ -66,7 +66,7 @@ extern DMA_HandleTypeDef hdma_usart1_tx;
 extern PCD_HandleTypeDef hpcd_USB_FS;
 
 extern circular_buffer<256> tx_buffer;
-extern int16_t adc_data[6];
+extern int16_t adc_data[7];
 extern uint8_t _UART_txing;
 
 namespace FwLogger
@@ -102,8 +102,10 @@ namespace FwLogger
 			uint64_t time();
 			eTSDB::Date timeETSDB();
 
-			int16_t get_adc_val(int channel);
-			int16_t get_adc_bat();
+			int16_t get_adc_raw(int channel);
+			int get_adc_mv(int channel);
+			int16_t get_bat_raw();
+			int get_bat_mv();
 			float get_battery();
 			int getCharging();
 
@@ -185,6 +187,8 @@ namespace FwLogger
 			char m_name[32];
 			bool m_init = false;
 			uint32_t init_delay;
+			uint32_t m_loop_time;
+			uint32_t m_last_loop;
 	};
 }
 #endif // FWLOGGER_H

@@ -8,6 +8,8 @@
 #define ADC_SE_2	2
 #define ADC_SE_3	3
 #define ADC_SE_4	4
+#define ADC_SE_5	5
+#define ADC_SE_6	6
 
 #define IO0 GPIOC,GPIO_PIN_0
 #define IO1 GPIOC,GPIO_PIN_1

@@ -222,6 +222,8 @@ namespace FwLogger
 				vm.ackSaveFlag();
 			}
 		}
+		m_loop_time = HAL_GetTick()-m_last_loop;
+		m_last_loop = HAL_GetTick();
 	}
 
 	int twodecparse(uint8_t* str)
@@ -1433,15 +1435,19 @@ namespace FwLogger
 			}
 			else if(strcmp(token, "battery") == 0)
 			{
-				printf("Battery: %f\n", get_battery());
+				printf("Battery: %d\n", get_bat_mv());
 			}
 			else if(strcmp(token, "rawbattery") == 0)
 			{
-				printf("Raw battery: %d\n", get_adc_bat());
+				printf("Raw battery: %d\n", get_bat_raw());
 			}
 			else if(strcmp(token, "charge") == 0)
 			{
 				printf("Charging status: %s\n", getCharging() == 1 ? "charging" : "not charging");
+			}
+			else if(strcmp(token, "looptime") == 0)
+			{
+				printf("Loop time: %d\n", m_loop_time);
 			}
 		}
 		else if(strcmp(token, "radio") == 0)
@@ -1564,6 +1570,12 @@ namespace FwLogger
 			{
 				printf("RegHop: %x\n", radio.getRegHopChannel());
 			}
+		}
+		else if(strcmp(token, "adc") == 0)
+		{
+			token = strtok(NULL, " ");
+			int chan = std::atoi(token);
+			printf("ADC: %d\n", get_adc_raw(chan));
 		}
 	}
 
@@ -2168,7 +2180,7 @@ namespace FwLogger
         return retDate;
 	}
 
-	int16_t OS::get_adc_val(int channel)
+	int16_t OS::get_adc_raw(int channel)
 	{
 		switch(channel)
 		{
@@ -2186,19 +2198,36 @@ namespace FwLogger
 
 		case ADC_SE_4:
 			return adc_data[4];
+
+		case ADC_SE_5:
+			return adc_data[5];
+
+		case ADC_SE_6:
+			return adc_data[6];
+
 		default:
 			return -1;
 		}
 	}
 
-	int16_t OS::get_adc_bat()
+	int OS::get_adc_mv(int channel)
+	{
+		return get_adc_raw(channel)*1200/adc_data[6];
+	}
+
+	int16_t OS::get_bat_raw()
 	{
 		return adc_data[5];
 	}
 
+	int OS::get_bat_mv()
+	{
+		return adc_data[5] * 5040 / adc_data[6] / 3;
+	}
+
 	float OS::get_battery()
 	{
-		return adc_data[5] / 780.19 *1.08;
+		return get_bat_mv()/1000.0;
 	}
 
 	int OS::getCharging()

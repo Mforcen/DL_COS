@@ -6,7 +6,7 @@ using namespace FwLogger;
 
 int getRawADC(int chan)
 {
-	return OS::get().get_adc_val(chan);
+	return OS::get().get_adc_raw(chan);
 }
 
 int getADC(int chan)
@@ -16,7 +16,7 @@ int getADC(int chan)
 
 int getBattery()
 {
-	return OS::get().get_adc_bat() * 4200 / 3724;
+	return OS::get().get_bat_mv();
 }
 
 int getCharging()
