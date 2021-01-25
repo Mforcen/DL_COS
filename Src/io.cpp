@@ -73,3 +73,13 @@ uint64_t time()
 {
 	return OS::get().time();
 }
+
+void setAlarm(int s)
+{
+	OS::get().setAlarm(s);
+}
+
+void sleep()
+{
+	OS::get().prepareSleep();
+}

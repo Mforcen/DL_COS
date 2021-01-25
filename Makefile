@@ -35,9 +35,7 @@ BUILD_DIR = build
 # source
 ######################################
 # C sources
-C_SOURCES =  \
-Src/stm32f1xx_it.c \
-Src/stm32f1xx_hal_msp.c \
+C_F103SOURCES = \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_gpio_ex.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_adc.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_adc_ex.c \
@@ -65,13 +63,55 @@ Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_uart.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pcd.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pcd_ex.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_usb.c \
-Src/system_stm32f1xx.c \
+Src/F103/system_stm32f1xx.c \
+Src/F103/stm32f1xx_it.c \
+Src/F103/stm32f1xx_hal_msp.c \
+Src/F103/usb_device.c \
+Src/F103/usbd_conf.c \
+Src/F103/usbd_desc.c \
+Src/F103/usbd_cdc_if.c \
+Src/F103/stm32f1xx_hal_mxinit.c
+
+C_F205SOURCES = \
+Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_pcd_ex.c \
+Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_pcd.c \
+Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_ll_usb.c \
+Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal.c \
+Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_rcc.c \
+Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_rcc_ex.c \
+Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_cortex.c \
+Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_flash.c \
+Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_flash_ex.c \
+Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_pwr.c \
+Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_pwr_ex.c \
+Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_gpio.c \
+Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_dma.c \
+Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_dma_ex.c \
+Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_exti.c \
+Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_adc.c \
+Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_adc_ex.c \
+Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_crc.c \
+Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_dac.c \
+Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_dac_ex.c \
+Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_i2c.c \
+Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_rtc.c \
+Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_rtc_ex.c \
+Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_spi.c \
+Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_tim.c \
+Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_tim_ex.c \
+Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_uart.c \
+Src/F205/system_stm32f2xx.c \
+Src/F205/usb_device.c \
+Src/F205/usbd_conf.c \
+Src/F205/usbd_desc.c \
+Src/F205/usbd_cdc_if.c \
+Src/F205/stm32f2xx_it.c \
+Src/F205/stm32f2xx_hal_msp.c \
+Src/F205/stm32f2xx_hal_mxinit.c
+
+C_SOURCES =  \
 Src/printf.c \
 Src/cppabi.c \
-Src/usb_device.c \
-Src/usbd_conf.c \
-Src/usbd_desc.c \
-Src/usbd_cdc_if.c \
 Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_core.c \
 Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ctlreq.c \
 Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c \
@@ -97,8 +137,11 @@ Src/Digital_Driver.cpp \
 Src/Connectivity.cpp
 
 # ASM sources
-ASM_SOURCES =  \
+ASM_F103SOURCES =  \
 startup_stm32f103xe.s
+
+ASM_F205SOURCES = \
+startup_stm32f205xx.s
 
 
 #######################################
@@ -145,7 +188,8 @@ AS_DEFS =
 # C defines
 C_DEFS =  \
 -DUSE_HAL_DRIVER \
--DSTM32F103xE
+-DSTM32F103xE \
+-DCPU_STRING_MODEL=\"STM32F103RET6\"
 
 
 # AS includes
@@ -154,9 +198,6 @@ AS_INCLUDES =
 # C includes
 C_INCLUDES =  \
 -IInc \
--IDrivers/STM32F1xx_HAL_Driver/Inc \
--IDrivers/STM32F1xx_HAL_Driver/Inc/Legacy \
--IDrivers/CMSIS/Device/ST/STM32F1xx/Include \
 -IDrivers/CMSIS/Include \
 -IMiddlewares/ST/STM32_USB_Device_Library/Core/Inc \
 -IMiddlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc
@@ -188,6 +229,34 @@ LDSCRIPT = STM32F103RETx_FLASH.ld
 LIBS = -lc -lm -lnosys
 LIBDIR =
 LDFLAGS = $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
+
+ifdef F205
+C_SOURCES += $(C_F205SOURCES)
+ASM_SOURCES = $(ASM_F205SOURCES)
+LDSCRIPT = STM32F205RETx_FLASH.ld
+
+C_DEFS =  \
+-DUSE_HAL_DRIVER \
+-DSTM32F205xx \
+-DCPU_STRING_MODEL=\"STM32F205RET6\"
+
+C_INCLUDES += \
+-IInc/F205 \
+-IDrivers/STM32F2xx_HAL_Driver/Inc \
+-IDrivers/STM32F2xx_HAL_Driver/Inc/Legacy \
+-IDrivers/CMSIS/Device/ST/STM32F2xx/Include 
+
+else
+C_SOURCES += $(C_F103SOURCES)
+ASM_SOURCES = $(ASM_F103SOURCES)
+
+C_INCLUDES += \
+-IInc/F103 \
+-IDrivers/STM32F1xx_HAL_Driver/Inc \
+-IDrivers/STM32F1xx_HAL_Driver/Inc/Legacy \
+-IDrivers/CMSIS/Device/ST/STM32F1xx/Include 
+
+endif
 
 # default action: build all
 all: $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).hex $(BUILD_DIR)/$(TARGET).bin

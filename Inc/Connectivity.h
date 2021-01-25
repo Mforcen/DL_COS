@@ -7,7 +7,7 @@
 #include "mem_structs.hpp"
 #include "KernelMQ.h"
 
-#include "stm32f1xx_hal.h"
+#include "stm32hal_libs.h"
 #include "LoRa.h"
 #include "LinkLayer.h"
 #include "Log.h"
@@ -231,10 +231,10 @@ namespace FwLogger
 		uint16_t* m_llAddr;
 		uint8_t UART_txing;
 
-		circular_buffer<32> m_rxbuf;
+		circular_buffer<64> m_rxbuf;
 		fixed_string<8> m_rxHeader;
 
-		uint8_t m_txbuf[1024];
+		uint8_t m_txbuf[2048];
 		uint16_t m_txRead, m_txWrite;
 		bool m_txFull;
 		int _txPush(const uint8_t* c, uint16_t len);
@@ -264,13 +264,15 @@ namespace FwLogger
 
 		static PortGSM& get();
 
-		circular_buffer<64> m_rxbuf;
-		uint8_t m_txbuf[256];
+		circular_buffer<128> m_rxbuf;
+		uint8_t m_txbuf[1024];
 
 		void reset();
 		void powerOff();
 
 		void setAPN(const char* apn);
+
+		void setBaudRate(int baudrate);
 
 		enum class GSMStatus : uint8_t
 		{
@@ -400,36 +402,9 @@ namespace FwLogger
 
 		void initHTTP();
 
-		void setStatus(GSMStatus s, const char* func = nullptr, int line = 0)
-		{
-			m_status = s;
-			switch(s)
-			{
-			case GSMStatus::Init:
-				m_portStatus = Status::Init;
-				break;
-			case GSMStatus::Ready:
-				m_portStatus = Status::Ready;
-				break;
-			case GSMStatus::Off:
-				m_portStatus = Status::Off;
-				break;
-			case GSMStatus::Sending:
-				m_portStatus = Status::Busy;
-				break;
-			default:
-				m_portStatus = Status::Error;
-			}
-			const char* fmt;
-			if(func)
-				fmt = "[Modem] -> %s from %s:%d\n";
-			else
-				fmt = "[Modem] -> %s\n";
-			Log::Verbose(fmt, getStatusStr(), func, line);
-		}
+		void setStatus(GSMStatus s, const char* func = nullptr, int line = 0);
 
 		void _gsm_tx(uint8_t* data, uint16_t len);
-
 
 		GSMStatus m_status;
 		int8_t m_signal;
@@ -439,6 +414,7 @@ namespace FwLogger
 		uint8_t m_ipAddr[4];
 		char m_apn[32];
 		int8_t m_initRetry;
+		uint8_t m_logbuf[512];
 
 		uint32_t delayStart;
 		circular_buffer<16, GSMState> _statusList;

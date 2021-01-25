@@ -1,5 +1,7 @@
 #include "FwLogger.h"
 
+unsigned char fw_standalone = 1;
+
 Allocator<128>* _vectAllocator;
 
 namespace FwLogger
@@ -12,60 +14,56 @@ namespace FwLogger
 		return *ptr;
 	}
 
-	const uint8_t vm_prg[] = {2,	63,	0,	0,	0,	104,	116,	116,	112,	58,	108,	97,	98,	115,	97,	112,	46,	117,	112,	99,	116,	46,	101,	115,	58,	56,	48,	56,	48,	47,	97,	112,
-		105,	47,	118,	49,	47,	77,	89,	111,	72,	104,	69,	71,	69,	102,	57,	114,	110,	54,	53,	103,	100,	55,	75,	113,	99,	47,	116,	101,	108,	101,	109,	101,
-		116,	114,	121,	0,	1,	224,	6,	0,	0,	10,	2,	4,	0,	0,	0,	34,	44,	34,	0,	1,	97,	7,	0,	0,	10,	1,	224,	6,	0,	0,	1,	20,
-		0,	1,	0,	64,	1,	137,	11,	0,	0,	9,	1,	48,	1,	0,	0,	61,	4,	0,	0,	0,	4,	0,	0,	0,	1,	33,	7,	0,	0,	1,	0,	0,
-		0,	0,	5,	1,	27,	0,	1,	0,	64,	1,	33,	7,	0,	0,	1,	101,	7,	0,	0,	1,	24,	0,	1,	0,	64,	65,	1,	223,	6,	0,	0,	0,
-		1,	47,	62,	2,	9,	0,	0,	0,	123,	34,	98,	97,	116,	34,	58,	34,	0,	1,	101,	7,	0,	0,	10,	1,	29,	0,	1,	0,	64,	1,	141,	11,
-		0,	0,	9,	1,	33,	7,	0,	0,	1,	141,	11,	0,	0,	5,	1,	26,	0,	1,	0,	64,	1,	33,	7,	0,	0,	1,	101,	7,	0,	0,	1,	24,
-		0,	1,	0,	64,	2,	10,	0,	0,	0,	34,	44,	34,	99,	104,	103,	34,	58,	34,	0,	1,	33,	7,	0,	0,	10,	1,	33,	7,	0,	0,	1,	101,
-		7,	0,	0,	1,	24,	0,	1,	0,	64,	1,	30,	0,	1,	0,	64,	1,	141,	11,	0,	0,	9,	1,	33,	7,	0,	0,	1,	141,	11,	0,	0,	5,
-		1,	26,	0,	1,	0,	64,	1,	33,	7,	0,	0,	1,	101,	7,	0,	0,	1,	24,	0,	1,	0,	64,	1,	0,	0,	0,	0,	1,	6,	0,	0,	0,
-		1,	101,	11,	0,	0,	1,	0,	0,	0,	0,	1,	16,	0,	1,	0,	64,	2,	12,	0,	0,	0,	34,	44,	34,	109,	111,	105,	115,	49,	34,	58,	34,
-		0,	1,	33,	7,	0,	0,	10,	1,	33,	7,	0,	0,	1,	101,	7,	0,	0,	1,	24,	0,	1,	0,	64,	1,	101,	11,	0,	0,	1,	0,	0,	0,
-		0,	1,	4,	0,	0,	0,	36,	34,	5,	1,	6,	1,	0,	0,	64,	2,	12,	0,	0,	0,	34,	44,	34,	109,	111,	105,	115,	50,	34,	58,	34,	0,
-		1,	33,	7,	0,	0,	10,	1,	33,	7,	0,	0,	1,	101,	7,	0,	0,	1,	24,	0,	1,	0,	64,	1,	101,	11,	0,	0,	1,	1,	0,	0,	0,
-		1,	4,	0,	0,	0,	36,	34,	5,	1,	6,	1,	0,	0,	64,	2,	12,	0,	0,	0,	34,	44,	34,	109,	111,	105,	115,	51,	34,	58,	34,	0,	1,
-		33,	7,	0,	0,	10,	1,	33,	7,	0,	0,	1,	101,	7,	0,	0,	1,	24,	0,	1,	0,	64,	1,	101,	11,	0,	0,	1,	2,	0,	0,	0,	1,
-		4,	0,	0,	0,	36,	34,	5,	1,	6,	1,	0,	0,	64,	2,	12,	0,	0,	0,	34,	44,	34,	109,	111,	105,	115,	52,	34,	58,	34,	0,	1,	33,
-		7,	0,	0,	10,	1,	33,	7,	0,	0,	1,	101,	7,	0,	0,	1,	24,	0,	1,	0,	64,	1,	101,	11,	0,	0,	1,	3,	0,	0,	0,	1,	4,
-		0,	0,	0,	36,	34,	5,	1,	6,	1,	0,	0,	64,	2,	12,	0,	0,	0,	34,	44,	34,	109,	111,	105,	115,	53,	34,	58,	34,	0,	1,	33,	7,
-		0,	0,	10,	1,	33,	7,	0,	0,	1,	101,	7,	0,	0,	1,	24,	0,	1,	0,	64,	1,	101,	11,	0,	0,	1,	4,	0,	0,	0,	1,	4,	0,
-		0,	0,	36,	34,	5,	1,	6,	1,	0,	0,	64,	2,	12,	0,	0,	0,	34,	44,	34,	109,	111,	105,	115,	54,	34,	58,	34,	0,	1,	33,	7,	0,
-		0,	10,	1,	33,	7,	0,	0,	1,	101,	7,	0,	0,	1,	24,	0,	1,	0,	64,	1,	101,	11,	0,	0,	1,	5,	0,	0,	0,	1,	4,	0,	0,
-		0,	36,	34,	5,	1,	6,	1,	0,	0,	64,	1,	2,	0,	0,	0,	1,	6,	0,	0,	0,	1,	101,	11,	0,	0,	1,	0,	0,	0,	0,	1,	16,
-		0,	1,	0,	64,	2,	11,	0,	0,	0,	34,	44,	34,	118,	105,	99,	49,	34,	58,	34,	0,	1,	33,	7,	0,	0,	10,	1,	33,	7,	0,	0,	1,
-		101,	7,	0,	0,	1,	24,	0,	1,	0,	64,	1,	101,	11,	0,	0,	1,	0,	0,	0,	0,	1,	4,	0,	0,	0,	36,	34,	5,	1,	6,	1,	0,
-		0,	64,	2,	11,	0,	0,	0,	34,	44,	34,	118,	105,	99,	50,	34,	58,	34,	0,	1,	33,	7,	0,	0,	10,	1,	33,	7,	0,	0,	1,	101,	7,
-		0,	0,	1,	24,	0,	1,	0,	64,	1,	101,	11,	0,	0,	1,	1,	0,	0,	0,	1,	4,	0,	0,	0,	36,	34,	5,	1,	6,	1,	0,	0,	64,
-		2,	11,	0,	0,	0,	34,	44,	34,	118,	105,	99,	51,	34,	58,	34,	0,	1,	33,	7,	0,	0,	10,	1,	33,	7,	0,	0,	1,	101,	7,	0,	0,
-		1,	24,	0,	1,	0,	64,	1,	101,	11,	0,	0,	1,	2,	0,	0,	0,	1,	4,	0,	0,	0,	36,	34,	5,	1,	6,	1,	0,	0,	64,	2,	11,
-		0,	0,	0,	34,	44,	34,	118,	105,	99,	52,	34,	58,	34,	0,	1,	33,	7,	0,	0,	10,	1,	33,	7,	0,	0,	1,	101,	7,	0,	0,	1,	24,
-		0,	1,	0,	64,	1,	101,	11,	0,	0,	1,	3,	0,	0,	0,	1,	4,	0,	0,	0,	36,	34,	5,	1,	6,	1,	0,	0,	64,	2,	11,	0,	0,
-		0,	34,	44,	34,	118,	105,	99,	53,	34,	58,	34,	0,	1,	33,	7,	0,	0,	10,	1,	33,	7,	0,	0,	1,	101,	7,	0,	0,	1,	24,	0,	1,
-		0,	64,	1,	101,	11,	0,	0,	1,	4,	0,	0,	0,	1,	4,	0,	0,	0,	36,	34,	5,	1,	6,	1,	0,	0,	64,	2,	11,	0,	0,	0,	34,
-		44,	34,	118,	105,	99,	54,	34,	58,	34,	0,	1,	33,	7,	0,	0,	10,	1,	33,	7,	0,	0,	1,	101,	7,	0,	0,	1,	24,	0,	1,	0,	64,
-		1,	101,	11,	0,	0,	1,	5,	0,	0,	0,	1,	4,	0,	0,	0,	36,	34,	5,	1,	6,	1,	0,	0,	64,	1,	4,	0,	0,	0,	1,	6,	0,
-		0,	0,	1,	101,	11,	0,	0,	1,	0,	0,	0,	0,	1,	16,	0,	1,	0,	64,	2,	11,	0,	0,	0,	34,	44,	34,	116,	109,	112,	49,	34,	58,
-		34,	0,	1,	33,	7,	0,	0,	10,	1,	33,	7,	0,	0,	1,	101,	7,	0,	0,	1,	24,	0,	1,	0,	64,	1,	101,	11,	0,	0,	1,	0,	0,
-		0,	0,	1,	4,	0,	0,	0,	36,	34,	5,	1,	6,	1,	0,	0,	64,	2,	11,	0,	0,	0,	34,	44,	34,	116,	109,	112,	50,	34,	58,	34,	0,
-		1,	33,	7,	0,	0,	10,	1,	33,	7,	0,	0,	1,	101,	7,	0,	0,	1,	24,	0,	1,	0,	64,	1,	101,	11,	0,	0,	1,	1,	0,	0,	0,
-		1,	4,	0,	0,	0,	36,	34,	5,	1,	6,	1,	0,	0,	64,	2,	11,	0,	0,	0,	34,	44,	34,	116,	109,	112,	51,	34,	58,	34,	0,	1,	33,
-		7,	0,	0,	10,	1,	33,	7,	0,	0,	1,	101,	7,	0,	0,	1,	24,	0,	1,	0,	64,	1,	101,	11,	0,	0,	1,	2,	0,	0,	0,	1,	4,
-		0,	0,	0,	36,	34,	5,	1,	6,	1,	0,	0,	64,	2,	11,	0,	0,	0,	34,	44,	34,	116,	109,	112,	52,	34,	58,	34,	0,	1,	33,	7,	0,
-		0,	10,	1,	33,	7,	0,	0,	1,	101,	7,	0,	0,	1,	24,	0,	1,	0,	64,	1,	101,	11,	0,	0,	1,	3,	0,	0,	0,	1,	4,	0,	0,
-		0,	36,	34,	5,	1,	6,	1,	0,	0,	64,	2,	11,	0,	0,	0,	34,	44,	34,	116,	109,	112,	53,	34,	58,	34,	0,	1,	33,	7,	0,	0,	10,
-		1,	33,	7,	0,	0,	1,	101,	7,	0,	0,	1,	24,	0,	1,	0,	64,	1,	101,	11,	0,	0,	1,	4,	0,	0,	0,	1,	4,	0,	0,	0,	36,
-		34,	5,	1,	6,	1,	0,	0,	64,	2,	11,	0,	0,	0,	34,	44,	34,	116,	109,	112,	54,	34,	58,	34,	0,	1,	33,	7,	0,	0,	10,	1,	33,
-		7,	0,	0,	1,	101,	7,	0,	0,	1,	24,	0,	1,	0,	64,	1,	101,	11,	0,	0,	1,	5,	0,	0,	0,	1,	4,	0,	0,	0,	36,	34,	5,
-		1,	6,	1,	0,	0,	64,	2,	3,	0,	0,	0,	34,	125,	0,	1,	33,	7,	0,	0,	10,	1,	33,	7,	0,	0,	1,	101,	7,	0,	0,	1,	24,
-		0,	1,	0,	64,	1,	101,	7,	0,	0,	1,	25,	0,	1,	0,	64,	1,	145,	11,	0,	0,	9,	1,	145,	11,	0,	0,	5,	1,	101,	7,	0,	0,
-		1,	137,	11,	0,	0,	5,	1,	22,	0,	1,	0,	64,	29,	1,	101,	7,	0,	0,	1,	14,	0,	1,	0,	64,	1,	88,	2,	0,	0,	1,	23,	0,
-		1,	0,	64,	1,	48,	1,	0,	0,	61,	127};
+	const uint8_t vm_prg[] =
+{2,	104,	0,	0,	0,	104,	116,	116,	112,	115,	58,	105,	114,	114,	105,	112,	108,	97,	116,	102,	111,	114,	109,	46,	101,	119,	46,	114,	46,	97,	112,	112,
+115,	112,	111,	116,	46,	99,	111,	109,	47,	95,	97,	104,	47,	97,	112,	105,	47,	101,	110,	100,	112,	111,	105,	110,	116,	105,	114,	114,	105,	112,	108,	97,
+116,	102,	111,	114,	109,	47,	118,	49,	47,	115,	97,	118,	101,	112,	97,	113,	117,	101,	116,	101,	115,	111,	110,	100,	97,	95,	99,	111,	110,	114,	105,	101,
+103,	111,	98,	97,	116,	101,	114,	105,	97,	95,	100,	115,	0,	1,	201,	5,	0,	0,	10,	2,	4,	0,	0,	0,	34,	44,	34,	0,	1,	179,	6,	0,
+0,	10,	1,	201,	5,	0,	0,	1,	20,	0,	1,	0,	64,	1,	219,	10,	0,	0,	9,	1,	89,	1,	0,	0,	61,	4,	0,	0,	0,	4,	0,	0,
+0,	1,	51,	6,	0,	0,	1,	0,	0,	0,	0,	5,	1,	27,	0,	1,	0,	64,	1,	51,	6,	0,	0,	1,	183,	6,	0,	0,	1,	24,	0,	1,
+0,	64,	65,	1,	200,	5,	0,	0,	0,	1,	47,	62,	2,	127,	0,	0,	0,	123,	34,	105,	100,	115,	34,	58,	91,	34,	80,	68,	50,	34,	44,	34,
+68,	76,	50,	51,	34,	44,	34,	83,	79,	78,	68,	65,	50,	51,	34,	93,	44,	34,	112,	114,	101,	102,	115,	34,	58,	91,	34,	84,	50,	51,	34,	44,
+34,	72,	50,	51,	34,	44,	34,	73,	50,	51,	34,	93,	44,	34,	112,	114,	111,	102,	34,	58,	91,	34,	95,	49,	48,	67,	77,	34,	44,	34,	95,	50,
+48,	67,	77,	34,	44,	34,	95,	51,	48,	67,	77,	34,	44,	34,	95,	52,	48,	67,	77,	34,	44,	34,	95,	53,	48,	67,	77,	34,	44,	34,	95,	54,
+48,	67,	77,	34,	93,	44,	34,	118,	115,	95,	116,	34,	58,	91,	34,	0,	1,	183,	6,	0,	0,	10,	1,	28,	0,	1,	0,	64,	1,	223,	10,	0,
+0,	9,	1,	4,	0,	0,	0,	1,	6,	0,	0,	0,	1,	183,	10,	0,	0,	1,	0,	0,	0,	0,	1,	16,	0,	1,	0,	64,	1,	0,	0,	0,
+0,	1,	227,	10,	0,	0,	9,	1,	51,	6,	0,	0,	1,	183,	10,	0,	0,	1,	227,	10,	0,	0,	5,	1,	4,	0,	0,	0,	36,	34,	5,	1,
+27,	0,	1,	0,	64,	1,	51,	6,	0,	0,	1,	183,	6,	0,	0,	1,	24,	0,	1,	0,	64,	2,	4,	0,	0,	0,	34,	44,	34,	0,	1,	51,
+6,	0,	0,	10,	1,	51,	6,	0,	0,	1,	183,	6,	0,	0,	1,	24,	0,	1,	0,	64,	1,	227,	10,	0,	0,	5,	44,	1,	227,	10,	0,	0,
+9,	1,	29,	2,	0,	0,	1,	227,	10,	0,	0,	5,	1,	5,	0,	0,	0,	45,	62,	1,	51,	6,	0,	0,	1,	183,	10,	0,	0,	1,	5,	0,
+0,	0,	1,	4,	0,	0,	0,	36,	34,	5,	1,	27,	0,	1,	0,	64,	1,	51,	6,	0,	0,	1,	183,	6,	0,	0,	1,	24,	0,	1,	0,	64,
+2,	13,	0,	0,	0,	34,	93,	44,	34,	118,	115,	95,	104,	34,	58,	91,	34,	0,	1,	51,	6,	0,	0,	10,	1,	51,	6,	0,	0,	1,	183,	6,
+0,	0,	1,	24,	0,	1,	0,	64,	1,	0,	0,	0,	0,	1,	6,	0,	0,	0,	1,	183,	10,	0,	0,	1,	0,	0,	0,	0,	1,	16,	0,	1,
+0,	64,	1,	0,	0,	0,	0,	1,	227,	10,	0,	0,	9,	1,	51,	6,	0,	0,	1,	183,	10,	0,	0,	1,	227,	10,	0,	0,	5,	1,	4,	0,
+0,	0,	36,	34,	5,	1,	27,	0,	1,	0,	64,	1,	51,	6,	0,	0,	1,	183,	6,	0,	0,	1,	24,	0,	1,	0,	64,	2,	4,	0,	0,	0,
+34,	44,	34,	0,	1,	51,	6,	0,	0,	10,	1,	51,	6,	0,	0,	1,	183,	6,	0,	0,	1,	24,	0,	1,	0,	64,	1,	227,	10,	0,	0,	5,
+44,	1,	227,	10,	0,	0,	9,	1,	3,	3,	0,	0,	1,	227,	10,	0,	0,	5,	1,	5,	0,	0,	0,	45,	62,	1,	51,	6,	0,	0,	1,	183,
+10,	0,	0,	1,	5,	0,	0,	0,	1,	4,	0,	0,	0,	36,	34,	5,	1,	27,	0,	1,	0,	64,	1,	51,	6,	0,	0,	1,	183,	6,	0,	0,
+1,	24,	0,	1,	0,	64,	2,	13,	0,	0,	0,	34,	93,	44,	34,	118,	115,	95,	115,	34,	58,	91,	34,	0,	1,	51,	6,	0,	0,	10,	1,	51,
+6,	0,	0,	1,	183,	6,	0,	0,	1,	24,	0,	1,	0,	64,	1,	2,	0,	0,	0,	1,	6,	0,	0,	0,	1,	183,	10,	0,	0,	1,	0,	0,
+0,	0,	1,	16,	0,	1,	0,	64,	1,	0,	0,	0,	0,	1,	227,	10,	0,	0,	9,	1,	0,	0,	0,	0,	1,	227,	10,	0,	0,	9,	1,	51,
+6,	0,	0,	1,	183,	10,	0,	0,	1,	227,	10,	0,	0,	5,	1,	4,	0,	0,	0,	36,	34,	5,	1,	27,	0,	1,	0,	64,	1,	51,	6,	0,
+0,	1,	183,	6,	0,	0,	1,	24,	0,	1,	0,	64,	2,	4,	0,	0,	0,	34,	44,	34,	0,	1,	51,	6,	0,	0,	10,	1,	51,	6,	0,	0,
+1,	183,	6,	0,	0,	1,	24,	0,	1,	0,	64,	1,	227,	10,	0,	0,	5,	44,	1,	227,	10,	0,	0,	9,	1,	244,	3,	0,	0,	1,	227,	10,
+0,	0,	5,	1,	5,	0,	0,	0,	45,	62,	1,	51,	6,	0,	0,	1,	183,	10,	0,	0,	1,	5,	0,	0,	0,	1,	4,	0,	0,	0,	36,	34,
+5,	1,	27,	0,	1,	0,	64,	1,	51,	6,	0,	0,	1,	183,	6,	0,	0,	1,	24,	0,	1,	0,	64,	2,	20,	0,	0,	0,	34,	93,	44,	34,
+118,	97,	108,	111,	114,	98,	97,	116,	101,	114,	105,	97,	34,	58,	34,	0,	1,	51,	6,	0,	0,	10,	1,	51,	6,	0,	0,	1,	183,	6,	0,	0,
+1,	24,	0,	1,	0,	64,	1,	0,	0,	0,	0,	1,	231,	10,	0,	0,	9,	1,	29,	0,	1,	0,	64,	54,	1,	231,	10,	0,	0,	9,	1,	51,
+6,	0,	0,	1,	231,	10,	0,	0,	5,	1,	27,	0,	1,	0,	64,	1,	51,	6,	0,	0,	1,	183,	6,	0,	0,	1,	24,	0,	1,	0,	64,	2,
+9,	0,	0,	0,	34,	44,	34,	116,	115,	34,	58,	34,	0,	1,	51,	6,	0,	0,	10,	1,	51,	6,	0,	0,	1,	183,	6,	0,	0,	1,	24,	0,
+1,	0,	64,	1,	51,	6,	0,	0,	1,	223,	10,	0,	0,	5,	1,	26,	0,	1,	0,	64,	1,	51,	6,	0,	0,	1,	183,	6,	0,	0,	1,	24,
+0,	1,	0,	64,	2,	3,	0,	0,	0,	34,	125,	0,	1,	51,	6,	0,	0,	10,	1,	51,	6,	0,	0,	1,	183,	6,	0,	0,	1,	24,	0,	1,
+0,	64,	1,	183,	6,	0,	0,	1,	14,	0,	1,	0,	64,	1,	183,	6,	0,	0,	1,	25,	0,	1,	0,	64,	1,	235,	10,	0,	0,	9,	1,	235,
+10,	0,	0,	5,	1,	183,	6,	0,	0,	1,	219,	10,	0,	0,	5,	1,	22,	0,	1,	0,	64,	29,	1,	223,	10,	0,	0,	5,	1,	88,	2,	0,
+0,	34,	1,	239,	10,	0,	0,	9,	1,	239,	10,	0,	0,	5,	1,	88,	2,	0,	0,	37,	1,	88,	2,	0,	0,	36,	1,	239,	10,	0,	0,	9,
+1,	239,	10,	0,	0,	5,	1,	31,	0,	1,	0,	64,	1,	89,	1,	0,	0,	61,	127};
 
-	OS::OS():_alloc(_alloc_buf, _alloc_idx, _alloc_ownership, 8192), flash(&hspi1, FLASH_CS), /*etsdb(0, 8192*1024, &hspi1, FLASH_CS, &_alloc),*/ sdi12(SDI12_0),
-	radio(&hspi1, LORA_DIO0, LORA_DIO1, LORA_RXEN, LORA_TXEN, LORA_CS, LORA_RST)
+	OS::OS():
+		_alloc(_alloc_buf, _alloc_idx, _alloc_ownership, 8192),
+		flash(&hspi1, FLASH_CS),
+		//etsdb(0, 8192*1024, &hspi1, FLASH_CS, &_alloc),
+		sdi12(SDI12_0),
+		radio(&hspi1, LORA_DIO0, LORA_DIO1, LORA_RXEN, LORA_TXEN, LORA_CS, LORA_RST)
 	{
 		for(int i = 0; i < 32; ++i) m_name[i] = 0;
 		errno = 0;
@@ -83,7 +81,6 @@ namespace FwLogger
 		//ctor
 
 		PortManager::setAllocator(&_alloc);
-		m_pendingAlarm = false;
 		//do not call hardware settings
 	}
 
@@ -92,17 +89,42 @@ namespace FwLogger
 		ptr = os;
 	}
 
+	void OS::hwinit()
+	{
+		/* Configure the system clock */
+		SystemClock_Config();
+
+		/* USER CODE BEGIN SysInit */
+
+		/* USER CODE END SysInit */
+
+		/* Initialize all configured peripherals */
+		MX_GPIO_Init();
+		MX_DMA_Init();
+		MX_ADC1_Init();
+		MX_DAC_Init();
+		MX_I2C1_Init();
+		MX_RTC_Init();
+		MX_SPI1_Init();
+		MX_SPI2_Init();
+		MX_TIM6_Init();
+		MX_TIM7_Init();
+		MX_USART1_UART_Init();
+		MX_USART3_UART_Init();
+		//MX_USB_PCD_Init();
+	}
+
 	void OS::init()
 	{
 		//flash.readPage(10, 0);
 		HAL_Delay(10);
 		//flash.loop(); // no preguntar, xd lol
 
-		radio.init(868000000);
-		radio.receive(1);
+		//radio.init(868000000);
+		//radio.receive(1);
 
 		_vectAllocator = &_alloc;
-		PortUART::get();
+		PortUART::get(); //this inits the variables
 		PortGSM::get();
 
 		m_lpEnabled = false;
@@ -126,6 +148,7 @@ namespace FwLogger
 	void OS::RTC_ISR()
 	{
 		m_rtcFlag = true;
+		Log::Info("RTC ISR\n");
 		HAL_PWR_DisableSleepOnExit();
 		HAL_RTC_DeactivateAlarm(&hrtc, RTC_ALARM_A);
 		vm.resumeExec();
@@ -166,11 +189,11 @@ namespace FwLogger
 
 		if(m_rtcFlag) // if it has to wake up from sleep
 		{
-			m_pendingAlarm = false;
 			m_rtcFlag = false;
 			m_lpEnabled = false;
 			vm.resumeExec(); // this will resume VM execution if WAIT_TABLE is called
 		}
+
 		else if(vm.getWaitFlag()) // else if has to go to sleep, configure alarm
 		{
 			RTC_TimeTypeDef sTime;
@@ -188,7 +211,9 @@ namespace FwLogger
 			HAL_RTC_SetAlarm_IT(&hrtc, &sAlarm, RTC_FORMAT_BIN);
 		}
 
-		if(vm.getSaveFlag()) //if it has to save data
+		HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, HAL_GetTick()%5000 < 10 ? GPIO_PIN_RESET : GPIO_PIN_SET);
+
+		/*if(vm.getSaveFlag()) //if it has to save data
 		{
             eTSDB::HeaderPage* hp = reinterpret_cast<eTSDB::HeaderPage*>(_fds[vm.HeaderFD-FD_BUILTINS].ptr);
             if(hp != nullptr)
@@ -221,7 +246,7 @@ namespace FwLogger
 
 				vm.ackSaveFlag();
 			}
-		}
+		}*/
 		m_loop_time = HAL_GetTick()-m_last_loop;
 		m_last_loop = HAL_GetTick();
 	}
@@ -319,40 +344,35 @@ namespace FwLogger
 						sTime.Minutes = date.minute;
 						sTime.Seconds = date.second;
 
-						HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BIN);
-						HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
+						setTime(sDate, sTime);
 
 					}
 				}
 			}
 			else if(uib[0] == '*')
 			{
-				if(!m_pendingAlarm)
+				if(strncmp(reinterpret_cast<char*>(uib), "*PSUTTZ", 7) == 0)
 				{
-					if(strncmp(reinterpret_cast<char*>(uib), "*PSUTTZ", 7) == 0)
-					{
-						uib = uib + 11;
-						RTC_DateTypeDef sDate;
-						RTC_TimeTypeDef sTime;
-						int dst;
+					uib = uib + 11;
+					RTC_DateTypeDef sDate;
+					RTC_TimeTypeDef sTime;
+					int dst;
 
-						uib += (parse_num(&dst, uib)+1);
-						sDate.Year = dst;
-						uib += parse_num(&dst, uib)+1;
-						sDate.Month = dst;
-						uib += parse_num(&dst, uib)+1;
-						sDate.Date = dst;
+					uib += (parse_num(&dst, uib)+1);
+					sDate.Year = dst;
+					uib += parse_num(&dst, uib)+1;
+					sDate.Month = dst;
+					uib += parse_num(&dst, uib)+1;
+					sDate.Date = dst;
 
-						uib += parse_num(&dst, uib)+1;
-						sTime.Hours = dst;
-						uib += parse_num(&dst, uib)+1;
-						sTime.Minutes = dst;
-						uib += parse_num(&dst, uib)+1;
-						sTime.Seconds = dst;
+					uib += parse_num(&dst, uib)+1;
+					sTime.Hours = dst;
+					uib += parse_num(&dst, uib)+1;
+					sTime.Minutes = dst;
+					uib += parse_num(&dst, uib)+1;
+					sTime.Seconds = dst;
 
-						HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BIN);
-						HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
-					}
+					setTime(sDate, sTime);
 				}
 			}
 
@@ -879,6 +899,11 @@ namespace FwLogger
 				token = strtok(NULL, " ");
 				PortGSM::get().setAPN(token);
 			}
+			else if(strcmp(token, "baudrate") == 0)
+			{
+				token = strtok(NULL, " ");
+				PortGSM::get().setBaudRate(std::atoi(token));
+			}
 			else
 			{
 				if(token[0] == 'A')
@@ -975,55 +1000,6 @@ namespace FwLogger
 				readTable_tsk.counter = 0;
 				msgQueue.push_back(readTable_tsk);
 			}
-			else if(strcmp(token, "test") == 0)
-			{
-				eTSDB::Row* test = new (_alloc.Allocate(sizeof(eTSDB::Row), reinterpret_cast<uintptr_t>(this))) eTSDB::Row();
-				test->vals.resize(2);
-				test->vals[0].data._float = 1;
-				test->vals[0].format = eTSDB::Format::Float;
-				test->vals[1].data._float = 2;
-				test->vals[1].format = eTSDB::Format::Float;
-
-				test->rowDate.year = 2020;
-				test->rowDate.month = 1;
-				test->rowDate.day = 1;
-				test->rowDate.hour = 0;
-				test->rowDate.minute = 0;
-				test->rowDate.second = 0;
-
-				Task open_tsk;
-				open_tsk.op = Operation::OpenHeader;
-				open_tsk.fd = _createFD(FDType::TS);
-				open_tsk.buf = _alloc.Allocate(sizeof(ProgramInitializer), reinterpret_cast<uintptr_t>(this));
-				reinterpret_cast<ProgramInitializer*>(open_tsk.buf)->name[0] = 't';
-				reinterpret_cast<ProgramInitializer*>(open_tsk.buf)->name[1] = 'e';
-				reinterpret_cast<ProgramInitializer*>(open_tsk.buf)->name[2] = 's';
-				reinterpret_cast<ProgramInitializer*>(open_tsk.buf)->name[3] = 't';
-				reinterpret_cast<ProgramInitializer*>(open_tsk.buf)->name[4] = 0;
-				eTSDB::HeaderInitializer* hi = &reinterpret_cast<ProgramInitializer*>(open_tsk.buf)->hi;
-				hi->cols.resize(2);
-				hi->cols[0].format = eTSDB::Format::Float;
-				hi->cols[1].format = eTSDB::Format::Float;
-				hi->cols[0].name[0] = 'p';
-				hi->cols[0].name[1] = 'o';
-				hi->cols[0].name[2] = 't';
-				hi->cols[0].name[3] = 0;
-
-				hi->cols[1].name[0] = 't';
-				hi->cols[1].name[1] = 'e';
-				hi->cols[1].name[2] = 'm';
-				hi->cols[1].name[3] = 'p';
-				hi->cols[1].name[4] = 0;
-				hi->period = 10;
-
-				msgQueue.push_back(open_tsk);
-
-				Task append_tsk;
-				append_tsk.op = Operation::SaveRow;
-				append_tsk.fd = open_tsk.fd;
-				append_tsk.buf = test;
-				msgQueue.push_back(append_tsk);
-			}
 		}*/
 
 		else if(strcmp(token, "test") == 0)
@@ -1082,6 +1058,11 @@ namespace FwLogger
 			else if(strcmp(token, "12v") == 0)
 			{
 				HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_11);
+			}
+			else if(strcmp(token, "init") == 0)
+			{
+				m_init = true;
+				printf("inited\n");
 			}
 		}
 
@@ -1228,7 +1209,7 @@ namespace FwLogger
 			{
 				SDI12_Driver::Status st = sdi12.getModuleStatus();
 				printf("SDI12 Status:\nTStatus: %s\nState: %s\n", sdi12.getTransceiverStatus(), sdi12.getSDI12State());
-				printf("Err\tRetry\tCounter\tLRC\tMeasN\tAMeas\tMAddr\tMSize\tMIdx\tMCmd\MDst\n%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%p\n",
+				printf("Err\tRetry\tCounter\tLRC\tMeasN\tAMeas\tMAddr\tMSize\tMIdx\tMCmd\tMDst\n%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%p\n",
 						st.error, st.retry_counter, st.counter, st.last_rx_counter, st.measNumber, st.additionalMeas, st.measAddr, st.measSize, st.measIdx, st.measCommand, st.measDst);
 			}
 			else if(strcmp(token, "reset") == 0)
@@ -1448,6 +1429,22 @@ namespace FwLogger
 			else if(strcmp(token, "looptime") == 0)
 			{
 				printf("Loop time: %d\n", m_loop_time);
+			}
+			else if(strcmp(token, "cpu") == 0)
+			{
+				printf("CPU Model: %s\n", CPU_STRING_MODEL);
+			}
+			else if(strcmp(token, "standalone") == 0)
+			{
+				token = strtok(NULL, " ");
+				if(strcmp(token, "enable") == 0)
+				{
+					fw_standalone = 1;
+				}
+				else
+				{
+					fw_standalone = 0;
+				}
 			}
 		}
 		else if(strcmp(token, "radio") == 0)
@@ -1762,12 +1759,12 @@ namespace FwLogger
 					sDate.Year = new_time.year%100;
 					sDate.Month = new_time.month;
 					sDate.Date = new_time.day;
-					HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BIN);
 
 					sTime.Hours = new_time.hour;
 					sTime.Minutes = new_time.minute;
 					sTime.Seconds = new_time.second;
-					HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
+
+					setTime(sDate, sTime);
 
 					uint8_t outbuf[] = {'s','C','s'};
 					write(fd, outbuf, 3);
@@ -1923,32 +1920,7 @@ namespace FwLogger
 
 	void OS::radio_eval()
 	{
-		uint8_t buf[128];
-		int buf_idx = 0;
-		Log::Info("Radio received with RSSI: %d", radio.getPacketRSSI());
-		if(radio.getPacketIRQFlags() & 0x20)
-			Log::Info(" and wrong crc");
-		else
-			Log::Info(" and correct crc");
-		Log::Info(" (flags 0x%x)\n", radio.getPacketIRQFlags());
-		while(radio.available()>0 && buf_idx < 128) buf[buf_idx++] = radio.pop();
 
-		buf[buf_idx] = 0;
-
-		char outbuf[6];
-		/*disp.setCursor(0,0);
-		disp.writeString("RSSI:");
-		disp.setCursor(0, 1);*/
-		if(radio.getPacketIRQFlags() & 0x20)
-			sprintf(outbuf, "%d!", radio.getPacketRSSI());
-		else
-			sprintf(outbuf, "%d", radio.getPacketRSSI());
-		/*disp.writeString(outbuf);
-		disp.setCursor(0,2);
-		disp.writeString(reinterpret_cast<char*>(buf));
-		disp.updateScreen();*/
-
-		printf("%s\n", buf);
 	}
 
 	int OS::open(char* path, int oflag)
@@ -2094,10 +2066,11 @@ namespace FwLogger
                     for(std::size_t i = 0; i < count; ++i)
 						_fd.buf[_fd.buf_idx++] = reinterpret_cast<const uint8_t*>(buf)[i];
 				}
-				else //there is page				{
+				else //there is page
+				{
 					if(_fd.buf != nullptr) //but there is unwritten things in buffer
 					{
-						uint8_t merge_buf[128];
+	 					uint8_t merge_buf[128];
 
 						for(int i = 0; i < _fd.buf_idx; ++i)
 							merge_buf[i] = _fd.buf[i];
@@ -2133,7 +2106,7 @@ namespace FwLogger
 	int OS::close(int fd) // this return 0 if there is no operation pending
 	{
 		if(fd == 0) return EBADF;
-		if(fd > SOCKET_DESCRIPTOR_OFFSET) return PortManager::close(fd);
+		if(fd >= SOCKET_DESCRIPTOR_OFFSET) return PortManager::close(fd);
 		FileDescriptor& _fd = _fds[fd-FD_BUILTINS];
 		if(_fd.type == FDType::None) return EBADF;
 		if(_fd.type == FDType::File)
@@ -2178,6 +2151,41 @@ namespace FwLogger
         retDate.second = rtc_time.Seconds;
         retDate.exists = 0;
         return retDate;
+	}
+
+	static inline uint32_t toSecs(RTC_TimeTypeDef& time)
+	{
+		return time.Hours*3600 + time.Minutes*60 + time.Seconds;
+	}
+
+	void OS::setTime(RTC_DateTypeDef& date, RTC_TimeTypeDef& time)
+	{
+		bool alarmEnabled = ((hrtc.Instance->CRH & 2) != 0);
+
+		//RTC_TimeTypeDef nowTime;
+		//HAL_RTC_GetTime(&hrtc, &nowTime, RTC_FORMAT_BIN);
+		//uint32_t timeSecs = toSecs(nowTime);
+
+		//int32_t timeDelta = toSecs(time) - timeSecs;
+
+		HAL_RTC_SetDate(&hrtc, &date, RTC_FORMAT_BIN);
+		HAL_RTC_SetTime(&hrtc, &time, RTC_FORMAT_BIN);
+
+		HAL_RTCEx_BKUPWrite(&hrtc, 2, hrtc.DateToUpdate.Year);
+		HAL_RTCEx_BKUPWrite(&hrtc, 3, hrtc.DateToUpdate.Month);
+		HAL_RTCEx_BKUPWrite(&hrtc, 4, hrtc.DateToUpdate.Date);
+
+		if(alarmEnabled)
+		{
+			uint32_t alarmTS = (hrtc.Instance->ALRH << 16) | hrtc.Instance->ALRL;
+			uint32_t clockTS = (hrtc.Instance->CNTH << 16) | hrtc.Instance->CNTL;
+			if(alarmTS < clockTS)
+			{
+				HAL_RTC_DeactivateAlarm(&hrtc, RTC_ALARM_A);
+				RTC_ISR(); // se llama al ISR
+			}
+		}
+
 	}
 
 	int16_t OS::get_adc_raw(int channel)
@@ -2240,6 +2248,32 @@ namespace FwLogger
 		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11 | GPIO_PIN_12, enable != 0 ? GPIO_PIN_SET : GPIO_PIN_RESET);
 	}
 
+	void OS::setAlarm(RTC_TimeTypeDef& time)
+	{
+		RTC_AlarmTypeDef sAlarm;
+		sAlarm.AlarmTime = time;
+		sAlarm.Alarm = RTC_ALARM_A;
+		HAL_RTC_SetAlarm_IT(&hrtc, &sAlarm, RTC_FORMAT_BIN);
+	}
+
+	void OS::setAlarm(int secs)
+	{
+		Log::Info("Set alarm at %d s\n", secs);
+		RTC_AlarmTypeDef sAlarm;
+		secs %= 86400;
+
+		sAlarm.AlarmTime.Hours = (secs / 3600);
+		secs = secs - sAlarm.AlarmTime.Hours*3600;
+
+		sAlarm.AlarmTime.Minutes = secs / 60;
+
+		sAlarm.AlarmTime.Seconds = secs % 60;
+
+		sAlarm.Alarm = RTC_ALARM_A;
+
+		HAL_RTC_SetAlarm_IT(&hrtc, &sAlarm, RTC_FORMAT_BIN);
+	}
+
 	int OS::sleepFor(int s)
 	{
 		printf("Sleeping for %d seconds\n",s);
@@ -2256,14 +2290,12 @@ namespace FwLogger
 		secs %= 3600;
 		sAlarm.AlarmTime.Minutes = secs/60;
 		sAlarm.AlarmTime.Seconds = secs%60;
-		m_pendingAlarm = true;
 
-		if(HAL_RTC_SetAlarm_IT(&hrtc, &sAlarm, RTC_FORMAT_BIN)!=HAL_OK)
+		if(HAL_RTC_SetAlarm_IT(&hrtc, &sAlarm, RTC_FORMAT_BIN) != HAL_OK)
 		{
 			printf("Error on AlarmA\n");
 			HAL_Delay(100);
 		};
-		vm.pauseExec();
 
 		prepareSleep();
 
@@ -2272,6 +2304,7 @@ namespace FwLogger
 
 	void OS::prepareSleep()
 	{
+		vm.pauseExec(); //well well...
 		PortGSM::get().powerOff();
 
 		m_lpEnabled = true;
@@ -2323,14 +2356,19 @@ namespace FwLogger
 		HAL_NVIC_DisableIRQ(SPI1_IRQn);
 		HAL_NVIC_DisableIRQ(USART1_IRQn);
 
+		HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, GPIO_PIN_SET);
+
 		HAL_SuspendTick();
 		HAL_PWR_EnableSleepOnExit();
-		//HAL_PWR_EnterSTOPMode(PWR_LOWPOWERREGULATOR_ON, PWR_SLEEPENTRY_WFI);
-		HAL_PWR_EnterSTANDBYMode();
+		HAL_PWR_EnterSTOPMode(PWR_LOWPOWERREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+		//HAL_PWR_EnterSTANDBYMode();
+		SystemClock_Config(); // being in stopmode changes system clock to HSI instead of PLL
 		HAL_ResumeTick();
 
+		HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, GPIO_PIN_RESET);
+
 		HAL_TIM_Base_Start_IT(&htim6);
-		HAL_ADC_Start_DMA(&hadc1, reinterpret_cast<uint32_t*>(adc_data), 5);
+		HAL_ADC_Start_DMA(&hadc1, reinterpret_cast<uint32_t*>(adc_data), 7);
 
 		HAL_NVIC_EnableIRQ(SPI1_IRQn);
 		HAL_NVIC_EnableIRQ(USART1_IRQn);
@@ -2341,7 +2379,7 @@ namespace FwLogger
 
 	void OS::saveConfig()
 	{
-		HAL_FLASH_Unlock();
+		/*HAL_FLASH_Unlock();
 
 		uint32_t flashaddr = 0x0807f800;
 
@@ -2383,7 +2421,7 @@ namespace FwLogger
 			FLASH_WaitForLastOperation(1000);
 		}
 
-		HAL_FLASH_Program(FLASH_TYPEPROGRAM_HALFWORD, flashaddr, /*lluart.getAddr()*/0);
+		HAL_FLASH_Program(FLASH_TYPEPROGRAM_HALFWORD, flashaddr, 0);
 
 		flashaddr += 4;
 
@@ -2433,12 +2471,12 @@ namespace FwLogger
 			}
 		}
 
-		HAL_FLASH_Lock();
+		HAL_FLASH_Lock();*/
 	}
 
 	void OS::loadConfig()
 	{
-		uintptr_t flash_ptr = (uintptr_t) 0x0807f800;
+		/*uintptr_t flash_ptr = (uintptr_t) 0x0807f800;
 		if(*reinterpret_cast<uint8_t*>(flash_ptr) == 0) return; // empty config
 		for(int i = 0; i < 32; ++i)
 		{
@@ -2482,6 +2520,6 @@ namespace FwLogger
 			flash_ptr = (flash_ptr+3) & ~(3);
 
 			mod->setParam(param, paramValue);
-		}
+		}*/
 	}
 }

@@ -2,7 +2,7 @@
 #define LINKLAYER_H
 
 #include "mem_structs.hpp"
-#include "stm32f1xx_hal.h"
+#include "stm32hal_libs.h"
 #include <cstdint>
 
 namespace FwLogger

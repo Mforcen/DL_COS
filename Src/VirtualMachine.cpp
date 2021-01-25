@@ -347,7 +347,7 @@ bool VirtualMachine::cycle()
 	{
 		uint32_t a = pop<uint32_t>();
 		uint32_t b = pop<uint32_t>();
-		push<uint32_t>(a/b);
+		push<uint32_t>(b/a);
 		++m_programCounter;
 	}
 	else if(op == Opcode::FADD) // coge dos valores del stack, los suma y los pone
@@ -376,7 +376,7 @@ bool VirtualMachine::cycle()
 	{
 		float a = pop<float>();
 		float b = pop<float>();
-		push<float>(a/b);
+		push<float>(b/a);
 		++m_programCounter;
 	}
 	else if(op == Opcode::MOD)

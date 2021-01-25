@@ -10,7 +10,7 @@
 
 #include "pin_defs.h"
 
-#include "stm32f1xx_hal.h"
+#include "stm32hal_libs.h"
 
 uint16_t getUS();
 
@@ -130,6 +130,7 @@ namespace FwLogger
 		protected:
 
 		private:
+			bool m_debugStatus;
 			GPIO_TypeDef* _gpio;
 			uint32_t _pin;
 

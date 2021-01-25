@@ -194,7 +194,14 @@ int32_t _getCharging(int* rv)
 	return 0;
 }
 
-BuiltinFunc builtinFuncs[31];
+int32_t _sleepUntil(void* rv, Arg secs)
+{
+	setAlarm(secs.ival);
+	sleep();
+	return -1;
+}
+
+BuiltinFunc builtinFuncs[32];
 
 void init_builtinFuncs()
 {
@@ -360,5 +367,10 @@ void init_builtinFuncs()
 	builtinFuncs[30].nArgs = 0;
 	builtinFuncs[30].retValue = INT;
 	builtinFuncs[30].func_ptr = (intptr_t)_getCharging;
+
+	builtinFuncs[31].nArgs = 1;
+	builtinFuncs[31].retValue = INT;
+	builtinFuncs[31].argTypes[0] = INT;
+	builtinFuncs[31].func_ptr = (intptr_t)_sleepUntil;
 }
 

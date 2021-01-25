@@ -6,7 +6,7 @@
 #include "printf.h"
 #include "io.h"
 
-#include "stm32f1xx_hal.h"
+#include "stm32hal_libs.h"
 #include "pin_defs.h"
 
 union Arg
@@ -52,10 +52,6 @@ struct BuiltinFunc
     intptr_t func_ptr;
 };
 
-// TODO (forcen#1#): Define the remaining builtin functions for accessing all the hardware interfaces
-// TODO (forcen#1#12/03/20): Add some functions like: ...
-//-Get battery voltage
-
 int32_t _sin(float* rv, Arg rad);
 int32_t _cos(float* rv, Arg rad);
 int32_t _tan(float* rv, Arg rad);
@@ -82,7 +78,7 @@ int32_t _digitalWrite(void* rv, Arg ch, Arg value);
 int32_t _pulseRead(int* rv, Arg ch);
 
 
-extern BuiltinFunc builtinFuncs[31];
+extern BuiltinFunc builtinFuncs[32];
 void init_builtinFuncs();
 
 

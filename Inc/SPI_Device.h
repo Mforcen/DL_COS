@@ -1,7 +1,7 @@
 #ifndef SPI_DEVICE_H
 #define SPI_DEVICE_H
 
-#include "stm32f1xx_hal.h"
+#include "stm32hal_libs.h"
 #include "mem_structs.hpp"
 #include "errno.h"
 #include "Module.h"

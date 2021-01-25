@@ -3,7 +3,7 @@
 
 #include "SPI_Device.h"
 #include "mem_structs.hpp"
-#include "stm32f1xx_hal.h"
+#include "stm32hal_libs.h"
 
 namespace FwLogger
 {

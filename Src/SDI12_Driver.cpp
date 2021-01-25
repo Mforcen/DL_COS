@@ -16,6 +16,7 @@ namespace FwLogger
 		gpio_dir.Pull = GPIO_NOPULL;
 		HAL_GPIO_Init(SDI12_Dir_GPIO_Port, &gpio_dir);
 
+		m_debugStatus = false;
 		setStatus(Disabled);
 	}
 
@@ -330,7 +331,7 @@ namespace FwLogger
 	void SDI12_Driver::setStatus(SDI12_Driver::TransceiverStatus status)
 	{
 		_status = status;
-		Log::Verbose("Status: %s\tC:%d\tRW:%d\n", getTransceiverStatus(), _counter, _retry_counter);
+		if(m_debugStatus) Log::Verbose("Status: %s\tC:%d\tRW:%d\n", getTransceiverStatus(), _counter, _retry_counter);
 
 		_counter = 0;
 		switch(status)

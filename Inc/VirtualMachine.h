@@ -102,7 +102,7 @@ class VirtualMachine : public FwLogger::Module
 	protected:
 
 	private:
-		uint8_t m_ram[4096]; // de momento
+		uint8_t m_ram[8192]; // de momento
 		uint32_t m_stackPointer = 0, m_stackSize; // van dentro de ram, al inicio, después del stacksize va el programa
 		uint32_t m_returnAddr, m_localVarAddr, m_argAddr; // esto sería el stackFrame
 

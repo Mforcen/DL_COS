@@ -7,12 +7,13 @@
 #include <cctype>
 #include <new>
 
+#include "main.h"
 #include "mem_structs.hpp"
 #include "printf.h"
 #include "KernelMQ.h"
 #include "Connectivity.h"
 
-#include "stm32f1xx_hal.h"
+#include "stm32hal_libs.h"
 #include "pin_defs.h"
 #include "errno.h"
 #include "Log.h"
@@ -46,9 +47,6 @@ extern DMA_HandleTypeDef hdma_i2c1_rx;
 extern DMA_HandleTypeDef hdma_i2c1_tx;
 
 extern RTC_HandleTypeDef hrtc;
-
-extern SD_HandleTypeDef hsd;
-extern DMA_HandleTypeDef hdma_sdio;
 
 extern SPI_HandleTypeDef hspi1;
 extern SPI_HandleTypeDef hspi2;
@@ -85,6 +83,7 @@ namespace FwLogger
 			OS();
 			static void setOS(OS* os);
 
+			void hwinit();
 			void init();
 
 			void RTC_ISR();
@@ -101,6 +100,7 @@ namespace FwLogger
 
 			uint64_t time();
 			eTSDB::Date timeETSDB();
+			void setTime(RTC_DateTypeDef& date, RTC_TimeTypeDef& time);
 
 			int16_t get_adc_raw(int channel);
 			int get_adc_mv(int channel);
@@ -111,6 +111,8 @@ namespace FwLogger
 
 			void enablePower(int enable);
 			void enableLowPower(int enable);
+			void setAlarm(RTC_TimeTypeDef& time);
+			void setAlarm(int secs);
 			int sleepFor(int s);
 			void prepareSleep();
 			void wakeUp();
@@ -177,7 +179,6 @@ namespace FwLogger
 			void _deleteFD(int fd);
 
 			FileDescriptor _fds[16];
-
 
 			int printf_out;
 

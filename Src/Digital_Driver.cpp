@@ -82,6 +82,7 @@ namespace FwLogger
 		if(newMode == PinMode::Input) ginit.Mode = GPIO_MODE_INPUT;
 		else if(newMode == PinMode::InputIT)
 		{
+			ginit.Pull = GPIO_PULLUP;
 			ginit.Mode = GPIO_MODE_IT_RISING;
 
 			if(_pins[pin].pin == GPIO_PIN_2) HAL_NVIC_EnableIRQ(EXTI2_IRQn);

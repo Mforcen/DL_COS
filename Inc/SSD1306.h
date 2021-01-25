@@ -1,7 +1,7 @@
 #ifndef SSD1306_H
 #define SSD1306_H
 
-#include "stm32f1xx_hal.h"
+#include "stm32hal_libs.h"
 #include "Log.h"
 #include "mem_structs.hpp"
 #include "Module.h"

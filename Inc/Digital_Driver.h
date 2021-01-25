@@ -2,7 +2,7 @@
 #define DIGITAL_DRIVER_H
 
 #include "Module.h"
-#include "stm32f1xx_hal.h"
+#include "stm32hal_libs.h"
 
 namespace FwLogger
 {

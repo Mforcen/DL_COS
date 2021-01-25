@@ -19,5 +19,7 @@ void DigitalWrite(int ch, int value);
 int PulseCount(int ch);
 void sleepFor(int s);
 uint64_t time();
+void setAlarm(int s);
+void sleep();
 
 #endif // IO_H_INCLUDED

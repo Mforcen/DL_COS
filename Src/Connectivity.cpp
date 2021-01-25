@@ -41,6 +41,7 @@ extern "C"
 	{
 		if(huart == &huart3)
 		{
+			if(HAL_UART_GetError(huart) == 0) return;
 			if(HAL_UART_GetError(huart) == HAL_UART_ERROR_PE)
 			{
 				FwLogger::Log::Error("huart3 pe\n");
@@ -62,7 +63,6 @@ extern "C"
 			{
 				FwLogger::Log::Error("huart3 dma\n");
 			}
-
 			FwLogger::PortGSM::get().m_rxbuf.clear();
 			FwLogger::PortGSM::get().reset();
 		}
@@ -717,7 +717,7 @@ namespace FwLogger
 		{
 			_txStart();
 		}
-		return false;
+ 		return false;
 	}
 
 	PortUART& PortUART::get()
@@ -838,10 +838,14 @@ namespace FwLogger
 
 		GPIO_InitTypeDef ginit;
 		ginit.Mode = GPIO_MODE_OUTPUT_PP;
-		ginit.Pin = GPIO_PIN_10;
 		ginit.Speed = GPIO_SPEED_FREQ_LOW;
 		ginit.Pull = GPIO_NOPULL;
+		ginit.Pin = GPIO_PIN_12;
 
+		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_12, GPIO_PIN_SET);
+		HAL_GPIO_Init(GPIOC, &ginit);
+
+		ginit.Pin = GPIO_PIN_10;
 		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, GPIO_PIN_RESET);
 		HAL_GPIO_Init(GPIOB, &ginit);
 
@@ -1028,7 +1032,7 @@ namespace FwLogger
 			}
 			else if(stat->state == 3)
 			{
-				if(HAL_GetTick()-delayStart >= 15000)
+				if(HAL_GetTick()-delayStart >= 20000)
 				{
 					setStatus(GSMStatus::Ready, __func__, __LINE__);
 					step();
@@ -1301,6 +1305,7 @@ namespace FwLogger
 				//if(strcmp(reinterpret_cast<char*>(buf), "NORMAL POWER DOWN") == 0)
 				if(strcmp(reinterpret_cast<char*>(buf), "OK") == 0)
 				{
+					HAL_GPIO_WritePin(GPIOC, GPIO_PIN_12, GPIO_PIN_RESET); //PWR Modem off
 					HAL_UART_AbortReceive_IT(&huart3);
 					step();
 				}
@@ -1584,7 +1589,8 @@ namespace FwLogger
 			HAL_UART_AbortReceive_IT(&huart3); // if only
 			stat->state = 0;
 			setStatus(GSMStatus::Init, __func__, __LINE__);
-			HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, GPIO_PIN_SET);
+			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_12, GPIO_PIN_SET);
+			HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, GPIO_PIN_SET); //start at EN low
 			delayStart = HAL_GetTick();
 		}
 
@@ -1703,13 +1709,49 @@ namespace FwLogger
 		_statusList.push_back(st);
 	}
 
+	void PortGSM::setStatus(GSMStatus s, const char* func, int line)
+	{
+		m_status = s;
+		switch(s)
+		{
+		case GSMStatus::Init:
+			m_portStatus = Status::Init;
+			break;
+		case GSMStatus::Ready:
+			m_portStatus = Status::Ready;
+			break;
+		case GSMStatus::Off:
+			m_portStatus = Status::Off;
+			break;
+		case GSMStatus::Sending:
+			m_portStatus = Status::Busy;
+			break;
+		default:
+			m_portStatus = Status::Error;
+		}
+		const char* fmt;
+		if(func)
+			fmt = "[Modem] -> %s from %s:%d\n";
+		else
+			fmt = "[Modem] -> %s\n";
+		Log::Verbose(fmt, getStatusStr(), func, line);
+	}
+
 	void PortGSM::_gsm_tx(uint8_t* data, uint16_t len)
 	{
-		uint8_t buf[128];
-		memcpy(buf, data, len);
-		buf[len] = 0;
+		memcpy(m_logbuf, data, len);
+		m_logbuf[len] = 0;
 		HAL_UART_Transmit_IT(&huart3, data, len);
-		Log::Verbose("[Modem(%s)] T: %s\n", getStatusStr(), buf);
+		Log::Verbose("[Modem(%s)] T: %s\n", getStatusStr(), m_logbuf);
+	}
+
+	void PortGSM::setBaudRate(int baudrate)
+	{
+		huart3.Instance->CR1 &= ~(1<<13); // disable UART;
+		uint32_t pclk = HAL_RCC_GetPCLK1Freq();
+		huart3.Instance->BRR = UART_BRR_SAMPLING16(pclk, baudrate);
+		huart3.Instance->CR1 |= (1<<13); // reenable UART
+		huart3.Init.BaudRate = baudrate;
 	}
 
 	/** PortRadio Driver */
