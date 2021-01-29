@@ -320,6 +320,7 @@
 		</Unit>
 		<Unit filename="Src/eTSDB_Driver.cpp" />
 		<Unit filename="Src/eTSDB_Pages.cpp" />
+		<Unit filename="Src/embeddedProgram.cpp" />
 		<Unit filename="Src/io.cpp" />
 		<Unit filename="Src/main.cpp">
 			<Option target="&lt;{~None~}&gt;" />

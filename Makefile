@@ -244,7 +244,7 @@ C_INCLUDES += \
 -IInc/F205 \
 -IDrivers/STM32F2xx_HAL_Driver/Inc \
 -IDrivers/STM32F2xx_HAL_Driver/Inc/Legacy \
--IDrivers/CMSIS/Device/ST/STM32F2xx/Include 
+-IDrivers/CMSIS/Device/ST/STM32F2xx/Include
 
 else
 C_SOURCES += $(C_F103SOURCES)
@@ -254,7 +254,7 @@ C_INCLUDES += \
 -IInc/F103 \
 -IDrivers/STM32F1xx_HAL_Driver/Inc \
 -IDrivers/STM32F1xx_HAL_Driver/Inc/Legacy \
--IDrivers/CMSIS/Device/ST/STM32F1xx/Include 
+-IDrivers/CMSIS/Device/ST/STM32F1xx/Include
 
 endif
 
