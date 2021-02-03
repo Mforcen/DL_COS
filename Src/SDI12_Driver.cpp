@@ -559,6 +559,7 @@ namespace FwLogger
 			startMeasurement(addr, additional);
 			_measDst = dst;
 			_measSize = count;
+			_measAddr = addr;
 			return 1;
 		}
 		else if(_state == DataFull)
@@ -639,11 +640,12 @@ namespace FwLogger
 	int SDI12_Driver::parseData(float* dst, int count, uint8_t* buf)
 	{
 		int val_idx = -1;
+		if(count <= 0) return 0;
 
 		uint8_t sign, decimal = 0;
 		int integer_part = 0;
 
-		if(buf[0] != '0') return -1;
+		if(buf[0]-'0' != _measAddr) return -1;
 
 		int buf_idx = 1;
 
@@ -661,7 +663,8 @@ namespace FwLogger
 				}
 
 				val_idx += 1;
-				if(val_idx >= count) return count; // exceeds number of values
+				if(val_idx >= count)
+					return count; // exceeds number of values
 
 				if(c == '-') sign = 1;
 				else sign = 0;
@@ -763,6 +766,7 @@ namespace FwLogger
 						else if(_state == StartMeasure)
 						{
 							_measNumber = _rx_buffer.buf[4]-'0'; //guarda el número de medidas
+							_measNumber = _measNumber < _measSize ? _measNumber : _measSize; // clamp _measNumber to _measSize
 							_measIdx = 0;
 							_measCommand = 1;
 
@@ -774,8 +778,8 @@ namespace FwLogger
 						}
 						else if(_state == GettingData)
 						{
-							Log::Info("SDI12 got %d data from %c\n", _measIdx, _measAddr);
-							_measIdx += parseData(&(_measDst[_measIdx]), _measNumber-_measIdx, _rx_buffer.buf);
+							Log::Info("SDI12 got %d data from %c\n", _measIdx, _measAddr);//TODO Parsedata can raise errors, log that
+							_measIdx += parseData(&(_measDst[_measIdx]), _measSize-_measIdx, _rx_buffer.buf);
 							if(_measIdx < _measNumber)
 							{
 								startGetData(_measAddr, _measCommand++);

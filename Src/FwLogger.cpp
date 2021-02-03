@@ -2053,8 +2053,11 @@ namespace FwLogger
 			}
 		}
 		else
-		{
-			PortManager::write(fd, buf, count); // it frees sockets if self managed
+		{ // TODO change to make proper error handling
+			if(PortManager::write(fd, buf, count) < 0) // it frees sockets if self managed
+			{
+				Log::Error("[FW]: Error on PortManager write\n");
+			}
 			return count;
 		}
 		errno = EUNSPEC;

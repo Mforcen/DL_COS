@@ -1032,7 +1032,7 @@ namespace FwLogger
 			}
 			else if(stat->state == 3)
 			{
-				if(HAL_GetTick()-delayStart >= 20000)
+				if(HAL_GetTick()-delayStart >= 45000)
 				{
 					setStatus(GSMStatus::Ready, __func__, __LINE__);
 					step();
@@ -1044,6 +1044,30 @@ namespace FwLogger
 			if(HAL_GetTick()-delayStart > 10000)
 			{
 				step();
+			}
+		}
+		else if(stat->op == GSMOp::GetNetworkRegistration)
+		{
+			if(stat->state == 0) // Waiting for response
+			{
+				if(HAL_GetTick()-delayStart > 5000)
+				{
+					int len = sprintf(reinterpret_cast<char*>(m_txbuf), "%s?\r", GSMCommands::CREG); // retry response
+					_gsm_tx(m_txbuf, len);
+					setStatus(GSMStatus::Error, __func__, __LINE__);
+					Log::Error("[Modem(%s)]: Modem not responding CREG\n", getStatusStr());
+					_statusList.clear();
+				}
+			}
+			if(stat->state == 1) // Waiting for registration
+			{
+				if(HAL_GetTick()-delayStart > 5000) // ask again
+				{
+					int len = sprintf(reinterpret_cast<char*>(m_txbuf), "%s?\r", GSMCommands::CREG);
+					_gsm_tx(m_txbuf, len);
+					stat->state = 0;
+					delayStart = HAL_GetTick();
+				}
 			}
 		}
 		else if(stat->op == GSMOp::RecvResponse)
@@ -1143,6 +1167,36 @@ namespace FwLogger
 			{
 				if(strcmp(reinterpret_cast<char*>(buf), "OK") == 0)
 					step();
+			}
+		}
+
+		else if(stat->op == GSMOp::GetNetworkRegistration)
+		{
+			if(stat->state == 0) // waiting response
+			{
+				if(strncmp(reinterpret_cast<char*>(buf), "+CREG:", 6) == 0)
+				{
+					uint8_t regstatus = buf[9]-'0';
+					if(regstatus == 1 || regstatus == 5)
+					{
+						step();
+					}
+					else
+					{
+						if(stat->counter < 20)
+						{
+							delayStart = HAL_GetTick();
+							stat->state = 1;
+							stat->counter++;
+						}
+						else // 200s without registering
+						{
+							setStatus(GSMStatus::Error, __func__, __LINE__);
+							Log::Error("[Modem(%s)]: Modem cannot register\n", getStatusStr());
+							_statusList.clear();
+						}
+					}
+				}
 			}
 		}
 
@@ -1624,6 +1678,13 @@ namespace FwLogger
 			len = sprintf(reinterpret_cast<char*>(m_txbuf), "%s=\"0034%d\"\r", GSMCommands::SMS_CMGS, stat->counter);
 		}
 
+		else if(stat->op == GSMOp::GetNetworkRegistration)
+		{
+			stat->state = 0; // waiting response
+			stat->counter = 0; // first try
+			len = sprintf(reinterpret_cast<char*>(m_txbuf), "%s?\r", GSMCommands::CREG);
+		}
+
 		else if(stat->op == GSMOp::BearerOpen)
 		{
 			m_sapbr = false;
@@ -1701,6 +1762,9 @@ namespace FwLogger
 	void PortGSM::initHTTP()
 	{
 		GSMState st;
+		st.op = GSMOp::GetNetworkRegistration;
+		_statusList.push_back(st);
+
 		st.op = GSMOp::BearerOpen;
 		_statusList.push_back(st);
 

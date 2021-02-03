@@ -334,6 +334,7 @@ namespace FwLogger
 
 			SMSSend,
 
+			GetNetworkRegistration,
 			BearerOpen,
 			BearerClose,
 
