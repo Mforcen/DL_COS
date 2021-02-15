@@ -129,7 +129,7 @@ int32_t _open(int* rv, Arg uri)
 
 int32_t _read(int* rv, Arg fd, Arg buf, Arg count)
 {
-	*rv = read(fd.ival, reinterpret_cast<void*>(buf.ptr_val), count.ival);
+	*rv = 0;
 	if(*rv == -1) return 1; // no dejar de ejecutra y salir del bucle
 	return 0;
 }

@@ -748,7 +748,7 @@ namespace FwLogger
 			}
 			else if(innerCounter == 9)
 			{
-				0; // TODO (forcen#1#12/03/20): Comprobar paridad
+				(void)0; // TODO (forcen#1#12/03/20): Comprobar paridad
 			}
 			else if(innerCounter == 10)
 			{

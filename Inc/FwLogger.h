@@ -47,6 +47,7 @@ extern DMA_HandleTypeDef hdma_i2c1_rx;
 extern DMA_HandleTypeDef hdma_i2c1_tx;
 
 extern RTC_HandleTypeDef hrtc;
+extern IWDG_HandleTypeDef hiwdg;
 
 extern SPI_HandleTypeDef hspi1;
 extern SPI_HandleTypeDef hspi2;
@@ -91,16 +92,13 @@ namespace FwLogger
 			void loop();
 			bool task_loop();
 			void eval(uint8_t* buf, int fd);
-			void bin_eval(uint8_t* ebuf, int length, int fd);
-			void radio_eval();
 			int open(char* path, int oflag);
-			int read(int fd, void* buf, size_t count);
 			int write(int fd, const void* buf, size_t count);
 			int close(int fd);
 
 			uint64_t time();
 			eTSDB::Date timeETSDB();
-			void setTime(RTC_DateTypeDef& date, RTC_TimeTypeDef& time);
+			void setTime(RTC_DateTypeDef& date, RTC_TimeTypeDef& time, bool check = true);
 
 			int16_t get_adc_raw(int channel);
 			int get_adc_mv(int channel);
@@ -118,12 +116,9 @@ namespace FwLogger
 			void wakeUp();
 
 			SPIFlash flash;
-			//eTSDB::Driver etsdb;
 			SDI12_Driver sdi12;
 			VirtualMachine vm;
 			Digital_Driver digital;
-
-			LoRa radio;
 
 			//SSD1306 disp;
 
@@ -138,8 +133,6 @@ namespace FwLogger
 			enum class FDType : uint8_t
 			{
 				None,
-				File,
-				TS,
 				SPI,
 				I2C,
 				SDI12,
@@ -174,6 +167,7 @@ namespace FwLogger
 			int errno;
 
 			bool m_rxBin, m_rtcFlag, m_pendingTask, m_lpEnabled, m_pendingAlarm;
+			bool m_sleeping;
 
 			int8_t _createFD(FDType type);
 			void _deleteFD(int fd);

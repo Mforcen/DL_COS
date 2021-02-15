@@ -62,6 +62,7 @@ Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_tim_ex.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_uart.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pcd.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pcd_ex.c \
+Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_iwdg.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_usb.c \
 Src/F103/system_stm32f1xx.c \
 Src/F103/stm32f1xx_it.c \
@@ -123,8 +124,6 @@ Src/FwLogger.cpp \
 Src/SDI12_Driver.cpp \
 Src/SPI_Device.cpp \
 Src/SPIFlash.cpp \
-Src/eTSDB_Driver.cpp \
-Src/eTSDB_Pages.cpp \
 Src/LoRa.cpp \
 Src/Module.cpp \
 Src/VirtualMachine.cpp \

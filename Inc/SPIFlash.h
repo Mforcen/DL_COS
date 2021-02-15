@@ -13,14 +13,10 @@ namespace FwLogger
 		public:
 			SPIFlash(SPI_HandleTypeDef* hspi, GPIO_TypeDef* gpio, uint16_t pin, const char* moduleName="SPIFlash",
 					 char bin_id=FLASH_BINID, uint8_t major=0, uint8_t minor=6);
-			int writePage(uint8_t* data, uint16_t len, uint32_t addr);
-			int readPage(uint16_t len, uint32_t addr, uint8_t* buf);
-			int readPage(uint16_t len, uint32_t addr);
-			int eraseSector(uint32_t addr);
-			int eraseChip();
+			int writePage(uint8_t* data, uint16_t len, uint16_t page);
+			int readPage(uint16_t page);
+			int eraseSector(uint16_t page);
 			int jedecId(uint8_t* data);
-			int powerDown();
-			int wakeUp();
 
 			void ISR();
 			virtual void flashModuleISR();
@@ -37,46 +33,48 @@ namespace FwLogger
 			GPIO_TypeDef* _gpio;
 			uint16_t _pin;
 
-			enum Action
+			enum Action : uint8_t
 			{
-				None,
-				WENDelay,
+				BusyCheck,
 				WriteEnable,
-				WriteStart,
-				Write,
-				WaitBusy,
-				SendReadAddr,
+				WELCheck,
+				ProgramDataLoad,
+				ProgramExecute,
+				PageDataRead,
 				Read,
-				Erase
-			} _action;
-
-			uint8_t _rx_status[2];
-			uint8_t _tx_status[2];
-
-			struct WritingOp
-			{
-				uint16_t addr;
-				uint16_t len;
+				Erase,
+				Delay
 			};
 
-			circular_buffer<4, WritingOp> write_ops;
+			void _exec(Action a);
+			void _isr(Action a);
+			void _step();
 
-			uint8_t tx_buffer[330];
+			circular_buffer<8, Action> _actions;
 
-			uint8_t rx_buffer[330];
-			uint8_t* ext_rx_buf;
+			uint8_t tx_buffer[2052];
+
+			uint8_t rx_buffer[2052];
 			uint16_t rx_idx;
 			uint16_t rx_size;
 
-			uint32_t _last_us; // para añadir un poco de espera por si hace falta para que a la memoria le de tiempo de hacer cosas
-			uint32_t _last_write_ms;
-			uint32_t _max_delay_time;
+			uint16_t _page_idx;
 
-			int _writeEnable(); // añadir bsy check
-			int _writeDisable();
+			uint32_t _curr_time;
+			uint32_t _delay_time;
+			uint16_t _last_us;
 
-			void _readStatus(int statusreg);
-			void _writeStatus(uint16_t status);
+			void _readStatus(uint8_t statreg);
+			int _busyCheck();
+			int _welCheck();
+			void _writeEnable();
+			void _programDataLoad();
+			void _programExecute(uint16_t page);
+			void _pageRead(uint16_t page);
+			void _read();
+
+			void _delay(int ms);
+
 			bool _isr_launched = false;
 	};
 }

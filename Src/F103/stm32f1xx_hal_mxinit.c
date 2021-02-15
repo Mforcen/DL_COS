@@ -11,6 +11,7 @@ extern DMA_HandleTypeDef hdma_i2c1_rx;
 extern DMA_HandleTypeDef hdma_i2c1_tx;
 
 extern RTC_HandleTypeDef hrtc;
+extern IWDG_HandleTypeDef hiwdg;
 
 extern SD_HandleTypeDef hsd;
 extern DMA_HandleTypeDef hdma_sdio;
@@ -310,6 +311,29 @@ void MX_RTC_Init(void)
 	}
 	RTC->CRL &= ~0x02; // clears alarm it flag
 
+	/* USER CODE BEGIN RTC_Init 2 */
+
+	/* USER CODE END RTC_Init 2 */
+
+}
+
+/**
+  * @brief RTC Initialization Function
+  * @param None
+  * @retval None
+  */
+void MX_IWDG_Init(void)
+{
+
+	/* USER CODE BEGIN RTC_Init 0 */
+
+	/* USER CODE END RTC_Init 0 */
+
+	/** Initialize RTC Only
+	*/
+	hiwdg.Instance = IWDG;
+	hiwdg.Init.Prescaler = IWDG_PRESCALER_256;
+	hiwdg.Init.Reload = 0xfff;
 	/* USER CODE BEGIN RTC_Init 2 */
 
 	/* USER CODE END RTC_Init 2 */

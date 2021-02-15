@@ -93,6 +93,7 @@
 		<Unit filename="Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h">
 			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
+		<Unit filename="Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_iwdg.h" />
 		<Unit filename="Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pwr.h">
 			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
@@ -177,6 +178,9 @@
 			<Option compilerVar="CC" />
 			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
+		<Unit filename="Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_iwdg.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pwr.c">
 			<Option compilerVar="CC" />
 			<Option target="&lt;{~None~}&gt;" />
@@ -244,10 +248,6 @@
 		<Unit filename="Inc/SSD1306.h" />
 		<Unit filename="Inc/VMBuiltin.h" />
 		<Unit filename="Inc/VirtualMachine.h" />
-		<Unit filename="Inc/eTSDB.hpp" />
-		<Unit filename="Inc/eTSDB_Driver.hpp" />
-		<Unit filename="Inc/eTSDB_Pages.hpp" />
-		<Unit filename="Inc/eTSDB_Utils.hpp" />
 		<Unit filename="Inc/errno.h" />
 		<Unit filename="Inc/io.h" />
 		<Unit filename="Inc/main.h">
@@ -318,8 +318,6 @@
 		<Unit filename="Src/cppabi.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="Src/eTSDB_Driver.cpp" />
-		<Unit filename="Src/eTSDB_Pages.cpp" />
 		<Unit filename="Src/embeddedProgram.cpp" />
 		<Unit filename="Src/io.cpp" />
 		<Unit filename="Src/main.cpp">

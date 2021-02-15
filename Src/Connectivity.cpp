@@ -1183,13 +1183,13 @@ namespace FwLogger
 					}
 					else
 					{
-						if(stat->counter < 20)
+						if(stat->counter < 90)
 						{
 							delayStart = HAL_GetTick();
 							stat->state = 1;
 							stat->counter++;
 						}
-						else // 200s without registering
+						else // 900s without registering
 						{
 							setStatus(GSMStatus::Error, __func__, __LINE__);
 							Log::Error("[Modem(%s)]: Modem cannot register\n", getStatusStr());

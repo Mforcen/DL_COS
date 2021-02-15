@@ -29,11 +29,6 @@ int open(char* path, int oflag)
 	return OS::get().open(path, oflag);
 }
 
-int read(int fd, void* buf, size_t count)
-{
-	return OS::get().read(fd, buf, count);
-}
-
 int write(int fd, const void* buf, size_t count)
 {
 	return OS::get().write(fd, buf, count);

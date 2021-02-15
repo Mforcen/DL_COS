@@ -59,6 +59,7 @@ void MX_DAC_Init(void);
 void MX_I2C1_Init(void);
 void MX_I2C2_SMBUS_Init(void);
 void MX_RTC_Init(void);
+void MX_IWDG_Init(void);
 void MX_SDIO_SD_Init(void);
 void MX_SPI1_Init(void);
 void MX_SPI2_Init(void);

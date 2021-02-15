@@ -53,6 +53,7 @@ DMA_HandleTypeDef hdma_i2c1_rx;
 DMA_HandleTypeDef hdma_i2c1_tx;
 
 RTC_HandleTypeDef hrtc;
+IWDG_HandleTypeDef hiwdg;
 
 SPI_HandleTypeDef hspi1;
 SPI_HandleTypeDef hspi2;
@@ -185,7 +186,7 @@ void sdi12_Isr()
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
-	if(GPIO_Pin == GPIO_PIN_0 || GPIO_Pin == GPIO_PIN_1) FwLogger::OS::get().radio.isrDIO(GPIO_Pin);
+	if(GPIO_Pin == GPIO_PIN_0 || GPIO_Pin == GPIO_PIN_1) {}
 	else if(GPIO_Pin == GPIO_PIN_2 || GPIO_Pin == GPIO_PIN_3) FwLogger::OS::get().digital.ISR(GPIO_Pin);
 	else if(GPIO_Pin < GPIO_PIN_4) FwLogger::OS::get().digital.ISR(GPIO_Pin);
 	else if(GPIO_Pin == GPIO_PIN_6) FwLogger::OS::get().sdi12.pin_isr();
