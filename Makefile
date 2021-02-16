@@ -124,6 +124,7 @@ Src/FwLogger.cpp \
 Src/SDI12_Driver.cpp \
 Src/SPI_Device.cpp \
 Src/SPIFlash.cpp \
+Src/SFS.cpp \
 Src/LoRa.cpp \
 Src/Module.cpp \
 Src/VirtualMachine.cpp \

@@ -19,12 +19,8 @@
 #include "Log.h"
 
 #include "VirtualMachine.h"
-#include "SPIFlash.h"
-#include "eTSDB.hpp"
-#include "LoRa.h"
+#include "SFS.h"
 #include "SDI12_Driver.h"
-#include "SSD1306.h"
-#include "LinkLayer.h"
 #include "Digital_Driver.h"
 
 #define O_RDONLY 1
@@ -97,7 +93,6 @@ namespace FwLogger
 			int close(int fd);
 
 			uint64_t time();
-			eTSDB::Date timeETSDB();
 			void setTime(RTC_DateTypeDef& date, RTC_TimeTypeDef& time, bool check = true);
 
 			int16_t get_adc_raw(int channel);
@@ -116,6 +111,7 @@ namespace FwLogger
 			void wakeUp();
 
 			SPIFlash flash;
+			SFS s;
 			SDI12_Driver sdi12;
 			VirtualMachine vm;
 			Digital_Driver digital;
@@ -147,21 +143,6 @@ namespace FwLogger
                 uint16_t bytes_read;
                 uint8_t buf_idx;
                 uint8_t* buf;
-			};
-
-			struct ProgramInitializer
-			{
-				ProgramInitializer()
-				{
-					for(int i = 0; i < 16; ++i) name[i] = 0;
-				}
-                eTSDB::HeaderInitializer hi;
-				uint8_t status;
-				uint8_t tables;
-                uint8_t name[16];
-                uint8_t name_counter;
-				uint8_t table_status;
-				uint32_t stack_size;
 			};
 
 			int errno;

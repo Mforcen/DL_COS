@@ -19,6 +19,7 @@ namespace FwLogger
 	OS::OS():
 		_alloc(_alloc_buf, _alloc_idx, _alloc_ownership, 8192),
 		flash(&hspi1, FLASH_CS),
+		s(&hspi1, FLASH_CS),
 		sdi12(SDI12_0)
 	{
 		for(int i = 0; i < 32; ++i) m_name[i] = 0;
@@ -94,6 +95,8 @@ namespace FwLogger
 
 		m_init = false;
 		init_delay = HAL_GetTick();
+
+		s.init();
 	}
 
 	void OS::RTC_ISR()
@@ -231,51 +234,7 @@ namespace FwLogger
 			PortGSM::get().eval(reinterpret_cast<uint8_t*>(currTask->buf), currTask->counter);
 
 			uint8_t* uib = reinterpret_cast<uint8_t*>(currTask->buf);
-			if(uib[0] == '+')
-			{
-				std::size_t space_loc;
-				for(space_loc = 0; space_loc < currTask->counter; ++space_loc)
-				{
-					if(uib[space_loc] == ' ')
-					{
-						uib[space_loc] = 0;
-						break;
-					}
-				}
-				if(space_loc < currTask->counter)
-				{
-					uib += 1;
-					if(strcmp(reinterpret_cast<char*>(uib), "CCLK:") == 0)
-					{
-						uib += space_loc;
-
-						eTSDB::Date date;
-						date.year = twodecparse(uib+1)+2000;
-						date.month = twodecparse(uib+4);
-						date.day = twodecparse(uib+7);
-						date.hour = twodecparse(uib+10);
-						date.minute = twodecparse(uib+13);
-						date.second = twodecparse(uib+16);
-
-						uint64_t timestamp = date.timestamp();
-						date.fromTimestamp(timestamp-3600);
-
-						RTC_DateTypeDef sDate;
-						sDate.Year = date.year-2000;
-						sDate.Month = date.month;
-						sDate.Date = date.day;
-
-						RTC_TimeTypeDef sTime;
-						sTime.Hours = date.hour;
-						sTime.Minutes = date.minute;
-						sTime.Seconds = date.second;
-
-						setTime(sDate, sTime);
-
-					}
-				}
-			}
-			else if(uib[0] == '*')
+			if(uib[0] == '*')
 			{
 				if(strncmp(reinterpret_cast<char*>(uib), "*PSUTTZ", 7) == 0)
 				{
@@ -786,26 +745,24 @@ namespace FwLogger
 
 	uint64_t OS::time()
 	{
-		return timeETSDB().timestamp();
-	}
-
-	eTSDB::Date OS::timeETSDB()
-	{
-		eTSDB::Date retDate;
-
 		RTC_DateTypeDef rtc_date;
 		HAL_RTC_GetDate(&hrtc, &rtc_date, RTC_FORMAT_BIN);
-		retDate.year = rtc_date.Year+2000;
-		retDate.month = rtc_date.Month;
-		retDate.day = rtc_date.Date;
 
 		RTC_TimeTypeDef rtc_time;
         HAL_RTC_GetTime(&hrtc, &rtc_time, RTC_FORMAT_BIN);
-        retDate.hour = rtc_time.Hours;
-        retDate.minute = rtc_time.Minutes;
-        retDate.second = rtc_time.Seconds;
-        retDate.exists = 0;
-        return retDate;
+
+		uint64_t retval;
+		retval = rtc_time.Seconds + rtc_time.Minutes*60 + rtc_time.Hours*3600 + (rtc_date.Date-1)*86400;
+
+		int year = rtc_date.Year + 2000;
+		for(int i = 1970; i < year; ++i)
+			retval += ((i%4 == 0 )|( i%400 == 0) ? 366 : 365)*86400;
+
+		uint8_t days[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+		if(year % 4 == 0 || year % 400 == 0) days[1] = 29;
+
+		for(uint8_t month_idx = 0; month_idx < (rtc_date.Month-1); ++month_idx) retval += days[month_idx] * 86400;
+		return retval;
 	}
 
 	static inline uint32_t toSecs(RTC_TimeTypeDef& time)

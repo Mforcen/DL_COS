@@ -243,6 +243,7 @@
 		<Unit filename="Inc/Log.h" />
 		<Unit filename="Inc/Module.h" />
 		<Unit filename="Inc/SDI12_Driver.h" />
+		<Unit filename="Inc/SFS.h" />
 		<Unit filename="Inc/SPIFlash.h" />
 		<Unit filename="Inc/SPI_Device.h" />
 		<Unit filename="Inc/SSD1306.h" />
@@ -310,6 +311,7 @@
 		<Unit filename="Src/Log.cpp" />
 		<Unit filename="Src/Module.cpp" />
 		<Unit filename="Src/SDI12_Driver.cpp" />
+		<Unit filename="Src/SFS.cpp" />
 		<Unit filename="Src/SPIFlash.cpp" />
 		<Unit filename="Src/SPI_Device.cpp" />
 		<Unit filename="Src/SSD1306.cpp" />

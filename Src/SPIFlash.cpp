@@ -25,6 +25,9 @@ namespace FwLogger
 		_pin = pin;
 		_actions.clear();
 		_delay_time = 0;
+
+		tx_buffer = &_tx_buffer[3];
+		rx_buffer = &_rx_buffer[4];
 	}
 
 	void SPIFlash::_delay(int ms)
@@ -48,63 +51,63 @@ namespace FwLogger
 
 	void SPIFlash::_readStatus(uint8_t statreg)
 	{
-		tx_buffer[0] = CMD_READ_STATUS_REG;
-		tx_buffer[1] = statreg;
-		tx_buffer[2] = 0;
-		rx_buffer[0] = 0;
-		rx_buffer[1] = 0;
-		rx_buffer[2] = 0;
+		_tx_buffer[0] = CMD_READ_STATUS_REG;
+		_tx_buffer[1] = statreg;
+		_tx_buffer[2] = 0;
+		_rx_buffer[0] = 0;
+		_rx_buffer[1] = 0;
+		_rx_buffer[2] = 0;
 		HAL_GPIO_WritePin(_gpio, _pin, GPIO_PIN_RESET);
-		startTxRx(tx_buffer, rx_buffer, 3);
+		startTxRx(_tx_buffer, _rx_buffer, 3);
 	}
 
 	void SPIFlash::_writeEnable()
 	{
-		tx_buffer[0] = CMD_WRITE_ENABLE;
+		_tx_buffer[0] = CMD_WRITE_ENABLE;
 		HAL_GPIO_WritePin(_gpio, _pin, GPIO_PIN_RESET);
 	}
 
 	void SPIFlash::_programDataLoad()
 	{
-		tx_buffer[0] = CMD_WRITE_DATA;
-		tx_buffer[1] = 0;
-		tx_buffer[2] = 0;
+		_tx_buffer[0] = CMD_WRITE_DATA;
+		_tx_buffer[1] = 0;
+		_tx_buffer[2] = 0;
 
 		HAL_GPIO_WritePin(_gpio, _pin, GPIO_PIN_RESET);
-		startWrite(tx_buffer, 2052);
+		startWrite(_tx_buffer, 2052);
 	}
 
 	void SPIFlash::_programExecute(uint16_t page)
 	{
-		tx_buffer[0] = CMD_PROGRAM_EXEC;
-		tx_buffer[1] = 0;
-		tx_buffer[2] = (page >> 8) & 0xff;
-		tx_buffer[3] = page & 0xff;
+		_tx_buffer[0] = CMD_PROGRAM_EXEC;
+		_tx_buffer[1] = 0;
+		_tx_buffer[2] = (page >> 8) & 0xff;
+		_tx_buffer[3] = page & 0xff;
 
 		HAL_GPIO_WritePin(_gpio, _pin, GPIO_PIN_RESET);
-		startWrite(tx_buffer, 4);
+		startWrite(_tx_buffer, 4);
 	}
 
 	void SPIFlash::_pageRead(uint16_t page)
 	{
-		tx_buffer[0] = CMD_PAGE_READ;
-		tx_buffer[1] = 0;
-		tx_buffer[2] = (page >> 8) & 0xff;
-		tx_buffer[3] = page & 0xff;
+		_tx_buffer[0] = CMD_PAGE_READ;
+		_tx_buffer[1] = 0;
+		_tx_buffer[2] = (page >> 8) & 0xff;
+		_tx_buffer[3] = page & 0xff;
 
 		HAL_GPIO_WritePin(_gpio, _pin, GPIO_PIN_RESET);
-		startWrite(tx_buffer, 4);
+		startWrite(_tx_buffer, 4);
 	}
 
 	void SPIFlash::_read()
 	{
-		tx_buffer[0] = CMD_READ_DATA;
-		tx_buffer[1] = 0;
-		tx_buffer[2] = 0;
-		tx_buffer[3] = 0;
+		_tx_buffer[0] = CMD_READ_DATA;
+		_tx_buffer[1] = 0;
+		_tx_buffer[2] = 0;
+		_tx_buffer[3] = 0;
 
 		HAL_GPIO_WritePin(_gpio, _pin, GPIO_PIN_RESET);
-		startTxRx(tx_buffer, rx_buffer, 2052);
+		startTxRx(_tx_buffer, _rx_buffer, 2052);
 	}
 
 	void SPIFlash::_exec(Action a)
@@ -193,7 +196,7 @@ namespace FwLogger
 
 		_page_idx = page;
 
-		for(int i = 0; i < len; ++i) tx_buffer[i+3] = data[i];
+		for(int i = 0; i < len; ++i) tx_buffer[i] = data[i];
 
 		_actions.push_back(BusyCheck);
 		_actions.push_back(WriteEnable);
@@ -244,10 +247,10 @@ namespace FwLogger
 		if(try_lock() != 0) return EBUSY;
 		if(_actions.size() > 0) return EBUSY;
 
-		tx_buffer[0] = 0x9f;
+		_tx_buffer[0] = 0x9f;
 		HAL_GPIO_WritePin(_gpio, _pin, GPIO_PIN_RESET);
-		HAL_SPI_Transmit(_hspi, tx_buffer, 1, 1000);
-		HAL_SPI_Receive(_hspi, rx_buffer, 4, 1000);
+		HAL_SPI_Transmit(_hspi, _tx_buffer, 1, 1000);
+		HAL_SPI_Receive(_hspi, _rx_buffer, 4, 1000);
 		HAL_GPIO_WritePin(_gpio, _pin, GPIO_PIN_SET);
 		return 0;
 	}
@@ -300,13 +303,13 @@ namespace FwLogger
 	int SPIFlash::peek()
 	{
 		if(!available()) return -1;
-		return rx_buffer[rx_idx];
+		return _rx_buffer[rx_idx];
 	}
 
 	int SPIFlash::pop()
 	{
 		if(!available()) return -1;
-		uint8_t c = rx_buffer[rx_idx++];
+		uint8_t c = _rx_buffer[rx_idx++];
 		return c;
 	}
 

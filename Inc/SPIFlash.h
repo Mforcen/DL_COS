@@ -26,6 +26,9 @@ namespace FwLogger
 			int peek();
 			int pop();
 
+			uint8_t *tx_buffer;
+			uint8_t *rx_buffer;
+
 			int bin_eval(uint8_t* buf, uint8_t* outbuf);
 		protected:
 
@@ -52,9 +55,9 @@ namespace FwLogger
 
 			circular_buffer<8, Action> _actions;
 
-			uint8_t tx_buffer[2052];
+			uint8_t _tx_buffer[2052];
 
-			uint8_t rx_buffer[2052];
+			uint8_t _rx_buffer[2052];
 			uint16_t rx_idx;
 			uint16_t rx_size;
 
