@@ -30,6 +30,7 @@ namespace FwLogger
 			int digitalRead(int pin);
 			void digitalWrite(int pin, int value);
 			int pulseRead(int pin);
+			void resetPulse(int pin);
 
 			void ISR(int pin);
 			bool loop();

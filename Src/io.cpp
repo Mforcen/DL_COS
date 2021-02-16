@@ -56,7 +56,9 @@ void DigitalWrite(int ch, int value)
 
 int PulseCount(int ch)
 {
-	return OS::get().digital.pulseRead(ch);
+	int pulse = OS::get().digital.pulseRead(ch);
+
+	return pulse;
 }
 
 void sleepFor(int s)

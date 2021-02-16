@@ -347,6 +347,13 @@ namespace FwLogger
 			}
 		}
 
+		else if(strcmp(token, "flash") == 0)
+		{
+			uint8_t buf[16] = {0};
+			s.jedecId(buf);
+			printf("%x %x %x %x\n", buf);
+		}
+
 		else if(strcmp(token, "uart") == 0)
 		{
 			token = strtok(NULL, " ");
@@ -425,19 +432,7 @@ namespace FwLogger
 			token = strtok(NULL, " ");
 			if(strcmp(token, "run") == 0)
 			{
-				token = strtok(NULL, " ");
-				char buf[32];
-				strcpy(buf, "/file/");
-				strcpy(buf+6, token);
-				int fd = open(buf, O_RDONLY);
 
-				Task tsk;
-				tsk.op = Operation::LoadProgram;
-				tsk.fd = fd;
-				tsk.buf = nullptr;
-				tsk.counter = 0;
-
-				msgQueue.push_back(tsk);
 			}
 			else if(strcmp(token, "name") == 0)
 			{
@@ -662,10 +657,12 @@ namespace FwLogger
 				if(strcmp(token, "enable") == 0)
 				{
 					fw_standalone = 1;
+					printf("standalone enabled");
 				}
 				else
 				{
 					fw_standalone = 0;
+					printf("standalone disabled");
 				}
 			}
 		}
@@ -728,6 +725,7 @@ namespace FwLogger
 				Log::Error("[FW]: Error on PortManager write\n");
 			}
 			return count;
+			s.append(reinterpret_cast<const uint8_t*>(buf), count); // just in case
 		}
 		errno = EUNSPEC;
 		return -2;

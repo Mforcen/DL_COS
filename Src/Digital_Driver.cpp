@@ -49,6 +49,11 @@ namespace FwLogger
 		return _pins[pin].counter;
 	}
 
+	void Digital_Driver::resetPulse(int pin)
+	{
+		_pins[pin].counter = 0;
+	}
+
 	void Digital_Driver::ISR(int pin)
 	{
 		if(pin == 0) return;
