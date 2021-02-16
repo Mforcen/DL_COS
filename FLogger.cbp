@@ -304,7 +304,6 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="Src/FwLogger.cpp" />
-		<Unit filename="Src/LoRa.cpp" />
 		<Unit filename="Src/Log.cpp" />
 		<Unit filename="Src/Module.cpp" />
 		<Unit filename="Src/SDI12_Driver.cpp" />

@@ -179,6 +179,11 @@ void HAL_RTC_AlarmAEventCallback(RTC_HandleTypeDef* hrtc)
     FwLogger::OS::get().RTC_ISR();
 }
 
+void HAL_RTCEx_RTCEventCallback(RTC_HandleTypeDef *hrtc)
+{
+	FwLogger::OS::get().RTC_SecondsIT();
+}
+
 void sdi12_Isr()
 {
 	FwLogger::OS::get().sdi12.timer_isr();

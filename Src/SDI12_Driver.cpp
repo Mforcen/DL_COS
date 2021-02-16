@@ -417,6 +417,7 @@ namespace FwLogger
 		case RetryWaiting:
 			{
 				_retry_counter++;
+				_last_rx_counter = 0;
 
 				HAL_GPIO_WritePin(SDI12_DIR, GPIO_PIN_RESET); // 3V3 a 5V
 

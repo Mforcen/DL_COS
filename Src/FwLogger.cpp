@@ -70,7 +70,7 @@ namespace FwLogger
 		MX_USART3_UART_Init();
 		//MX_USB_PCD_Init();
 
-		HAL_IWDG_Init(&hiwdg);
+		MX_IWDG_Init();
 	}
 
 	void OS::init()
@@ -93,27 +93,28 @@ namespace FwLogger
 			Log::Verbose("[OS] Init\n");
 		}
 
-		m_init = false;
+		m_init = true;
 		init_delay = HAL_GetTick();
+		HAL_IWDG_Init(&hiwdg);
 
 		s.init();
 	}
 
 	void OS::RTC_ISR()
 	{
-		if(hrtc.Instance->CRL & 0x01) // Second IT
-		{
-			HAL_IWDG_Refresh(&hiwdg);
-			hrtc.Instance->CRL &= ~(0x01);
-
-			return;
-		}
-
 		m_rtcFlag = true;
 		Log::Info("RTC ISR\n");
 		HAL_PWR_DisableSleepOnExit();
 		HAL_RTC_DeactivateAlarm(&hrtc, RTC_ALARM_A);
 		vm.resumeExec();
+	}
+
+	void OS::RTC_SecondsIT()
+	{
+		HAL_IWDG_Refresh(&hiwdg);
+		uint32_t alarmTS = (hrtc.Instance->ALRH << 16) | hrtc.Instance->ALRL;
+		uint32_t clockTS = (hrtc.Instance->CNTH << 16) | hrtc.Instance->CNTL;
+		if(alarmTS < clockTS) RTC_ISR();
 	}
 
 	void OS::loop()
@@ -174,7 +175,6 @@ namespace FwLogger
 		}
 
 		HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, HAL_GetTick()%5000 < 10 ? GPIO_PIN_RESET : GPIO_PIN_SET);
-
 
 		m_loop_time = HAL_GetTick()-m_last_loop;
 		m_last_loop = HAL_GetTick();
@@ -350,7 +350,7 @@ namespace FwLogger
 		else if(strcmp(token, "flash") == 0)
 		{
 			uint8_t buf[16] = {0};
-			s.jedecId(buf);
+			//s.jedecId(buf);
 			printf("%x %x %x %x\n", buf);
 		}
 
@@ -592,6 +592,10 @@ namespace FwLogger
 
 					printf("%d/%d/%d %d:%d:%d\n", rtc_date.Year+2000, rtc_date.Month, rtc_date.Date, rtc_time.Hours, rtc_time.Minutes, rtc_time.Seconds);
 				}
+				else if(strcmp(token, "second") == 0)
+				{
+					setSecondsIT();
+				}
 			}
 			else if(strcmp(token, "log") == 0)
 			{
@@ -665,6 +669,10 @@ namespace FwLogger
 					printf("standalone disabled");
 				}
 			}
+			else if(strcmp(token, "uptime") == 0)
+			{
+				printf("Uptime in ms: %d\n", HAL_GetTick());
+			}
 		}
 		else if(strcmp(token, "adc") == 0)
 		{
@@ -724,8 +732,8 @@ namespace FwLogger
 			{
 				Log::Error("[FW]: Error on PortManager write\n");
 			}
+			//s.append(reinterpret_cast<const uint8_t*>(buf), count); // just in case
 			return count;
-			s.append(reinterpret_cast<const uint8_t*>(buf), count); // just in case
 		}
 		errno = EUNSPEC;
 		return -2;
@@ -918,6 +926,20 @@ namespace FwLogger
 		return 0;
 	}
 
+	void OS::setSecondsIT(int enable)
+	{
+		if(enable)
+		{
+			HAL_RTCEx_SetSecond_IT(&hrtc);
+			HAL_NVIC_EnableIRQ(RTC_IRQn);
+		}
+		else
+		{
+			HAL_RTCEx_DeactivateSecond(&hrtc);
+			HAL_NVIC_DisableIRQ(RTC_IRQn);
+		}
+	}
+
 	void OS::prepareSleep()
 	{
 		vm.pauseExec(); //well well...
@@ -976,16 +998,15 @@ namespace FwLogger
 
 		HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, GPIO_PIN_SET);
 
-		HAL_RTCEx_SetSecond_IT(&hrtc); // for WDT
+		setSecondsIT();
 
 		HAL_SuspendTick();
 		HAL_PWR_EnableSleepOnExit();
 		HAL_PWR_EnterSTOPMode(PWR_LOWPOWERREGULATOR_ON, PWR_SLEEPENTRY_WFI);
 
 		SystemClock_Config(); // being in stopmode changes system clock to HSI instead of PLL
+		setSecondsIT(0);
 		HAL_ResumeTick();
-
-		HAL_RTCEx_DeactivateSecond(&hrtc);
 
 		HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, GPIO_PIN_RESET);
 

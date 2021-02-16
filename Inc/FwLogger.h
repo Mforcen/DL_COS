@@ -84,6 +84,7 @@ namespace FwLogger
 			void init();
 
 			void RTC_ISR();
+			void RTC_SecondsIT();
 
 			void loop();
 			bool task_loop();
@@ -104,9 +105,14 @@ namespace FwLogger
 
 			void enablePower(int enable);
 			void enableLowPower(int enable);
+
 			void setAlarm(RTC_TimeTypeDef& time);
 			void setAlarm(int secs);
+
 			int sleepFor(int s);
+
+			void setSecondsIT(int enable = 1);
+
 			void prepareSleep();
 			void wakeUp();
 
@@ -115,8 +121,6 @@ namespace FwLogger
 			SDI12_Driver sdi12;
 			VirtualMachine vm;
 			Digital_Driver digital;
-
-			//SSD1306 disp;
 
 		protected:
 
