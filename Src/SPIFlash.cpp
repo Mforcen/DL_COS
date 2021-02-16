@@ -155,8 +155,10 @@ namespace FwLogger
 				if(_welCheck() == 0)
 					_step();
 				else
+				{
 					_actions.push_front(WriteEnable);
 					_exec(WriteEnable);
+				}
 				break;
 			case ProgramDataLoad:
 				_step();

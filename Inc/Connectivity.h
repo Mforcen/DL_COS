@@ -8,7 +8,6 @@
 #include "KernelMQ.h"
 
 #include "stm32hal_libs.h"
-#include "LoRa.h"
 #include "LinkLayer.h"
 #include "Log.h"
 #include "printf.h"
@@ -24,10 +23,6 @@ namespace FwLogger
 	enum SocketType : uint8_t
 	{
 		SOCK_UART = 0,
-		SOCK_UART_LL,
-		SOCK_RADIO,
-		SOCK_CDC,
-		SOCK_CDC_LL,
 		SOCK_GSM,
 		SOCK_GSM_HTTP,
 		SOCK_GSM_HTTPS,
@@ -187,28 +182,6 @@ namespace FwLogger
 		Socket* m_sockNow;
 
 		Status m_portStatus;
-	};
-
-	class PortCDC : public Port
-	{
-	public:
-		PortCDC(const PortCDC& c) = delete;
-		int open(Socket* sock, const char* scheme, const char* path);
-		int write(Socket* sock, const void* buf, size_t count);
-		void push_rx(uint8_t* buf, size_t count);
-		void setAddrPtr(uint16_t* addrPtr);
-		bool loop();
-
-		static PortCDC& get();
-
-	private:
-		PortCDC();
-		ParserStatus m_pStatus;
-		int m_pIndex, m_pSize, m_pLastRecv;
-		uint16_t* m_llAddr;
-
-		fixed_string<256> m_rxbuf;
-		circular_buffer<128> m_txbuf;
 	};
 
 	class PortUART : public Port
@@ -419,19 +392,6 @@ namespace FwLogger
 
 		uint32_t delayStart;
 		circular_buffer<16, GSMState> _statusList;
-	};
-
-	class PortRadio : public Port
-	{
-	public:
-		PortRadio(LoRa* lora);
-		int open(Socket* sock, const char* scheme, const char* path);
-		int write(Socket* sock, const void* buf, size_t count);
-		bool loop();
-
-	private:
-		LoRa* m_lora;
-		uint16_t* m_llAddr;
 	};
 }
 

@@ -102,14 +102,6 @@ namespace FwLogger
 			{
 				_sockTable[sd].type = SOCK_UART;
 			}
-			else if(strcmp(path, "cdc") == 0)
-			{
-				_sockTable[sd].type = SOCK_CDC;
-			}
-			else if(strcmp(path, "lora") == 0)
-			{
-				_sockTable[sd].type = SOCK_RADIO;
-			}
 			else if(strcmp(path, "gsm") == 0)
 			{
 				_sockTable[sd].type = SOCK_GSM;
@@ -151,12 +143,8 @@ namespace FwLogger
 		{
 		case SOCK_UART:
 			return PortUART::get().write(nullptr, buf, count);
-		case SOCK_CDC:
-			return PortCDC::get().write(nullptr, buf, count);
 		case SOCK_GSM:
 			return PortGSM::get().write(nullptr, buf, count);
-		case SOCK_RADIO:
-			return 0;//PortRadio::get().write(nullptr, buf, count);
 		case SOCK_GSM_SMS:
 		case SOCK_GSM_HTTP:
 		case SOCK_GSM_HTTPS:
@@ -277,224 +265,6 @@ namespace FwLogger
 
 	/**
 	  *
-	  * PortCDC driver
-	  *
-	  */
-
-	PortCDC::PortCDC()
-	{
-		m_pStatus = ParserStatus::Start;
-		m_pIndex = 0;
-		m_pSize = 0;
-		m_pLastRecv = HAL_GetTick();
-	}
-
-	int PortCDC::open(Socket* sock, const char* scheme, const char* path)
-	{
-		return 0;
-	}
-
-	int PortCDC::write(Socket* sock, const void* buf, size_t count)
-	{
-		/*if(sock == nullptr)
-		{
-			uint8_t* ui8_buf = (uint8_t*) buf;
-			for(unsigned int i = 0; i < count; ++i)
-			{
-				if(m_txbuf.push_back(ui8_buf[i]) != 0)
-				{
-					//errno = EBADF;
-					return -1;
-				}
-			}
-
-			uint8_t ph;
-			if(!UART_txing) // esto se podría ver como un flush
-			{
-				if(m_txbuf.pop_front(&ph) == 0)
-				{
-					HAL_UART_Transmit_IT(&huart1, &ph, 1);
-					UART_txing = 1;
-				}
-			}
-		}
-		else
-		{
-
-		}*/
-		return 0;
-	}
-
-	void PortCDC::push_rx(uint8_t* buf, size_t count)
-	{
-		/*m_pLastRecv = HAL_GetTick();
-		for(size_t i = 0; i < count; ++i)
-		{
-			char c = buf[i];
-			if(m_pStatus == ParserStatus::Start)
-			{
-				m_rxbuf.clear();
-
-				if(std::isalnum(c))
-				{
-					//write_type(sockid, &c, 1);
-					if(c == '\b' || c == 127) return;
-					m_pStatus = ParserStatus::AsciiCommand;
-					m_rxbuf.push_back(c);
-
-					Socket sockNow;
-					sockNow.type = SOCK_CDC;
-					sockNow.data = reinterpret_cast<uintptr_t>(_alloc->Allocate(128, reinterpret_cast<uintptr_t>(this)));
-					sockNow.recv_bytes = 1;
-					reinterpret_cast<uint8_t*>(sockNow.data)[0] = c;
-				}
-				else
-				{
-					m_rxbuf.push_back(c);
-					m_pStatus = ParserStatus::LLHeader;
-				}
-			}
-			else if(m_pStatus == ParserStatus::AsciiCommand)
-			{
-				//write_type(sockid, &c, 1); //echo back
-				if(c == '\b' || c == 127)
-				{
-
-					if(m_pSize > 0)
-						--m_pSize;
-
-					m_rxbuf.delete_back();
-				}
-				else if(c == '\n')
-				{
-					Task tsk;
-					tsk.op = Operation::Eval;
-					tsk.fd = 0; // mismo
-					tsk.buf = reinterpret_cast<void*>(_alloc->Allocate(128, reinterpret_cast<uintptr_t>(this)));
-					for(size_t i = 0; i < m_rxbuf.size(); ++i)
-					{
-						reinterpret_cast<uint8_t*>(tsk.buf)[i] = *m_rxbuf.at(i);
-					}
-					msgQueue.push_front(tsk);
-					m_rxbuf.clear();
-				}
-				else
-					m_rxbuf.push_back(c);
-			}
-			else if(m_pStatus == ParserStatus::LLHeader)
-			{
-				m_rxbuf.push_back(c);
-				if(m_rxbuf.size() == 8)
-				{
-					LLHeader header;
-					if(!header.deserialize(m_rxbuf.at(0)))
-					{
-						m_pStatus = ParserStatus::Start; //malformed packet
-					}
-					else
-					{
-						if(header.dstAddr != *m_llAddr) // message for others
-						{
-							m_pStatus = ParserStatus::Start;
-							continue;
-						}
-						if(m_sockNow != nullptr) // active socket
-						{
-							if(m_sockNow->getType() == SOCK_CDC_LL)
-							{
-								LLConn* conn = reinterpret_cast<LLConn*>(m_sockNow->params);
-								if(conn->remoteAddr != header.srcAddr) // misma dirección
-								{
-									m_sockNow = nullptr;
-								}
-							}
-						}
-
-						if(m_sockNow == nullptr)
-						{
-							for(Socket& sock : m_sockets) // checking if there is a socket for this conn
-							{
-								if(reinterpret_cast<LLConn*>(sock.params)->remoteAddr == *m_llAddr)
-								{
-									m_sockNow = &sock;
-									break;
-								}
-							}
-						}
-
-						if(m_sockNow == nullptr) // no socket for this
-						{
-							Socket sockNow;
-							sockNow.type = SOCK_CDC_LL;
-
-							LLConn* conn = reinterpret_cast<LLConn*>(_alloc->Allocate(sizeof(LLConn), reinterpret_cast<uintptr_t>(this)));
-							sockNow.params = reinterpret_cast<uintptr_t>(conn);
-
-							conn->type = header.type;
-							conn->version = header.version;
-							conn->remoteAddr = header.srcAddr;
-							conn->id = header.id;
-
-							sockNow.data = reinterpret_cast<uintptr_t>(_alloc->Allocate(header.len, reinterpret_cast<uintptr_t>(this)));
-
-							m_sockets.push_back(sockNow);
-
-							m_sockNow = &(*m_sockets.end());
-							m_sockNow->recv_bytes = header.seq*118; // configure offset
-						}
-
-						LLConn* conn = reinterpret_cast<LLConn*>(m_sockNow->params);
-						conn->seq = header.seq;
-
-						m_pStatus = ParserStatus::LLPayload;
-					}
-				}
-				//lluart.receive(&c, 1); // this will exit the status automatically
-			}
-
-			else if(m_pStatus == ParserStatus::LLPayload)
-			{
-				uint8_t* data = reinterpret_cast<uint8_t*>(m_sockNow->data);
-				data[m_sockNow->recv_bytes++] = c;
-				if(m_sockNow->recv_bytes == m_sockNow->size)
-				{
-					Task tsk;
-					tsk.op = Operation::BinEval;
-					tsk.fd = reinterpret_cast<uintptr_t>(m_sockNow);
-					tsk.buf = reinterpret_cast<void*>(m_sockNow->data);
-					m_sockNow->data = reinterpret_cast<uintptr_t>(nullptr);
-					msgQueue.push_back(tsk);
-				}
-			}
-		}*/
-	}
-
-	void PortCDC::setAddrPtr(uint16_t* addrPtr)
-	{
-		m_llAddr = addrPtr;
-	}
-
-	bool PortCDC::loop()
-	{
-		if(HAL_GetTick()-m_pLastRecv > 5000)
-		{
-			m_pStatus = ParserStatus::Start;
-			m_pLastRecv = HAL_GetTick();
-			m_rxbuf.clear();
-		}
-		else
-			return true;
-		return false;
-	}
-
-	PortCDC& PortCDC::get()
-	{
-		static PortCDC S;
-		return S;
-	}
-
-	/**
-	  *
 	  *  PortUART Driver
 	  *
 	  */
@@ -577,12 +347,6 @@ namespace FwLogger
 					reinterpret_cast<uint8_t*>(m_sockNow->data)[0] = c;
 
 				}
-				else
-				{
-					m_rxHeader.clear();
-					m_rxHeader.push_back(c);
-					m_pStatus = ParserStatus::LLHeader;
-				}
 			}
 			else if(m_pStatus == ParserStatus::AsciiCommand)
 			{
@@ -614,92 +378,6 @@ namespace FwLogger
 				else
 				{
 					reinterpret_cast<uint8_t*>(m_sockNow->data)[m_sockNow->recv_bytes++] = c;
-				}
-			}
-			else if(m_pStatus == ParserStatus::LLHeader)
-			{
-				m_rxHeader.push_back(c);
-				if(m_rxHeader.size() == 8)
-				{
-					LLHeader header;
-					if(!header.deserialize(m_rxHeader.buf))
-					{
-						m_pStatus = ParserStatus::Start; //malformed packet
-					}
-					else
-					{
-						if(header.dstAddr != *m_llAddr) // message for others
-						{
-							m_pStatus = ParserStatus::Start;
-							continue;
-						}
-						if(m_sockNow != nullptr) // active socket
-						{
-							if(m_sockNow->getType() == SOCK_CDC_LL)
-							{
-								LLConn* conn = reinterpret_cast<LLConn*>(m_sockNow->params.ptr);
-								if(conn->remoteAddr != header.srcAddr) // misma dirección
-								{
-									m_sockNow = nullptr;
-								}
-							}
-						}
-
-						if(m_sockNow == nullptr) //inactive
-						{
-							/*for(size_t i = 0; i < 16; ++i) // checking if there is a socket for this conn
-							{
-								if(_sockTable[i].type == SocketType::SOCK_CDC_LL)
-								if(reinterpret_cast<LLConn*>(_sockTable[i].params)->remoteAddr == *m_llAddr)
-								{
-									m_sockNow = i;
-									break;
-								}
-							}*/
-						}
-
-						if(m_sockNow == nullptr) // no socket for this
-						{
-
-							m_sockNow = _createSelfManagedSocket();
-							if(m_sockNow == nullptr) continue;
-
-							new(m_sockNow) Socket();
-							m_sockNow->type = SOCK_CDC_LL;
-
-							LLConn* conn = reinterpret_cast<LLConn*>(getAllocator()->Allocate(sizeof(LLConn), this));
-							m_sockNow->params.ptr = conn;
-
-							conn->type = header.type;
-							conn->version = header.version;
-							conn->remoteAddr = header.srcAddr;
-							conn->id = header.id;
-
-							m_sockNow->data = reinterpret_cast<uint8_t*>(getAllocator()->Allocate(header.len, this));
-							m_sockNow->recv_bytes = header.seq*118; // configure offset
-						}
-
-						LLConn* conn = reinterpret_cast<LLConn*>(m_sockNow->params.ptr);
-						conn->seq = header.seq;
-
-						m_pStatus = ParserStatus::LLPayload;
-					}
-				}
-			}
-
-			else if(m_pStatus == ParserStatus::LLPayload)
-			{
-				uint8_t* data = reinterpret_cast<uint8_t*>(m_sockNow->data);
-				data[m_sockNow->recv_bytes++] = c;
-
-				if(m_sockNow->recv_bytes == m_sockNow->size)
-				{
-					Task tsk;
-					tsk.op = Operation::BinEval;
-					tsk.fd = reinterpret_cast<uintptr_t>(m_sockNow);
-					tsk.buf = reinterpret_cast<void*>(m_sockNow->data);
-					m_sockNow->data = reinterpret_cast<uintptr_t>(nullptr);
-					msgQueue.push_back(tsk);
 				}
 			}
 		}
@@ -1816,22 +1494,5 @@ namespace FwLogger
 		huart3.Instance->BRR = UART_BRR_SAMPLING16(pclk, baudrate);
 		huart3.Instance->CR1 |= (1<<13); // reenable UART
 		huart3.Init.BaudRate = baudrate;
-	}
-
-	/** PortRadio Driver */
-
-	PortRadio::PortRadio(LoRa* lora)
-	{
-		m_lora = lora;
-	}
-
-	int PortRadio::open(Socket* sock, const char* scheme, const char* path)
-	{
-		return -1;
-	}
-
-	bool PortRadio::loop()
-	{
-		return false;
 	}
 }

@@ -125,14 +125,12 @@ Src/SDI12_Driver.cpp \
 Src/SPI_Device.cpp \
 Src/SPIFlash.cpp \
 Src/SFS.cpp \
-Src/LoRa.cpp \
 Src/Module.cpp \
 Src/VirtualMachine.cpp \
 Src/VMBuiltin.cpp \
 Src/io.cpp \
 Src/Log.cpp \
 Src/LinkLayer.cpp \
-Src/SSD1306.cpp \
 Src/Digital_Driver.cpp \
 Src/Connectivity.cpp
 
