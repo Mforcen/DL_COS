@@ -8,7 +8,6 @@
 #include "KernelMQ.h"
 
 #include "stm32hal_libs.h"
-#include "LinkLayer.h"
 #include "Log.h"
 #include "printf.h"
 #include <cctype>
