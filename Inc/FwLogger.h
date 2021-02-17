@@ -113,6 +113,8 @@ namespace FwLogger
 
 			void setSecondsIT(int enable = 1);
 
+			void reset(const char* file, int line, const char* reason);
+
 			void prepareSleep();
 			void wakeUp();
 

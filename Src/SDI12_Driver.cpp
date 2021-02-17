@@ -710,7 +710,7 @@ namespace FwLogger
 						}
 						else if(_state == GettingData)
 						{
-							Log::Info("SDI12 got %d data from %c\n", _measIdx, _measAddr);//TODO Parsedata can raise errors, log that
+							Log::Info("SDI12 got %d data from %c\n", _measIdx, _measAddr+'0');//TODO Parsedata can raise errors, log that
 							_measIdx += parseData(&(_measDst[_measIdx]), _measSize-_measIdx, _rx_buffer.buf);
 							if(_measIdx < _measNumber)
 							{

@@ -93,7 +93,7 @@ namespace FwLogger
 			Log::Verbose("[OS] Init\n");
 		}
 
-		m_init = true;
+		m_init = false;
 		init_delay = HAL_GetTick();
 		HAL_IWDG_Init(&hiwdg);
 
@@ -116,7 +116,11 @@ namespace FwLogger
 		else
 		{
 			uint32_t nextAlarm = _alarmTime < CNT+5 ? _alarmTime : CNT+5;
-			if(RTC_WriteAlarmCounter(&hrtc, nextAlarm) != HAL_OK) HAL_NVIC_SystemReset();
+			if(RTC_WriteAlarmCounter(&hrtc, nextAlarm) != HAL_OK)
+			{
+				//reset(__func__, __line__, "Cannot set RTC");
+				HAL_NVIC_SystemReset();
+			}
 		}
 	}
 
@@ -148,7 +152,7 @@ namespace FwLogger
 		{
 			if(HAL_GetTick()-init_delay > 15000)
 			{
-				vm.setStackSize(150);
+				vm.setStackSize(300);
 				vm.setProgram(vm_prg, 0, sizeof(vm_prg));
 
 				vm.enable(true);
@@ -402,7 +406,7 @@ namespace FwLogger
 			}
 			else if(strcmp(token, "vm") == 0)
 			{
-				vm.setStackSize(150);
+				vm.setStackSize(300);
 				vm.setProgram(vm_prg, 0, sizeof(vm_prg));
 				vm.enable(true);
 			}
@@ -935,6 +939,13 @@ namespace FwLogger
 		}
 	}
 
+	void OS::reset(const char *file, int line, const char *reason)
+	{
+		printf("[SYS] Reset at %s:%d, reason: %s\n", file, line, reason);
+		HAL_Delay(1000);
+		HAL_NVIC_SystemReset();
+	}
+
 	void OS::prepareSleep()
 	{
 		vm.pauseExec(); //well well...
@@ -985,8 +996,10 @@ namespace FwLogger
 		}
 
 		uint32_t nextAlarm = _alarmTime < RTC_CNT+5 ? _alarmTime : RTC_CNT+5;
-		if(RTC_WriteAlarmCounter(&hrtc, nextAlarm) != HAL_OK) HAL_NVIC_SystemReset();
-
+		if(RTC_WriteAlarmCounter(&hrtc, nextAlarm) != HAL_OK)
+		{
+			reset(__func__, __LINE__, "Cannot set RTC Alarm at sleeping");
+		}
 		__HAL_RTC_ALARM_CLEAR_FLAG(&hrtc, RTC_FLAG_ALRAF);
 		__HAL_RTC_ALARM_ENABLE_IT(&hrtc, RTC_IT_ALRA);
 

@@ -961,7 +961,24 @@ namespace FwLogger
 					stat->state = 1;
 			}
 			else if(stat->state == 1)
-				step();
+			{
+				if(strncmp(reinterpret_cast<char*>(buf), "+HTTPACTION: ", 13) == 0)
+				{
+					int method = buf[13] -'0';
+					int retcode = (buf[15]-'0')*100+(buf[16]-'0')*10+(buf[17]-'0');
+					if(retcode == 604)
+					{
+						stat->state = 0;
+						GSMState delay;
+						delay.op = GSMOp::Delay;
+						delay.params.delay = 5000;
+						_statusList.push_front(delay);
+						execute();
+					}
+					else
+						step();
+				}
+			}
 		}
 
 
