@@ -91,7 +91,9 @@ namespace FwLogger
 
 	bool SFS::loop()
 	{
-		return _ops.size() > 0 || SPIFlash::loop();
+		bool retvalue = SPIFlash::loop();
+		retvalue = _ops.size()>0 || retvalue;
+		return retvalue;
 	}
 
 	void SFS::flashModuleISR()

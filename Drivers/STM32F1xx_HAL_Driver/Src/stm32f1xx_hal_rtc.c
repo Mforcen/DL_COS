@@ -224,7 +224,7 @@
 static uint32_t           RTC_ReadTimeCounter(RTC_HandleTypeDef *hrtc);
 static HAL_StatusTypeDef  RTC_WriteTimeCounter(RTC_HandleTypeDef *hrtc, uint32_t TimeCounter);
 static uint32_t           RTC_ReadAlarmCounter(RTC_HandleTypeDef *hrtc);
-static HAL_StatusTypeDef  RTC_WriteAlarmCounter(RTC_HandleTypeDef *hrtc, uint32_t AlarmCounter);
+HAL_StatusTypeDef  RTC_WriteAlarmCounter(RTC_HandleTypeDef *hrtc, uint32_t AlarmCounter);
 static HAL_StatusTypeDef  RTC_EnterInitMode(RTC_HandleTypeDef *hrtc);
 static HAL_StatusTypeDef  RTC_ExitInitMode(RTC_HandleTypeDef *hrtc);
 static uint8_t            RTC_ByteToBcd2(uint8_t Value);
@@ -1665,7 +1665,7 @@ static uint32_t RTC_ReadAlarmCounter(RTC_HandleTypeDef *hrtc)
   * @param  AlarmCounter: Counter to write in RTC_ALR registers
   * @retval HAL status
   */
-static HAL_StatusTypeDef RTC_WriteAlarmCounter(RTC_HandleTypeDef *hrtc, uint32_t AlarmCounter)
+HAL_StatusTypeDef RTC_WriteAlarmCounter(RTC_HandleTypeDef *hrtc, uint32_t AlarmCounter)
 {
   HAL_StatusTypeDef status = HAL_OK;
 

@@ -2,7 +2,7 @@
 
 #define CMD_WRITE_ENABLE 		0x06
 #define CMD_WRITE_DISABLE		0x04
-#define CMD_READ_STATUS_REG		0x0F
+#define CMD_READ_STATUS_REG		0x05
 #define CMD_WRITE_STATUS_REG	0x01
 #define CMD_PAGE_READ			0x13
 #define CMD_READ_DATA			0x03
@@ -39,13 +39,13 @@ namespace FwLogger
 
 	int SPIFlash::_welCheck()
 	{
-		if(rx_buffer[2] & 0x02) return 0;
+		if(_rx_buffer[2] & 0x02) return 0;
 		return -1;
 	}
 
 	int SPIFlash::_busyCheck() // call after status is checked
 	{
-		if(rx_buffer[2] & 0x01) return 0;
+		if(_rx_buffer[2] & 0x01 == 0) return 0;
 		return -1;
 	}
 
@@ -250,9 +250,10 @@ namespace FwLogger
 		if(_actions.size() > 0) return EBUSY;
 
 		_tx_buffer[0] = 0x9f;
+		_tx_buffer[1] = 0x00;
 		HAL_GPIO_WritePin(_gpio, _pin, GPIO_PIN_RESET);
-		HAL_SPI_Transmit(_hspi, _tx_buffer, 1, 1000);
-		HAL_SPI_Receive(_hspi, _rx_buffer, 4, 1000);
+		HAL_SPI_Transmit(_hspi, _tx_buffer, 2, 1000);
+		HAL_SPI_Receive(_hspi, data, 3, 1000);
 		HAL_GPIO_WritePin(_gpio, _pin, GPIO_PIN_SET);
 		return 0;
 	}

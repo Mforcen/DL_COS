@@ -60,7 +60,8 @@ namespace FwLogger
 	{
 		char buf[512];
 		buf[0] = 'l';
-		int buflen = vsnprintf_(buf+1, 511, fmt, args);
+		int buflen = sprintf_(buf+1, "%d:",HAL_GetTick());
+		buflen += vsnprintf_(buf+1+buflen, 511-buflen, fmt, args);
 		if(buflen < 0) return;
 		OS::get().write(_fd_sink, buf, buflen+1);
 	}

@@ -116,8 +116,8 @@ namespace FwLogger
 			void prepareSleep();
 			void wakeUp();
 
-			SPIFlash flash;
-			SFS s;
+			//SPIFlash flash;
+			//SFS s;
 			SDI12_Driver sdi12;
 			VirtualMachine vm;
 			Digital_Driver digital;
@@ -127,6 +127,8 @@ namespace FwLogger
 		private:
 			void sleep();
 			uint32_t _lastTaskTime;
+
+			uint32_t _alarmTime;
 
 			static OS* ptr;
 

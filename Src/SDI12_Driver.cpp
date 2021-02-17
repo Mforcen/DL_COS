@@ -242,77 +242,6 @@ namespace FwLogger
 			//Log::Verbose("R:%d,%d,%d\n", dt_rx, pinValue, _counter);
 
 			push_bits(bits, pinValue);
-			/*while(bits-->0)
-			{
-				if(_counter == 0) // Viene desde marking, entonces, solo puede haber uno independientemente de bits
-				{
-					if(pinValue == GPIO_PIN_RESET)
-					{
-						Log::Verbose("Error on start\n");
-						setStatus(Disabled); // debería ser un start bit (nivel alto) pero es bajo, ergo es un error
-					}
-					_rx_char = 0;
-					_counter++;
-					return;
-				}
-				uint8_t innerCounter = _counter % 11; //inner counter puede ser 0 (start bit), 1-7 (data bit), 8 (parity bit) y 9 (stop bit)
-				if(innerCounter == 1)
-				{
-					_rx_char = 0;
-				}
-				else if(innerCounter == 9)
-				{
-					0; // no compruebo paridad porque alv, pero tampoco puedo guardarlo
-				}
-				else if(innerCounter == 10)
-				{
-					Log::Verbose("C: %c\n",_rx_char);
-					_rx_buffer.push_back(_rx_char & 0x7f);
-					if(_rx_buffer.idx > 2)
-					{
-						if(_rx_buffer.buf[_rx_buffer.idx-1] == '\n' && _rx_buffer.buf[_rx_buffer.idx-2] == '\r')
-						{
-							if(_state == Command)
-							{
-								_state = EndCommand;
-							}
-							else if(_state == StartMeasure)
-							{
-								_measNumber = _rx_buffer.buf[4]-'0'; //guarda el número de medidas
-
-								_rx_buffer.clear(); //
-
-								_state = WaitingSR;
-								_last_rx_counter = (_rx_buffer.buf[1]-'0')*100 + (_rx_buffer.buf[2]-'0')*10 + (_rx_buffer.buf[3]-'0');
-								_last_rx_counter *= 1200;
-
-								_state = WaitingSR;
-							}
-							else if(_state == WaitingSR) // system request received, getting measure
-							{
-								_counter = 0;
-								startGetData(_measAddr, _additionalMeas);
-
-							}
-							else if(_state == GettingData)
-							{
-								_state = DataFull;
-							}
-						}
-					}
-					if(pinValue == GPIO_PIN_SET)// antes era low, por lo que se asume que esto es un bit de start
-					{
-						_counter = 0; //de forma que luego vale 1
-						_rx_char = 0;
-					}
-				}
-				else
-				{
-					if(pinValue == GPIO_PIN_SET)//Antes era todo low, por lo que eran 1's lógicos (invertido)
-						_rx_char |= (0x01 << (innerCounter - 2));
-				}
-				_counter++;
-			}*/
 			_last_rx = getUS();
 		}
 	}
@@ -589,6 +518,8 @@ namespace FwLogger
 	int SDI12_Driver::startMeasurement(uint8_t addr, uint8_t additional, uint8_t type, bool crc)
 	{
 		if(_state != Nop) return EBUSY;
+
+		_retry_counter = 0;
 
 		setState(StartMeasure);
 
