@@ -966,13 +966,20 @@ namespace FwLogger
 				{
 					int method = buf[13] -'0';
 					int retcode = (buf[15]-'0')*100+(buf[16]-'0')*10+(buf[17]-'0');
-					if(retcode == 604)
+					if(retcode >= 600)
 					{
 						stat->state = 0;
-						GSMState delay;
-						delay.op = GSMOp::Delay;
-						delay.params.delay = 15000;
-						_statusList.push_front(delay);
+						PortTask* t = m_tasks.at_front();
+
+						GSMState ops;
+						ops.op = GSMOp::HTTPData;
+						ops.params.ptr = reinterpret_cast<char*>(getAllocator()->Allocate(t->len, this));
+						ops.counter = t->len;
+						memcpy(ops.params.ptr, t->data, t->len);
+
+						ops.op = GSMOp::Delay;
+						ops.params.delay = 15000;
+						_statusList.push_front(ops);
 						execute();
 					}
 					else
