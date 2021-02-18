@@ -104,21 +104,22 @@ namespace FwLogger
 	{
 		//HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_2);
 		HAL_IWDG_Refresh(&hiwdg);
-		uint32_t CNT = RTC->CNTH << 16 | RTC->CNTL;
-		if(_alarmTime <= CNT)
+		uint64_t t = time(); // this updates counter
+		if(_alarmTime <= t)
 		{
 			m_rtcFlag = true;
 			Log::Info("RTC ISR\n");
 			HAL_PWR_DisableSleepOnExit();
 			HAL_RTC_DeactivateAlarm(&hrtc, RTC_ALARM_A);
+
+			HAL_RTCEx_BKUPWrite(&hrtc, 5, 0);
+			HAL_RTCEx_BKUPWrite(&hrtc, 6, 0);
 			vm.resumeExec();
 		}
 		else
 		{
-			uint32_t nextAlarm = _alarmTime < CNT+5 ? _alarmTime : CNT+5;
-			if(RTC_WriteAlarmCounter(&hrtc, nextAlarm) != HAL_OK)
+			if(setNextAlarm() == 0)
 			{
-				//reset(__func__, __line__, "Cannot set RTC");
 				HAL_NVIC_SystemReset();
 			}
 		}
@@ -887,35 +888,25 @@ namespace FwLogger
 		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11 | GPIO_PIN_12, enable != 0 ? GPIO_PIN_SET : GPIO_PIN_RESET);
 	}
 
-
-	void OS::setAlarm(RTC_TimeTypeDef& time)
+	void OS::setAlarm(uint64_t secs)
 	{
-		RTC_TimeTypeDef sTime;
-		HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
+		Log::Info("Set alarm at %llu s\n", secs);
 
-		_alarmTime = toSecs(time);
-		uint32_t nowsecs = toSecs(sTime);
-		while(nowsecs > _alarmTime) _alarmTime += 86400; // sumo un dia
-	}
-
-	void OS::setAlarm(int secs)
-	{
-		Log::Info("Set alarm at %d s\n", secs);
-		_alarmTime = secs % 86400;
-		RTC_TimeTypeDef sTime;
-		HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
-		uint32_t nowsecs = toSecs(sTime);
-		while(nowsecs > _alarmTime) _alarmTime += 86400;
+		_alarmTime = secs;
+		if(time() >= _alarmTime) RTC_ISR();
+		else
+		{
+			HAL_RTCEx_BKUPWrite(&hrtc, 5, _alarmTime & 0xffffffff);
+			HAL_RTCEx_BKUPWrite(&hrtc, 6, (_alarmTime >> 32) & 0xffffffff);
+		}
 	}
 
 	int OS::sleepFor(int s)
 	{
 		printf("Sleeping for %d seconds\n",s);
 		HAL_Delay(100);
-		RTC_TimeTypeDef sTime;
-		HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
 
-		int secs = sTime.Hours*3600+sTime.Minutes*60+sTime.Seconds;
+		uint64_t secs = time();
 		secs += s;
 
 		setAlarm(secs);
@@ -985,21 +976,10 @@ namespace FwLogger
 
 	void OS::sleep()
 	{
-		uint32_t RTC_CNT = (RTC->CNTH << 16) | RTC->CNTL;
-		uint32_t RTC_ALR = (RTC->ALRH << 16) | RTC->ALRL;
+		int ret = setNextAlarm();
+		if(!ret) reset(__func__, __LINE__, "Cannot set RTC Alarm at sleeping");
+		if(ret == -1) return; // alarm passed
 
-		if(RTC_ALR <= RTC_CNT || _alarmTime <= RTC_CNT)
-		{
-			m_rtcFlag = true;
-			vm.resumeExec();
-			return;
-		}
-
-		uint32_t nextAlarm = _alarmTime < RTC_CNT+5 ? _alarmTime : RTC_CNT+5;
-		if(RTC_WriteAlarmCounter(&hrtc, nextAlarm) != HAL_OK)
-		{
-			reset(__func__, __LINE__, "Cannot set RTC Alarm at sleeping");
-		}
 		__HAL_RTC_ALARM_CLEAR_FLAG(&hrtc, RTC_FLAG_ALRAF);
 		__HAL_RTC_ALARM_ENABLE_IT(&hrtc, RTC_IT_ALRA);
 
@@ -1036,5 +1016,32 @@ namespace FwLogger
 
 		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11 | GPIO_PIN_12, GPIO_PIN_SET);
 		HAL_Delay(500);
+	}
+
+	int OS::setNextAlarm()
+	{
+		uint64_t t = time();
+		if(_alarmTime <= t)
+		{
+			m_rtcFlag = true;
+			Log::Info("RTC ISR\n");
+			HAL_PWR_DisableSleepOnExit();
+			HAL_RTC_DeactivateAlarm(&hrtc, RTC_ALARM_A);
+			vm.resumeExec();
+			return -1;
+		}
+
+		uint32_t CNT = RTC->CNTH << 16 | RTC->CNTL;
+		int32_t nextAlarm = _alarmTime - (t/86400*86400); //removing decimals
+		nextAlarm = nextAlarm < CNT+5 ? nextAlarm : CNT+5;
+
+		HAL_StatusTypeDef st;
+		for(int tries = 0; tries < 5; ++tries)
+		{
+			st = RTC_WriteAlarmCounter(&hrtc, nextAlarm);
+			if(st == HAL_OK) break;
+		}
+		if(st == HAL_OK) return 1;
+		return 0;
 	}
 }

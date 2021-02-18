@@ -106,8 +106,7 @@ namespace FwLogger
 			void enablePower(int enable);
 			void enableLowPower(int enable);
 
-			void setAlarm(RTC_TimeTypeDef& time);
-			void setAlarm(int secs);
+			void setAlarm(uint64_t secs);
 
 			int sleepFor(int s);
 
@@ -128,9 +127,10 @@ namespace FwLogger
 
 		private:
 			void sleep();
+			int setNextAlarm();
 			uint32_t _lastTaskTime;
 
-			uint32_t _alarmTime;
+			uint64_t _alarmTime;
 
 			static OS* ptr;
 

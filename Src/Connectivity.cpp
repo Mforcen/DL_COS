@@ -1460,6 +1460,10 @@ namespace FwLogger
 		st.op = GSMOp::GetNetworkRegistration;
 		_statusList.push_back(st);
 
+		st.op = GSMOp::Delay;
+		st.params.delay = 10000;
+		_statusList.push_back(st);
+
 		st.op = GSMOp::BearerOpen;
 		_statusList.push_back(st);
 
