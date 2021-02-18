@@ -684,7 +684,7 @@ namespace FwLogger
 			}
 			else if(innerCounter == 10)
 			{
-				Log::Verbose("C: %c\n",_rx_char);
+				//Log::Verbose("C: %c\n",_rx_char);
 
 				_rx_buffer.push_back(_rx_char & 0x7f);
 				if(_rx_buffer.idx > 2)

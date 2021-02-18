@@ -1031,7 +1031,7 @@ namespace FwLogger
 			return -1;
 		}
 
-		uint32_t CNT = RTC->CNTH << 16 | RTC->CNTL;
+		int32_t CNT = RTC->CNTH << 16 | RTC->CNTL; // shouldn't be bigger than 86400
 		int32_t nextAlarm = _alarmTime - (t/86400*86400); //removing decimals
 		nextAlarm = nextAlarm < CNT+5 ? nextAlarm : CNT+5;
 

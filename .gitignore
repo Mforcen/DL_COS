@@ -6,3 +6,6 @@ hardware/mainBoard/Fabricación
 build/*
 *.bin
 core
+.gdbinit
+salida
+programas
