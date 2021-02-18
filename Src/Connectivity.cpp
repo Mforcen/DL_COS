@@ -755,7 +755,7 @@ namespace FwLogger
 		}
 		else
 		{
-			if(HAL_GetTick()-delayStart > 10000)
+			if(HAL_GetTick()-delayStart > 20000)
 				execute();
 		}
 		return true;
@@ -971,7 +971,7 @@ namespace FwLogger
 						stat->state = 0;
 						GSMState delay;
 						delay.op = GSMOp::Delay;
-						delay.params.delay = 5000;
+						delay.params.delay = 15000;
 						_statusList.push_front(delay);
 						execute();
 					}
