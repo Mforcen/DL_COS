@@ -986,16 +986,6 @@ namespace FwLogger
 						_statusList.push_front(ops);
 						execute();
 					}
-					else if(retcode >= 600)
-					{
-						_statusList.clear();
-						GSMState st;
-						st.op;
-						_statusList.push_back(st);
-
-						_appendWrite();
-						execute();
-					}
 					else
 						step();
 				}
@@ -1313,9 +1303,9 @@ namespace FwLogger
 				_statusList.at_back()->op = GSMOp::HTTPAction;
 				_statusList.at_back()->counter = 1; // post action
 
-				_statusList.push_back(GSMState());
-				_statusList.at_back()->op = GSMOp::ExecCommand;
-				_statusList.at_back()->params.command = GSMCommands::HTTP_READ;
+				//_statusList.push_back(GSMState());
+				//_statusList.at_back()->op = GSMOp::ExecCommand;
+				//_statusList.at_back()->params.command = GSMCommands::HTTP_READ;
 
 
 				_statusList.push_back(GSMState());
