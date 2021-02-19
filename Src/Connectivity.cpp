@@ -966,8 +966,12 @@ namespace FwLogger
 				{
 					int method = buf[13] -'0';
 					int retcode = (buf[15]-'0')*100+(buf[16]-'0')*10+(buf[17]-'0');
-					if(retcode >= 600)
+					if(retcode == 604)
 					{
+						if(stat->counter++ >= 10)
+						{
+							step();// avoiding loops
+						}
 						stat->state = 0;
 						PortTask* t = m_tasks.at_front();
 
@@ -980,6 +984,16 @@ namespace FwLogger
 						ops.op = GSMOp::Delay;
 						ops.params.delay = 15000;
 						_statusList.push_front(ops);
+						execute();
+					}
+					else if(retcode >= 600)
+					{
+						_statusList.clear();
+						GSMState st;
+						st.op;
+						_statusList.push_back(st);
+
+						_appendWrite();
 						execute();
 					}
 					else
