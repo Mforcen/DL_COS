@@ -64,6 +64,8 @@ extern circular_buffer<256> tx_buffer;
 extern int16_t adc_data[7];
 extern uint8_t _UART_txing;
 
+extern uint32_t lsi_capture;
+
 namespace FwLogger
 {
 	class OS

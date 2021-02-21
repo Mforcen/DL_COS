@@ -46,7 +46,8 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE|RCC_OSCILLATORTYPE_LSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV1;
-  RCC_OscInitStruct.LSEState = RCC_LSE_ON;
+  RCC_OscInitStruct.LSEState = RCC_LSE_OFF;
+  RCC_OscInitStruct.LSIState = RCC_LSI_ON;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
@@ -70,7 +71,7 @@ void SystemClock_Config(void)
   }
   PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RTC|RCC_PERIPHCLK_ADC
                               |RCC_PERIPHCLK_USB;
-  PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_LSE;
+  PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_LSI;
   PeriphClkInit.AdcClockSelection = RCC_ADCPCLK2_DIV8;
   PeriphClkInit.UsbClockSelection = RCC_USBCLKSOURCE_PLL_DIV1_5;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
@@ -244,6 +245,8 @@ void MX_I2C1_Init(void)
 
 }
 
+uint32_t lsi_capture;
+
 /**
   * @brief RTC Initialization Function
   * @param None
@@ -258,8 +261,38 @@ void MX_RTC_Init(void)
 
 	/** Initialize RTC Only
 	*/
+
+	RCC->CSR |= 1;
+	while((RCC->CSR & (1 << 1)) == 0); //wait lsi to be ready
+
+	RCC->APB1ENR |= 1 << 3;
+	TIM5->CR1 = (1 << 2) | (1 << 1); // dont enable yet
+	TIM5->CR2 = 0;
+	TIM5->SMCR = 0;
+
+	TIM5->EGR = 0;
+	TIM5->PSC = 0;
+	TIM5->CCMR2 = (1 << 8);
+	TIM5->CCER = 1 << 12; //CC4 as input
+	TIM5->CNT = 0;
+
+	__HAL_AFIO_REMAP_TIM5CH4_ENABLE();
+
+	TIM5->CR1 |= 1;
+	TIM5->SR = 0; // clearing flags
+	while((TIM5->SR & (1<<4)) == 0); // sync tim with lsi
+	TIM5->CNT = 0;
+	TIM5->SR = 0; // reset flag
+	while((TIM5->SR & (1<<4)) == 0); // input capture
+
+	lsi_capture = TIM5->CCR4;
+	TIM5->CR1 = 0; // disable tim5
+	RCC->APB1ENR &= ~(1 << 3);
+
+	uint32_t clock_freq = 72000000/lsi_capture;
+
 	hrtc.Instance = RTC;
-	hrtc.Init.AsynchPrediv = 0x7FFF; // supuestamente, 32.768kHz hacen 1 segundo
+	hrtc.Init.AsynchPrediv = clock_freq-1; // obtained from HSE
 	hrtc.Init.OutPut = RTC_OUTPUTSOURCE_NONE;
 	if (HAL_RTC_Init(&hrtc) != HAL_OK)
 	{

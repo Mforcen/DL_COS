@@ -559,6 +559,34 @@ namespace FwLogger
 					}
 				}
 			}
+			else if(strcmp(token, "lsi") == 0)
+			{
+				RCC->APB1ENR |= 1 << 3;
+				TIM5->CR1 = (1 << 2) | (1 << 1); // dont enable yet
+				TIM5->CR2 = 0;
+				TIM5->SMCR = 0;
+
+				TIM5->EGR = 0;
+				TIM5->PSC = 0;
+				TIM5->CCMR2 = (1 << 8);
+				TIM5->CCER = 1 << 12; //CC4 as input
+				TIM5->CNT = 0;
+
+				__HAL_AFIO_REMAP_TIM5CH4_ENABLE();
+
+				TIM5->CR1 |= 1;
+				TIM5->SR = 0; // clearing flags
+				while((TIM5->SR & (1<<4)) == 0); // sync tim with lsi
+				TIM5->CNT = 0;
+				TIM5->SR = 0; // reset flag
+				while((TIM5->SR & (1<<4)) == 0); // input capture
+
+				lsi_capture = TIM5->CCR4;
+				TIM5->CR1 = 0; // disable tim5
+				RCC->APB1ENR &= ~(1 << 3);
+
+				printf("Input capture: %d\n", lsi_capture);
+			}
 			else if(strcmp(token, "version") == 0)
 			{
                 int mn = Module::getModuleNumber();
