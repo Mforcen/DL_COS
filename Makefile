@@ -59,6 +59,7 @@ Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_crc.c \
 Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_dac.c \
 Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_dac_ex.c \
 Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_i2c.c \
+Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_iwdg.c \
 Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_rtc.c \
 Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_rtc_ex.c \
 Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_spi.c \
@@ -68,7 +69,7 @@ Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_uart.c \
 Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_core.c \
 Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ctlreq.c \
 Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c \
-Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c
+Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c \
 Src/printf.c \
 Src/cppabi.c \
 Src/system_stm32f2xx.c \

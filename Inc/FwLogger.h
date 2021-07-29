@@ -96,7 +96,7 @@ namespace FwLogger
 			int close(int fd);
 
 			uint64_t time();
-			void setTime(RTC_DateTypeDef& date, RTC_TimeTypeDef& time, bool check = true);
+			int setTime(RTC_DateTypeDef& date, RTC_TimeTypeDef& time, bool check = true);
 
 			int16_t get_adc_raw(int channel);
 			int get_adc_mv(int channel);

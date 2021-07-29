@@ -125,17 +125,6 @@ namespace FwLogger
 		}
 	}
 
-
-	void OS::RTC_SecondsIT()
-	{
-		uint32_t CNT = RTC->CNTH << 16 | RTC->CNTL;
-		if(_alarmTime <= CNT)
-		{
-			m_rtcFlag = true;
-			Log::Info("RTC Seconds ISR\n");
-		}
-	}
-
 	void OS::loop()
 	{
 		volatile bool work_left = false;
@@ -559,34 +548,6 @@ namespace FwLogger
 					}
 				}
 			}
-			else if(strcmp(token, "lsi") == 0)
-			{
-				RCC->APB1ENR |= 1 << 3;
-				TIM5->CR1 = (1 << 2) | (1 << 1); // dont enable yet
-				TIM5->CR2 = 0;
-				TIM5->SMCR = 0;
-
-				TIM5->EGR = 0;
-				TIM5->PSC = 0;
-				TIM5->CCMR2 = (1 << 8);
-				TIM5->CCER = 1 << 12; //CC4 as input
-				TIM5->CNT = 0;
-
-				__HAL_AFIO_REMAP_TIM5CH4_ENABLE();
-
-				TIM5->CR1 |= 1;
-				TIM5->SR = 0; // clearing flags
-				while((TIM5->SR & (1<<4)) == 0); // sync tim with lsi
-				TIM5->CNT = 0;
-				TIM5->SR = 0; // reset flag
-				while((TIM5->SR & (1<<4)) == 0); // input capture
-
-				lsi_capture = TIM5->CCR4;
-				TIM5->CR1 = 0; // disable tim5
-				RCC->APB1ENR &= ~(1 << 3);
-
-				printf("Input capture: %d\n", lsi_capture);
-			}
 			else if(strcmp(token, "version") == 0)
 			{
                 int mn = Module::getModuleNumber();
@@ -820,39 +781,15 @@ namespace FwLogger
 		return time.Hours*3600 + time.Minutes*60 + time.Seconds;
 	}
 
-	void OS::setTime(RTC_DateTypeDef& date, RTC_TimeTypeDef& time, bool check)
+	int OS::setTime(RTC_DateTypeDef& date, RTC_TimeTypeDef& time, bool check)
 	{
-		bool alarmEnabled = ((hrtc.Instance->CRH & 2) != 0);
-
-		if(check)
-		{
-			RTC_TimeTypeDef nowTime;
-			HAL_RTC_GetTime(&hrtc, &nowTime, RTC_FORMAT_BIN);
-			uint32_t timeSecs = toSecs(nowTime);
-
-			int32_t timeDelta = toSecs(time) - timeSecs;
-			if(timeDelta < 0) timeDelta = -timeDelta;
-			if(timeDelta > 100) //just allow time drifting error correction
-				return;
-		}
-
-		HAL_RTC_SetDate(&hrtc, &date, RTC_FORMAT_BIN);
-		HAL_RTC_SetTime(&hrtc, &time, RTC_FORMAT_BIN);
-
-		HAL_RTCEx_BKUPWrite(&hrtc, 2, hrtc.DateToUpdate.Year);
-		HAL_RTCEx_BKUPWrite(&hrtc, 3, hrtc.DateToUpdate.Month);
-		HAL_RTCEx_BKUPWrite(&hrtc, 4, hrtc.DateToUpdate.Date);
-
-		if(alarmEnabled)
-		{
-			uint32_t alarmTS = (hrtc.Instance->ALRH << 16) | hrtc.Instance->ALRL;
-			uint32_t clockTS = (hrtc.Instance->CNTH << 16) | hrtc.Instance->CNTL;
-			if(alarmTS < clockTS)
-			{
-				HAL_RTC_DeactivateAlarm(&hrtc, RTC_ALARM_A);
-				RTC_ISR(); // se llama al ISR
-			}
-		}
+		date.WeekDay = RTC_WEEKDAY_MONDAY;
+		time.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
+		time.StoreOperation = RTC_STOREOPERATION_RESET;
+		time.TimeFormat = RTC_HOURFORMAT12_AM;
+		if(HAL_RTC_SetTime(&hrtc, &time, RTC_FORMAT_BIN) != HAL_OK) return -1;
+		if(HAL_RTC_SetDate(&hrtc, &date, RTC_FORMAT_BIN) != HAL_OK) return -2;
+		return 0;
 
 	}
 
@@ -946,16 +883,7 @@ namespace FwLogger
 
 	void OS::setSecondsIT(int enable)
 	{
-		if(enable)
-		{
-			HAL_RTCEx_SetSecond_IT(&hrtc);
-			HAL_NVIC_EnableIRQ(RTC_IRQn);
-		}
-		else
-		{
-			HAL_RTCEx_DeactivateSecond(&hrtc);
-			HAL_NVIC_DisableIRQ(RTC_IRQn);
-		}
+		// UNIMPLEMENTED DUE TO MCU CHANGE
 	}
 
 	void OS::reset(const char *file, int line, const char *reason)
@@ -1008,13 +936,10 @@ namespace FwLogger
 		if(!ret) reset(__func__, __LINE__, "Cannot set RTC Alarm at sleeping");
 		if(ret == -1) return; // alarm passed
 
-		__HAL_RTC_ALARM_CLEAR_FLAG(&hrtc, RTC_FLAG_ALRAF);
+		
 		__HAL_RTC_ALARM_ENABLE_IT(&hrtc, RTC_IT_ALRA);
 
 		/* RTC Alarm Interrupt Configuration: EXTI configuration */
-		__HAL_RTC_ALARM_EXTI_ENABLE_IT();
-		__HAL_RTC_ALARM_EXTI_ENABLE_RISING_EDGE();
-
 		PortUART::get().powerOff();
 
 		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11 | GPIO_PIN_12, GPIO_PIN_RESET); // apagar el power
@@ -1048,6 +973,7 @@ namespace FwLogger
 
 	int OS::setNextAlarm()
 	{
+		/* UNIMPLEMENTED DUE TO MCU CHANGE
 		uint64_t t = time();
 		if(_alarmTime <= t)
 		{
@@ -1069,7 +995,7 @@ namespace FwLogger
 			st = RTC_WriteAlarmCounter(&hrtc, nextAlarm);
 			if(st == HAL_OK) break;
 		}
-		if(st == HAL_OK) return 1;
+		if(st == HAL_OK) return 1;*/
 		return 0;
 	}
 }
